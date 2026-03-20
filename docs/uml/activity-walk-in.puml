@@ -1,0 +1,49 @@
+@startuml
+title Activity Diagram - Tiếp nhận khách Walk-in
+
+start
+:Lễ tân tiếp nhận khách;
+:Nhập guest_count,\nname/phone (optional nếu có bàn ngay);
+
+if (guest_count <= 0?) then (Có)
+  :Thông báo lỗi;
+  stop
+endif
+
+:Tính start_time = NOW;
+:Tính end_time = min(NOW + Duration + Buffer, Giờ đóng cửa);
+:Lọc bàn capacity >= guest_count;
+:Phân tích available window từng bàn;
+
+if (Có FULL AVAILABLE?) then (Có)
+  :Chọn bàn nhỏ nhất phù hợp;
+  :Lock bàn;
+  :Tạo Reservation type=WALK_IN,\nstatus=SEATED;
+  stop
+else (Không)
+  if (Có PARTIAL AVAILABLE?) then (Có)
+    :Tính toán available_until = \n(Next_Booking_Start - 10p Buffer);
+    :Đề xuất short seating đến available_until;
+    if (Khách đồng ý?) then (Có)
+      :Gán bàn tạm;
+      :Cập nhật end_time của Reservation \n= available_until;
+      :Tạo Reservation type=WALK_IN,\nstatus=SEATED;
+      stop
+    else (Không)
+      :Thử bàn khác / ghép bàn;
+    endif
+  endif
+endif
+
+if (Có phương án ghép bàn?) then (Có)
+  :Lock các bàn liên quan;
+  :Tạo Reservation type=WALK_IN,\nstatus=SEATED;
+  :Tạo mapping chi tiết bàn;
+  stop
+else (Không)
+  :Yêu cầu nhập name + phone;
+  :Tạo Waitlist status=WAITING;
+  :Thông báo đang chờ;
+  stop
+endif
+@enduml

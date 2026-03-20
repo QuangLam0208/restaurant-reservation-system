@@ -1,0 +1,79 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam nodesep 40
+skinparam ranksep 60
+
+' Định nghĩa các Actors
+actor "Khách hàng Online" as OnlineCustomer
+actor "Khách Walk-in" as WalkInCustomer
+actor "Nhân viên Lễ tân" as Receptionist
+actor "Quản lý (Manager)" as Manager
+actor "Hệ thống (System)" as System
+
+rectangle "Hệ thống Quản lý Đặt bàn Tích hợp (Online & Offline)" {
+
+  rectangle "Phân hệ Đặt bàn Online" {
+    usecase "Đặt bàn trực tuyến" as UC_BookOnline
+    usecase "Hủy đặt bàn" as UC_CancelOnline
+  }
+
+  rectangle "Phân hệ Xử lý Logic (Hệ thống)" {
+    usecase "Tự động phân bổ bàn" as UC_AutoAssign
+    usecase "Ghép bàn (Merge Tables)" as UC_Merge
+    usecase "Gợi ý giờ trống" as UC_Suggest
+    usecase "Tự động đánh dấu No-show" as UC_AutoNoShow
+    usecase "Cảnh báo Overstay" as UC_AlertOverstay
+    usecase "Khóa bàn (Optimistic Lock)" as UC_LockTable
+  }
+
+  rectangle "Phân hệ Vận hành Lễ tân (POS)" {
+    usecase "Tiếp nhận khách Walk-in" as UC_HandleWalkIn
+    usecase "Xếp bàn ngồi tạm (Short Seating)" as UC_ShortSeating
+    usecase "Đưa vào Danh sách chờ (Waitlist)" as UC_Waitlist
+    usecase "Check-in khách đặt trước" as UC_CheckIn
+    usecase "Check-out / Giải phóng bàn" as UC_CheckOut
+    usecase "Ghi đè thủ công (Override)" as UC_Override
+    usecase "Ghi log hệ thống" as UC_Log
+  }
+
+  rectangle "Phân hệ Quản trị" {
+    usecase "Quản lý sơ đồ bàn (CRUD)" as UC_ManageTables
+    usecase "Xem báo cáo thống kê" as UC_ViewReports
+  }
+}
+
+OnlineCustomer --> UC_BookOnline
+OnlineCustomer --> UC_CancelOnline
+
+WalkInCustomer --> UC_HandleWalkIn
+WalkInCustomer --> UC_Waitlist : "Tham gia khi hết bàn"
+
+Receptionist --> UC_HandleWalkIn
+Receptionist --> UC_CheckIn
+Receptionist --> UC_CheckOut
+Receptionist --> UC_Override
+
+Manager --> UC_ManageTables
+Manager --> UC_ViewReports
+
+System --> UC_AutoNoShow
+System --> UC_AlertOverstay
+
+' Luồng Online
+UC_BookOnline ..> UC_AutoAssign : <<include>>
+UC_BookOnline ..> UC_LockTable : <<include>>
+UC_AutoAssign <.. UC_Merge : <<extend>> (Khi khách đông)
+UC_BookOnline <.. UC_Suggest : <<extend>> (Khi hết bàn)
+
+' Luồng Offline / Vận hành
+UC_HandleWalkIn ..> UC_AutoAssign : <<include>>
+UC_HandleWalkIn ..> UC_LockTable : <<include>>
+UC_HandleWalkIn <.. UC_ShortSeating : <<extend>> (Bàn trống tạm thời)
+UC_HandleWalkIn <.. UC_Waitlist : <<extend>> (Không có bàn nào)
+
+' Luồng Xử lý xung đột
+UC_Override ..> UC_Log : <<include>> (Bắt buộc ghi log)
+
+@enduml

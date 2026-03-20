@@ -1,0 +1,53 @@
+@startuml
+title Activity Diagram - Quy trình Check-in (Xử lý Đa kịch bản)
+
+start
+:Lễ tân tiếp nhận khách;
+:Tra cứu Reservation;
+
+if (current_time > start_time + 15p?) then (Có)
+  :Cập nhật status = NO_SHOW;
+  :Giải phóng bàn (Table -> AVAILABLE);
+  :Kết thúc (Hủy đơn);
+  stop
+else (Không)
+  if (Đến sớm (current_time < start_time)?) then (Có)
+    :Kiểm tra trạng thái bàn gốc;
+    if (Bàn gốc == AVAILABLE?) then (Có)
+      :Cho phép ngồi sớm;
+    else (Không/Đang Overstay)
+      :Tìm bàn thay thế trống;
+      if (Có bàn thay thế?) then (Có)
+        :Cập nhật Reservation_Table_Mapping\n(Giữ nguyên đơn gốc);
+      else (Không)
+        :Yêu cầu khách chờ đến giờ gốc;
+        stop
+      endif
+    endif
+  else (Đúng giờ/Trong Grace Period)
+    :Kiểm tra trạng thái bàn gốc;
+    if (Bàn gốc != AVAILABLE?) then (Đang bị Overstay)
+      :Tìm bàn thay thế khẩn cấp;
+      if (Có bàn thay thế?) then (Có)
+        :Gán bàn mới;
+      else (Không)
+        :Thông báo lỗi vận hành (Overstay conflict);
+        :Lễ tân xử lý thủ công (Override);
+        stop
+      endif
+    endif
+  endif
+endif
+
+:Cập nhật Reservation status = SEATED;
+:Cập nhật Table status = OCCUPIED;
+:Ghi nhận actual_start_time = NOW;
+
+note right
+  Hệ thống chuyển sang chế độ
+  giám sát thời gian sử dụng
+  (Background Monitoring)
+end note
+
+stop
+@enduml

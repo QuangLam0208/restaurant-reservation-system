@@ -1,0 +1,20 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Java
+target/
+build/
+
+# Node (nếu có web sau này)
+node_modules/
+
+# Visual Studio / WinForms
+bin/
+obj/
+*.user
+*.suo
+
+# OS
+.DS_Store
+Thumbs.db
