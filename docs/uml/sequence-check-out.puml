@@ -1,0 +1,43 @@
+@startuml
+title Sequence Diagram - Check-out và xử lý Overstay
+
+actor "Lễ tân / Quản lý" as Staff
+participant "POS UI" as UI
+participant "Dining Controller" as DC
+participant "Monitoring Service" as MS
+database "Reservation DB" as RDB
+database "Table DB" as TDB
+database "Override Log DB" as LDB
+
+== Giám sát Overstay (Chạy ngầm) ==
+loop Định kỳ liên tục
+    MS -> RDB : Quét đơn SEATED có current_time > end_time
+    RDB --> MS : Danh sách đơn vi phạm
+    MS -> TDB : Cập nhật Table status = OVERSTAY
+    MS -> UI : Phát cảnh báo OVERSTAY tại sơ đồ bàn
+end
+
+== Luồng Check-out thông thường ==
+Staff -> UI : Thực hiện Check-out (reservation_id)
+UI -> DC : completeReservation(id)
+
+DC -> RDB : update status = COMPLETED, end_time = current_time
+DC -> TDB : update status = AVAILABLE (sau end_time + 10p buffer)
+DC --> UI : Hoàn tất Check-out và giải phóng bàn
+
+== Luồng Xử lý Xung đột Overstay ==
+Note over Staff, UI: Khi có Online Booking sắp đến nhưng bàn vẫn OVERSTAY
+
+alt Nhân viên yêu cầu khách rời đi
+    Staff -> UI : Thực hiện Check-out sớm
+    UI -> DC : completeReservation(id)
+    DC -> RDB : update status = COMPLETED
+    DC -> TDB : Giải phóng bàn cho lượt tiếp theo
+else Tình huống bất khả kháng (Cần Override)
+    Staff -> UI : Chọn Ghi đè (Override) + Nhập lý do
+    UI -> DC : overrideConflict(id, account_id, reason)
+    DC -> LDB : save Override_Log (reservation_id, account_id, reason)
+    DC -> RDB : Cập nhật ghi chú xử lý thủ công
+    DC --> UI : Ghi log thành công (Audit Trail)
+end
+@enduml

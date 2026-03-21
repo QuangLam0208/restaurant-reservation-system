@@ -1,0 +1,106 @@
+@startuml
+title Class Diagram - Restaurant Reservation System (Standardized)
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "Domain Entities" {
+    class Customer {
+        - customerId: Long {PK}
+        - name: String
+        - phone: String
+    }
+
+    class Table_Info {
+        - tableId: Long {PK}
+        - capacity: int
+        - status: TableStatus
+        - version: int {Optimistic Lock}
+    }
+
+    class Reservation {
+        - reservationId: Long {PK}
+        - type: ReservationType
+        - guestCount: int
+        - startTime: DateTime
+        - endTime: DateTime
+        - status: ReservationStatus
+        - note: String
+        - createdAt: DateTime
+    }
+
+    class Waitlist {
+        - waitlistId: Long {PK}
+        - guestCount: int
+        - joinedAt: DateTime
+        - status: WaitlistStatus
+    }
+
+    class Account {
+        - accountId: Long {PK}
+        - username: String
+        - password: String
+        - role: UserRole
+    }
+
+    class Override_Log {
+        - logId: Long {PK}
+        - reason: String
+        - createdAt: DateTime
+    }
+}
+
+package "Value Objects / Enums" {
+    enum TableStatus {
+        AVAILABLE
+        OCCUPIED
+        OVERSTAY
+    }
+
+    enum ReservationStatus {
+        CREATED
+        PENDING_PAYMENT
+        RESERVED
+        SEATED
+        COMPLETED
+        CANCELLED
+        NO_SHOW
+        EXPIRED
+    }
+
+    enum ReservationType {
+        ONLINE
+        WALK_IN
+    }
+
+    enum WaitlistStatus {
+        WAITING
+        SEATED
+        SKIPPED
+    }
+
+    enum UserRole {
+        RECEPTIONIST
+        MANAGER
+    }
+}
+
+' Mối quan hệ giữa các thực thể
+Customer "1" -- "0..*" Reservation : "makes"
+Customer "1" -- "0..*" Waitlist : "joins"
+
+' Quan hệ Nhiều - Nhiều cho nghiệp vụ Ghép bàn
+Reservation "0..*" -- "1..*" Table_Info : "occupies"
+(Reservation, Table_Info) .. Reservation_Table_Mapping
+
+class Reservation_Table_Mapping {
+    - mapping_id: Long {PK}
+    - reservation_id: Long {FK}
+    - table_id: Long {FK}
+}
+
+Account "1" -- "0..*" Reservation : "handles"
+Account "1" -- "0..*" Override_Log : "records"
+Reservation "1" -- "0..1" Override_Log : "triggers"
+
+@enduml
