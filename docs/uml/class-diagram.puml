@@ -1,29 +1,25 @@
 @startuml
-title Class Diagram - Integrated Reservation Management System (SOLID Design)
+title Class Diagram - Restaurant Reservation System (Standardized)
 
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 
 package "Domain Entities" {
     class Customer {
-        - customerId: Long
+        - customerId: Long {PK}
         - name: String
         - phone: String
-        + getReservations(): List<Reservation>
-        + addToWaitlist(): void
     }
 
     class Table_Info {
-        - tableId: Long
+        - tableId: Long {PK}
         - capacity: int
         - status: TableStatus
-        - version: int {optimistic lock}
-        + isAvailable(start: DateTime, end: DateTime): boolean
-        + updateStatus(newStatus: TableStatus): void
+        - version: int {Optimistic Lock}
     }
 
     class Reservation {
-        - reservationId: Long
+        - reservationId: Long {PK}
         - type: ReservationType
         - guestCount: int
         - startTime: DateTime
@@ -31,31 +27,24 @@ package "Domain Entities" {
         - status: ReservationStatus
         - note: String
         - createdAt: DateTime
-        + calculateTotalFee(): Double
-        + checkIn(): void
-        + cancel(): void
-        + markAsOverstay(): void
     }
 
     class Waitlist {
-        - waitlistId: Long
+        - waitlistId: Long {PK}
         - guestCount: int
         - joinedAt: DateTime
         - status: WaitlistStatus
-        + notifyCustomer(): void
     }
 
     class Account {
-        - accountId: Long
+        - accountId: Long {PK}
         - username: String
-        - password: {encrypted} String
+        - password: String
         - role: UserRole
-        + processCheckIn(res: Reservation): void
-        + handleOverride(res: Reservation, reason: String): void
     }
 
     class Override_Log {
-        - logId: Long
+        - logId: Long {PK}
         - reason: String
         - createdAt: DateTime
     }
@@ -96,21 +85,22 @@ package "Value Objects / Enums" {
     }
 }
 
-' Relationships
-Customer "1" -- "0..*" Reservation : makes >
-Customer "1" -- "0..*" Waitlist : joins >
+' Mối quan hệ giữa các thực thể
+Customer "1" -- "0..*" Reservation : "makes"
+Customer "1" -- "0..*" Waitlist : "joins"
 
-' Relationship many-to-many for Table Merging
-Reservation "0..*" -- "1..*" Table_Info : occupies >
+' Quan hệ Nhiều - Nhiều cho nghiệp vụ Ghép bàn
+Reservation "0..*" -- "1..*" Table_Info : "occupies"
 (Reservation, Table_Info) .. Reservation_Table_Mapping
 
 class Reservation_Table_Mapping {
-    - mappingId: Long
-    - assignedAt: DateTime
+    - mapping_id: Long {PK}
+    - reservation_id: Long {FK}
+    - table_id: Long {FK}
 }
 
-Account "1" -- "0..*" Reservation : handles >
-Account "1" -- "0..*" Override_Log : records >
-Reservation "1" -- "0..1" Override_Log : triggers >
+Account "1" -- "0..*" Reservation : "handles"
+Account "1" -- "0..*" Override_Log : "records"
+Reservation "1" -- "0..1" Override_Log : "triggers"
 
 @enduml
