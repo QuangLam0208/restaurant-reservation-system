@@ -36,7 +36,11 @@ alt Chưa đăng nhập / Lần đầu sử dụng
     UI -> Auth : login(Email, Password)
     Auth -> DB : Validate credentials & is_verified = TRUE
     Auth --> UI : Cấp phát JWT Token hợp lệ
-
+else Đã có tài khoản
+    Customer -> UI : Thực hiện Đăng nhập
+    UI -> Auth : login(Email, Password)
+    Auth -> DB : Validate credentials & is_verified = TRUE
+    Auth --> UI : Cấp phát JWT Token hợp lệ
 end
 
 == 2. Quá trình Đặt bàn (Mục 3.2) ==
@@ -89,7 +93,6 @@ else Token hợp lệ
 
         RC -> DB : Thiết lập Soft Lock 5 phút cho các bàn\n(Bàn được coi là Busy với yêu cầu khác - Mục 3.2.5)
 
-== 3. Thanh toán Phí giữ bàn (Mục 3.2.6) ==
 
         RC -> RC : Tính phí giữ bàn\n(50.000 VNĐ × guest_count)
         RC -> DB : Cập nhật Status = PENDING_PAYMENT
@@ -105,7 +108,6 @@ else Token hợp lệ
                 RC -> DB : Chốt phân bổ bàn\n(Lưu vào bảng Reservation_Table_Mapping)
                 RC -> DB : Giải phóng Soft Lock
                 RC --> UI : Trả kết quả đặt bàn thành công
-                RC -> Customer : Gửi Email/SMS xác nhận
                 UI --> Customer : Hiển thị màn hình xác nhận đặt bàn
 
             else Thanh toán Thất bại / Quá hạn 5 phút
