@@ -43,6 +43,7 @@ rectangle "Hệ thống Quản lý Đặt bàn Tích hợp (Online & Offline)" {
     usecase "Tự động phân bổ bàn\n(UC_AutoAssign)" as UC_AutoAssign
     usecase "Ghép bàn\n(UC_Merge)" as UC_Merge
     usecase "Khóa bàn tạm\n(UC_SoftLock)" as UC_SoftLock
+    usecase "Khóa lạc quan\n(UC_OptimisticLock)" as UC_OptimisticLock
     usecase "Tự động hủy Soft Lock\n(UC_AutoExpire)" as UC_AutoExpire
     usecase "Gửi xác nhận Email/SMS\n(UC_Notify)" as UC_Notify
     usecase "Gợi ý giờ trống\n(UC_Suggest)" as UC_Suggest
@@ -118,6 +119,9 @@ UC_BookOnline ..> UC_Login : <<include>>
 UC_BookOnline ..> UC_AutoAssign  : <<include>>
 UC_BookOnline ..> UC_SoftLock    : <<include>>
 UC_BookOnline ..> UC_Payment     : <<include>>
+
+' AutoAssign luôn dùng Optimistic Lock khi ghi reservation
+UC_AutoAssign ..> UC_OptimisticLock : <<include>>
 
 ' Sau thanh toán thành công → gửi thông báo
 UC_Payment ..> UC_Notify         : <<include>>
