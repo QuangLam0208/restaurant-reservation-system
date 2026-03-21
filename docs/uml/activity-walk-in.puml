@@ -1,75 +1,49 @@
 @startuml
+title Activity Diagram - Tiếp nhận khách Walk-in
+
 start
+:Lễ tân tiếp nhận khách;
+:Nhập guest_count,\nname/phone (optional nếu có bàn ngay);
 
-:Nhân viên nhập guest_count;
-
-if (guest_count > 0?) then (Yes)
-
-  :Tính start_time = NOW;
-  :Tính service_end_time = min(NOW + Duration, closing_time);
-  :Tính occupied_until = service_end_time + buffer_time;
-
-  :Tìm danh sách bàn phù hợp;
-  :Lọc bàn capacity >= guest_count;
-  :Loại các bàn xung đột với booking ONLINE (ưu tiên online);
-
-  if (Có bàn FULL AVAILABLE?) then (Yes)
-    :Chọn bàn nhỏ nhất đủ chỗ;
-    :Tạo Reservation (WALK_IN, SEATED);
-    :Tạo Reservation_Table_Mapping;
-    :Lock bàn (transaction / version check);
-    stop
-
-  else (No)
-
-    :Thử tìm phương án GHÉP BÀN (FULL);
-
-    if (Có thể ghép bàn?) then (Yes)
-      :Chọn tổ hợp bàn tối ưu;
-      :Tạo Reservation;
-      :Tạo nhiều Reservation_Table_Mapping;
-      :Lock tất cả bàn;
-      stop
-
-    else (No)
-
-      :Xét bàn PARTIAL AVAILABLE;
-
-      if (Có bàn PARTIAL?) then (Yes)
-
-        :Tính available_until (trước booking tiếp theo);
-
-        if (available_until > NOW?) then (Yes)
-          :Gợi ý Short Seating cho khách;
-
-          if (Khách đồng ý?) then (Yes)
-            :Tạo Reservation (end_time = available_until);
-            :Tạo Reservation_Table_Mapping;
-            :Lock bàn;
-            stop
-          else (No)
-            :Tiếp tục tìm phương án khác;
-          endif
-
-        endif
-
-      endif
-
-      :Thử lại ghép bàn (nếu có short window);
-
-      if (Vẫn không có bàn?) then (Yes)
-        :Nhập name + phone;
-        :Tạo hoặc tìm Customer;
-        :Tạo Waitlist (WAITING);
-        stop
-      endif
-
-    endif
-
-  endif
-
-else (No)
-  :Hiển thị lỗi "Số lượng khách không hợp lệ";
+if (guest_count <= 0?) then (Có)
+  :Thông báo lỗi;
+  stop
 endif
 
+:Tính start_time = NOW;
+:Tính end_time = min(NOW + Duration + Buffer, Giờ đóng cửa);
+:Lọc bàn capacity >= guest_count;
+:Phân tích available window từng bàn;
+
+if (Có FULL AVAILABLE?) then (Có)
+  :Chọn bàn nhỏ nhất phù hợp;
+  :Lock bàn;
+  :Tạo Reservation type=WALK_IN,\nstatus=SEATED;
+  stop
+else (Không)
+  if (Có PARTIAL AVAILABLE?) then (Có)
+    :Tính toán available_until = \n(Next_Booking_Start - 10p Buffer);
+    :Đề xuất short seating đến available_until;
+    if (Khách đồng ý?) then (Có)
+      :Gán bàn tạm;
+      :Cập nhật end_time của Reservation \n= available_until;
+      :Tạo Reservation type=WALK_IN,\nstatus=SEATED;
+      stop
+    else (Không)
+      :Thử bàn khác / ghép bàn;
+    endif
+  endif
+endif
+
+if (Có phương án ghép bàn?) then (Có)
+  :Lock các bàn liên quan;
+  :Tạo Reservation type=WALK_IN,\nstatus=SEATED;
+  :Tạo mapping chi tiết bàn;
+  stop
+else (Không)
+  :Yêu cầu nhập name + phone;
+  :Tạo Waitlist status=WAITING;
+  :Thông báo đang chờ;
+  stop
+endif
 @enduml
