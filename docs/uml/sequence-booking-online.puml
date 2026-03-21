@@ -1,0 +1,51 @@
+@startuml
+title Sequence Diagram - Đặt bàn Online (Tích hợp Thanh toán)
+autonumber
+skinparam actorStyle awesome
+
+actor Customer
+boundary UI as "Web/App UI"
+control ReservationController
+control AssignmentService
+control PaymentGateway
+database ReservationDB
+database TableDB
+
+Customer -> UI : Nhập: Tên, SĐT, Số khách, Ngày/Giờ
+UI -> ReservationController : createOnlineReservation(data)
+
+group Kiểm tra & Phân bổ bàn
+    ReservationController -> AssignmentService : findBestFit(data)
+    Note over AssignmentService : Tính: Giờ đến + 120p (Duration) + 10p (Buffer)
+    AssignmentService -> TableDB : Lọc bàn theo Capacity & Status
+    AssignmentService -> ReservationDB : Kiểm tra Overlap thời gian
+
+    alt Không có bàn đơn phù hợp
+        AssignmentService -> AssignmentService : Thuật toán Ghép bàn (Merge Tables)
+    end
+end
+
+alt Hết chỗ hoàn toàn
+    AssignmentService --> UI : Trả về lỗi & Gợi ý mốc thời gian khác
+else Tìm thấy bàn/nhóm bàn phù hợp
+    ReservationController -> ReservationDB : Khởi tạo Reservation (Status=CREATED)
+    ReservationController -> ReservationDB : Thiết lập Soft Lock (5 phút)
+
+    ReservationController -> ReservationController : Tính phí giữ bàn (50k * số khách)
+    ReservationController -> ReservationDB : Update Status=PENDING_PAYMENT
+    ReservationController --> UI : Trả về link thanh toán & Countdown Timer
+
+    Customer -> PaymentGateway : Thực hiện thanh toán
+    PaymentGateway -> ReservationController : Callback (Thành công)
+
+    ReservationController -> ReservationDB : Update Status=RESERVED
+    ReservationController -> TableDB : Update Table Status (Physical Mapping)
+    ReservationController --> UI : Gửi SMS/Email xác nhận thành công
+
+    else Thanh toán thất bại / Quá hạn 5 phút
+        PaymentGateway -> ReservationController : Callback (Thất bại/Timeout)
+        ReservationController -> ReservationDB : Update Status=EXPIRED/CANCELED
+        ReservationController -> ReservationDB : Giải phóng Soft Lock
+        ReservationController --> UI : Thông báo đơn hàng đã hủy
+end
+@enduml

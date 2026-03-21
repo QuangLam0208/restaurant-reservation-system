@@ -1,0 +1,54 @@
+@startuml
+title Sequence Diagram - Tiếp nhận khách Walk-in (Đã tinh chỉnh)
+autonumber
+skinparam actorStyle awesome
+
+actor "Lễ tân" as Receptionist
+actor "Khách Walk-in" as WalkIn
+boundary "POS UI" as UI
+control "Walk-in Controller" as WC
+control "Assignment Service" as AS
+control "Lock Manager" as LM
+database "Database (3NF)" as DB
+
+Receptionist -> UI : Nhập số lượng khách (Bắt buộc)
+Note right of Receptionist : Tên/SĐT là tùy chọn nếu có bàn ngay
+
+UI -> WC : createWalkIn(guest_count, optional_info)
+WC -> AS : findRealTimeAvailableTables(guest_count, now)
+
+group Phân tích trạng thái bàn
+    AS -> DB : Lọc bàn theo Capacity & Status
+    AS -> DB : Tìm Online Booking gần nhất của từng bàn
+    AS --> WC : Trả về danh sách (Bàn trống / Bàn ngồi tạm)
+end
+
+alt Trường hợp FULL AVAILABLE
+    WC -> AS : Chọn bàn nhỏ nhất đủ chỗ
+    AS --> WC : table_id
+    WC -> LM : Khóa bàn (Optimistic Locking)
+    WC -> DB : Tạo Reservation (type=WALK_IN, status=SEATED, end_time=now+120p)
+    WC -> DB : Cập nhật Table_Info status=OCCUPIED
+    WC --> UI : Xếp bàn thành công
+
+else Trường hợp PARTIAL AVAILABLE (Short Seating)
+    WC --> UI : Hiển thị "Trống đến HH:MM"
+    Receptionist -> WalkIn : Hỏi ý kiến khách
+
+    alt Khách đồng ý
+        UI -> WC : confirmShortSeating(table_id, available_until)
+        WC -> DB : Tạo Reservation (status=SEATED, end_time=available_until)
+        WC -> DB : Cập nhật Table_Info status=OCCUPIED
+        WC --> UI : Xếp Short Seating thành công
+    else Khách không đồng ý / Hết bàn hoàn toàn
+        WC -> AS : Thử thuật toán ghép bàn (Merge Tables)
+        alt Không thể ghép bàn
+            AS --> WC : No tables available
+            WC --> UI : Đề nghị vào Waitlist
+            Receptionist -> UI : Nhập Tên + SĐT (Bắt buộc)
+            UI -> DB : insert Waitlist (status=WAITING, joined_at=now)
+            UI --> Receptionist : Đã ghi danh vào hàng đợi
+        end
+    end
+end
+@enduml

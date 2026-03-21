@@ -1,0 +1,60 @@
+@startuml
+skinparam actorStyle awesome
+autonumber
+
+actor "Khách hàng" as Customer
+actor "Lễ tân / Quản lý" as Staff
+participant "Web/POS UI" as UI
+participant "Reservation Controller" as RC
+participant "Waitlist Service" as WS
+participant "Monitoring Service" as MS
+database "Database" as DB
+
+== Luồng Online: Đặt bàn & Thanh toán ==
+Customer -> UI : Gửi yêu cầu đặt bàn
+UI -> RC : createOnlineReservation(request)
+RC -> DB : Tìm bàn trống & Lock tạm 5p
+RC -> UI : Chuyển hướng thanh toán
+Customer -> UI : Thanh toán thành công
+UI -> DB : Reservation status = RESERVED
+
+== Check-in & Grace Period ==
+Staff -> UI : Check-in (reservation_id)
+alt Đến đúng hạn (Trong 15p)
+    UI -> DB : status = SEATED, Table = OCCUPIED
+else Quá hạn (Trễ > 15p)
+    UI -> DB : status = NO_SHOW, Release Table
+end
+
+== Luồng Walk-in & Waitlist ==
+Staff -> UI : Nhập số khách (Walk-in)
+UI -> RC : findAvailableTable()
+
+alt Có bàn (Trống hoàn toàn hoặc Ngồi tạm)
+    RC --> UI : Gợi ý bàn/Short seating
+    Staff -> DB : status = SEATED
+else Hết bàn hoàn toàn
+    UI -> Staff : Thông báo hết bàn, đề nghị Waitlist
+    Staff -> UI : Nhập Tên + SĐT (Bắt buộc)
+    UI -> WS : addToWaitlist(customer_info)
+    WS -> DB : Save Waitlist (status = WAITING)
+end
+
+== Giám sát Overstay & Override ==
+loop Quét định kỳ mỗi phút
+    MS -> DB : Kiểm tra đơn SEATED quá end_time
+    DB --> MS : Trả về danh sách vi phạm
+    MS -> UI : Cảnh báo trạng thái OVERSTAY
+end
+
+alt Xử lý xung đột (Override)
+    Staff -> UI : Ghi đè thủ công (Tình huống bất khả kháng)
+    UI -> DB : Lưu Override_Log (Lý do + Mã NV)
+    UI -> DB : Cập nhật trạng thái bàn thủ công
+end
+
+== Hoàn tất phục vụ ==
+Staff -> UI : Check-out khách
+UI -> DB : Reservation = COMPLETED
+Note right of DB : Bàn về AVAILABLE sau Buffer Time
+@enduml
