@@ -1,51 +1,89 @@
 @startuml
-title Sequence Diagram - Đặt bàn Online (Tích hợp Thanh toán)
+title Sequence Diagram - Đặt bàn Online (Từ Đăng nhập đến Thanh toán)
 autonumber
 skinparam actorStyle awesome
+skinparam maxMessageSize 150
 
-actor Customer
-boundary UI as "Web/App UI"
-control ReservationController
-control AssignmentService
-control PaymentGateway
-database ReservationDB
-database TableDB
+actor "Khách hàng" as Customer
+boundary "Web/App UI" as UI
+control "Auth Service" as Auth
+control "Reservation Controller" as RC
+control "Assignment Service" as Assign
+control "Payment Gateway" as PG
+database "Database" as DB
 
-Customer -> UI : Nhập: Tên, SĐT, Số khách, Ngày/Giờ
-UI -> ReservationController : createOnlineReservation(data)
+== 1. Tiền điều kiện: Xác thực Tài khoản (Mục 3.1) ==
+Customer -> UI : Mở chức năng Đặt bàn trực tuyến
 
-group Kiểm tra & Phân bổ bàn
-    ReservationController -> AssignmentService : findBestFit(data)
-    Note over AssignmentService : Tính: Giờ đến + 120p (Duration) + 10p (Buffer)
-    AssignmentService -> TableDB : Lọc bàn theo Capacity & Status
-    AssignmentService -> ReservationDB : Kiểm tra Overlap thời gian
+alt Chưa đăng nhập / Lần đầu sử dụng
+    Customer -> UI : Chọn Đăng ký tài khoản
+    UI -> Auth : register(Name, Phone, Email, Password)
+    Auth -> DB : Lưu tài khoản (is_verified = FALSE)
+    Auth --> Customer : Gửi Email xác minh
+    Customer -> Auth : Click link xác minh trong Email
+    Auth -> DB : Cập nhật is_verified = TRUE
 
-    alt Không có bàn đơn phù hợp
-        AssignmentService -> AssignmentService : Thuật toán Ghép bàn (Merge Tables)
-    end
+    Customer -> UI : Thực hiện Đăng nhập
+    UI -> Auth : login(Email, Password)
+    Auth -> DB : Validate credentials & is_verified
+    Auth --> UI : Cấp phát Token hợp lệ
 end
 
-alt Hết chỗ hoàn toàn
-    AssignmentService --> UI : Trả về lỗi & Gợi ý mốc thời gian khác
-else Tìm thấy bàn/nhóm bàn phù hợp
-    ReservationController -> ReservationDB : Khởi tạo Reservation (Status=CREATED)
-    ReservationController -> ReservationDB : Thiết lập Soft Lock (5 phút)
+== 2. Quá trình Đặt bàn (Mục 3.2) ==
+Customer -> UI : Nhập Số khách, Ngày, Giờ, Ghi chú
+UI -> RC : createOnlineReservation(token, request_data)
+RC -> Auth : validateToken(token)
 
-    ReservationController -> ReservationController : Tính phí giữ bàn (50k * số khách)
-    ReservationController -> ReservationDB : Update Status=PENDING_PAYMENT
-    ReservationController --> UI : Trả về link thanh toán & Countdown Timer
+alt Token không hợp lệ
+    Auth --> RC : Lỗi 401 Unauthorized
+    RC --> UI : Báo lỗi xác thực
+    UI --> Customer : Yêu cầu Đăng nhập lại
+else Token hợp lệ
+    Auth --> RC : Trả về customer_id
+    RC -> DB : Truy xuất tự động Tên & SĐT theo customer_id
 
-    Customer -> PaymentGateway : Thực hiện thanh toán
-    PaymentGateway -> ReservationController : Callback (Thành công)
+    group Kiểm tra & Phân bổ bàn (Auto Assignment)
+        RC -> Assign : findBestFit(data)
+        Note over Assign : Tính: end_time = MIN(start_time + 120p + 10p(buffer time), Giờ đóng cửa)
+        Assign -> DB : Lọc bàn theo Capacity & Kiểm tra Overlap
 
-    ReservationController -> ReservationDB : Update Status=RESERVED
-    ReservationController -> TableDB : Update Table Status (Physical Mapping)
-    ReservationController --> UI : Gửi SMS/Email xác nhận thành công
+        alt Không có bàn đơn phù hợp
+            Assign -> Assign : Kích hoạt thuật toán Ghép bàn (Merge Tables)
+        end
+    end
 
-    else Thanh toán thất bại / Quá hạn 5 phút
-        PaymentGateway -> ReservationController : Callback (Thất bại/Timeout)
-        ReservationController -> ReservationDB : Update Status=EXPIRED/CANCELED
-        ReservationController -> ReservationDB : Giải phóng Soft Lock
-        ReservationController --> UI : Thông báo đơn hàng đã hủy
+    alt Hết chỗ hoàn toàn (Cả đơn và ghép đều thất bại)
+        Assign --> RC : Trả về NULL
+        RC --> UI : Thông báo lỗi & Hiển thị giờ gợi ý
+        UI --> Customer : Yêu cầu chọn giờ khác
+    else Tìm thấy bàn/nhóm bàn phù hợp
+        Assign --> RC : Trả về danh sách table_id
+        RC -> DB : Tạo Reservation (Status=CREATED, type=ONLINE)
+        RC -> DB : Thiết lập Khóa tạm (Soft Lock) các bàn trong 5 phút
+
+== 3. Thanh toán Phí giữ bàn ==
+        RC -> RC : Tính phí giữ bàn (50.000 VNĐ * guest_count)
+        RC -> DB : Cập nhật Status=PENDING_PAYMENT
+        RC --> UI : Trả về URL thanh toán & Countdown Timer 5 phút
+        UI --> Customer : Điều hướng sang màn hình Thanh toán
+
+        group Quá trình Thanh toán (Trong vòng 5 phút)
+            Customer -> PG : Thực hiện thanh toán
+
+            alt Thanh toán Thành công
+                PG -> RC : Webhook Callback (Thành công)
+                RC -> DB : Cập nhật Status=RESERVED
+                RC -> DB : Chốt phân bổ bàn (Lưu vào bảng Mapping)
+                RC --> UI : Trả kết quả Đặt bàn thành công
+                UI --> Customer : Hiển thị thông báo & Gửi Email/SMS
+            else Thanh toán Thất bại / Quá hạn 5 phút
+                PG -> RC : Webhook Callback (Thất bại) / Timeout
+                RC -> DB : Cập nhật Status=EXPIRED / CANCELLED
+                RC -> DB : Giải phóng Soft Lock (Bàn trở về AVAILABLE)
+                RC --> UI : Trả kết quả Thất bại
+                UI --> Customer : Thông báo giao dịch bị hủy
+            end
+        end
+    end
 end
 @enduml
