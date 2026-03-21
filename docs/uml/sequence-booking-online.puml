@@ -1,0 +1,122 @@
+@startuml
+title Sequence Diagram - Đặt bàn Online (Từ Đăng nhập đến Thanh toán)
+autonumber
+skinparam actorStyle awesome
+skinparam maxMessageSize 150
+
+actor "Khách hàng" as Customer
+boundary "Web/App UI" as UI
+control "Auth Service" as Auth
+control "Reservation Controller" as RC
+control "Assignment Service" as Assign
+control "Payment Gateway" as PG
+database "Database" as DB
+
+== 1. Xác thực người dùng (Mục 3.1) ==
+
+Customer -> UI : Mở chức năng Đặt bàn trực tuyến
+
+alt Chưa đăng nhập / Lần đầu sử dụng
+
+    Customer -> UI : Chọn Đăng ký tài khoản
+    UI -> Auth : register(Name, Phone, Email, Password)
+    Auth -> DB : Lưu tài khoản (is_verified = FALSE, password_hash)
+    Auth --> Customer : Gửi Email xác minh
+
+    note right of Customer
+        Khách mở email và
+        click link xác minh
+    end note
+
+    Customer -> Auth : GET /verify?token=...
+    Auth -> DB : Cập nhật is_verified = TRUE
+    Auth --> Customer : Xác minh thành công, yêu cầu đăng nhập
+
+    Customer -> UI : Thực hiện Đăng nhập
+    UI -> Auth : login(Email, Password)
+    Auth -> DB : Validate credentials & is_verified = TRUE
+    Auth --> UI : Cấp phát JWT Token hợp lệ
+
+end
+
+== 2. Quá trình Đặt bàn (Mục 3.2) ==
+
+Customer -> UI : Nhập Số khách, Ngày, Giờ, Ghi chú
+UI -> RC : createOnlineReservation(token, request_data)
+RC -> Auth : validateToken(token)
+
+alt Token không hợp lệ
+    Auth --> RC : Lỗi 401 Unauthorized
+    RC --> UI : Báo lỗi xác thực
+    UI --> Customer : Yêu cầu Đăng nhập lại
+
+else Token hợp lệ
+    Auth --> RC : Trả về customer_id
+    RC -> DB : Truy xuất tự động Tên & SĐT theo customer_id
+
+    group Kiểm tra & Phân bổ bàn (Auto Assignment)
+        RC -> Assign : findBestFit(guest_count, start_time)
+        note over Assign
+            Tính end_time = start_time + 120p (Duration) + 10p (Buffer)
+            Lọc bàn: Capacity >= guest_count AND không overlap
+            Ưu tiên bàn nhỏ nhất đủ chỗ
+        end note
+        Assign -> DB : Lọc bàn theo Capacity & kiểm tra Overlap
+
+        alt Không có bàn đơn phù hợp
+            Assign -> Assign : Kích hoạt thuật toán Ghép bàn\n(Merge Tables - Mục 3.2.4)
+            Assign -> DB : Tìm tổ hợp bàn trống có thể ghép
+        end
+    end
+
+    alt Hết chỗ hoàn toàn (đơn lẻ và ghép đều thất bại)
+        Assign --> RC : Trả về NULL
+        RC --> UI : Thông báo hết bàn & danh sách giờ gợi ý
+        UI --> Customer : Yêu cầu chọn khung giờ khác
+
+    else Tìm thấy bàn / nhóm bàn phù hợp
+        Assign --> RC : Trả về danh sách table_id
+
+        group Tạo Reservation có kiểm soát đồng thời (Mục 3.5.3)
+            RC -> DB : Tạo Reservation (Status=CREATED, type=ONLINE)\nvới Optimistic Lock - kiểm tra version của bàn
+
+            break Version conflict (race condition - bàn vừa bị đặt)
+                DB --> RC : Lỗi version conflict
+                RC --> UI : Thông báo bàn vừa được đặt, vui lòng thử lại
+                UI --> Customer : Yêu cầu chọn lại
+            end
+        end
+
+        RC -> DB : Thiết lập Soft Lock 5 phút cho các bàn\n(Bàn được coi là Busy với yêu cầu khác - Mục 3.2.5)
+
+== 3. Thanh toán Phí giữ bàn (Mục 3.2.6) ==
+
+        RC -> RC : Tính phí giữ bàn\n(50.000 VNĐ × guest_count)
+        RC -> DB : Cập nhật Status = PENDING_PAYMENT
+        RC --> UI : Trả về URL thanh toán & Countdown Timer 5 phút
+        UI --> Customer : Điều hướng sang màn hình Thanh toán
+
+        group Quá trình Thanh toán (Trong vòng 5 phút - Mục 3.2.7)
+            Customer -> PG : Thực hiện thanh toán
+
+            alt Thanh toán Thành công
+                PG -> RC : Webhook Callback (Thành công)
+                RC -> DB : Cập nhật Status = RESERVED
+                RC -> DB : Chốt phân bổ bàn\n(Lưu vào bảng Reservation_Table_Mapping)
+                RC -> DB : Giải phóng Soft Lock
+                RC --> UI : Trả kết quả đặt bàn thành công
+                RC -> Customer : Gửi Email/SMS xác nhận
+                UI --> Customer : Hiển thị màn hình xác nhận đặt bàn
+
+            else Thanh toán Thất bại / Quá hạn 5 phút
+                PG -> RC : Webhook Callback (Thất bại) / Timeout
+                RC -> DB : Cập nhật Status = EXPIRED hoặc CANCELLED
+                RC -> DB : Giải phóng Soft Lock\n(Bàn trở về AVAILABLE)
+                RC --> UI : Trả kết quả thất bại
+                UI --> Customer : Thông báo giao dịch bị hủy
+            end
+        end
+    end
+end
+
+@enduml
