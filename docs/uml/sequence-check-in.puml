@@ -1,0 +1,49 @@
+@startuml
+title Sequence Diagram - Check-in khách hàng
+
+actor Receptionist
+boundary POS as "Reception UI"
+control CheckInController
+database ReservationDB
+database TableDB
+database MappingDB
+
+Receptionist -> POS : Tìm và chọn Reservation
+POS -> CheckInController : processCheckIn(reservation_id)
+
+CheckInController -> ReservationDB : getReservation(reservation_id)
+ReservationDB --> CheckInController : Thông tin đơn đặt (scheduled_time, table_id)
+
+alt Khách đến sớm (current_time < scheduled_time)
+    CheckInController -> TableDB : Kiểm tra trạng thái bàn vật lý (table_id)
+    TableDB --> CheckInController : status (AVAILABLE / OCCUPIED)
+
+    alt Bàn gốc hiện đang trống
+        CheckInController -> ReservationDB : update status = SEATED, start_time = current_time
+        CheckInController -> TableDB : update status = OCCUPIED
+        CheckInController --> POS : Cho khách nhận bàn sớm
+    else Bàn gốc chưa trống
+        CheckInController -> TableDB : Tìm bàn trống thay thế khác
+        TableDB --> CheckInController : result (new_table_id / null)
+
+        alt Có bàn thay thế
+            CheckInController -> MappingDB : Cập nhật table_id mới cho reservation_id [cite: 113]
+            CheckInController -> ReservationDB : update status = SEATED, start_time = current_time
+            CheckInController -> TableDB : update status = OCCUPIED
+            CheckInController --> POS : Xếp khách vào bàn thay thế
+        else Không có bàn thay thế
+            CheckInController --> POS : Thông báo bàn chưa sẵn sàng, mời khách chờ
+        end
+    end
+
+else Đúng giờ hoặc trong Grace Period (trễ <= 15 phút) [cite: 74]
+    CheckInController -> ReservationDB : update status = SEATED, start_time = current_time
+    CheckInController -> TableDB : update status = OCCUPIED
+    CheckInController --> POS : Check-in thành công
+
+else Quá hạn (trễ > 15 phút)
+    CheckInController -> ReservationDB : update status = NO_SHOW [cite: 75, 107]
+    CheckInController -> TableDB : release table (update status = AVAILABLE) [cite: 75]
+    CheckInController --> POS : Đơn đã quá hạn và bị hủy (NO_SHOW)
+end
+@enduml

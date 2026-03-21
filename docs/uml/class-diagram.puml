@@ -1,0 +1,116 @@
+@startuml
+title Class Diagram - Integrated Reservation Management System (SOLID Design)
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "Domain Entities" {
+    class Customer {
+        - customerId: Long
+        - name: String
+        - phone: String
+        + getReservations(): List<Reservation>
+        + addToWaitlist(): void
+    }
+
+    class Table_Info {
+        - tableId: Long
+        - capacity: int
+        - status: TableStatus
+        - version: int {optimistic lock}
+        + isAvailable(start: DateTime, end: DateTime): boolean
+        + updateStatus(newStatus: TableStatus): void
+    }
+
+    class Reservation {
+        - reservationId: Long
+        - type: ReservationType
+        - guestCount: int
+        - startTime: DateTime
+        - endTime: DateTime
+        - status: ReservationStatus
+        - note: String
+        - createdAt: DateTime
+        + calculateTotalFee(): Double
+        + checkIn(): void
+        + cancel(): void
+        + markAsOverstay(): void
+    }
+
+    class Waitlist {
+        - waitlistId: Long
+        - guestCount: int
+        - joinedAt: DateTime
+        - status: WaitlistStatus
+        + notifyCustomer(): void
+    }
+
+    class Account {
+        - accountId: Long
+        - username: String
+        - password: {encrypted} String
+        - role: UserRole
+        + processCheckIn(res: Reservation): void
+        + handleOverride(res: Reservation, reason: String): void
+    }
+
+    class Override_Log {
+        - logId: Long
+        - reason: String
+        - createdAt: DateTime
+    }
+}
+
+package "Value Objects / Enums" {
+    enum TableStatus {
+        AVAILABLE
+        OCCUPIED
+        OVERSTAY
+    }
+
+    enum ReservationStatus {
+        CREATED
+        PENDING_PAYMENT
+        RESERVED
+        SEATED
+        COMPLETED
+        CANCELLED
+        NO_SHOW
+        EXPIRED
+    }
+
+    enum ReservationType {
+        ONLINE
+        WALK_IN
+    }
+
+    enum WaitlistStatus {
+        WAITING
+        SEATED
+        SKIPPED
+    }
+
+    enum UserRole {
+        RECEPTIONIST
+        MANAGER
+    }
+}
+
+' Relationships
+Customer "1" -- "0..*" Reservation : makes >
+Customer "1" -- "0..*" Waitlist : joins >
+
+' Relationship many-to-many for Table Merging
+Reservation "0..*" -- "1..*" Table_Info : occupies >
+(Reservation, Table_Info) .. Reservation_Table_Mapping
+
+class Reservation_Table_Mapping {
+    - mappingId: Long
+    - assignedAt: DateTime
+}
+
+Account "1" -- "0..*" Reservation : handles >
+Account "1" -- "0..*" Override_Log : records >
+Reservation "1" -- "0..1" Override_Log : triggers >
+
+@enduml
