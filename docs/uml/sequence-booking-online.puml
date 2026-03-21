@@ -12,7 +12,6 @@ control "Assignment Service" as Assign
 control "Payment Gateway" as PG
 database "Database" as DB
 
-== 1. Tiền điều kiện: Xác thực Tài khoản (Mục 3.1) ==
 Customer -> UI : Mở chức năng Đặt bàn trực tuyến
 
 alt Chưa đăng nhập / Lần đầu sử dụng
