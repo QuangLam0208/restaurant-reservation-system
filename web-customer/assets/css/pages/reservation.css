@@ -1,5 +1,314 @@
-/* Các style cụ thể chỉ dành riêng cho layout đặt bàn nếu cần */
 .reservation-wrapper {
-    padding-top: 150px;
+    padding-top: 120px;
+    padding-bottom: 80px;
     min-height: 80vh;
 }
+
+/* NÚT BẤM DÙNG CHUNG (CHO DATE) */
+.pill-btn {
+    padding: 12px 20px;
+    border: 1px solid #E8E0D5;
+    background-color: var(--white);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-align: center;
+    font-family: inherit;
+}
+.pill-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.pill-btn.selected {
+    background-color: var(--accent);
+    color: var(--white);
+    border-color: var(--accent);
+    box-shadow: 0 4px 10px rgba(139, 115, 85, 0.3);
+}
+
+/* LƯỚI 7 NGÀY (HIỂN THỊ ĐỦ 1 TUẦN) */
+.date-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    width: 100%;
+    margin-top: 0;
+    flex-grow: 1;
+}
+
+.date-grid .pill-btn {
+    padding: 10px 4px;
+    font-size: 13px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .date-grid {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        scroll-behavior: smooth;
+    }
+    .date-grid::-webkit-scrollbar { height: 6px; }
+    .date-grid::-webkit-scrollbar-thumb { background-color: #d1c8bd; border-radius: 10px; }
+    .date-grid .pill-btn {
+        min-width: 80px;
+    }
+}
+
+/* LƯỚI KHUNG GIỜ */
+.time-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+}
+.time-slot {
+    padding: 12px 8px;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    font-family: inherit;
+}
+.time-slot.available {
+    background-color: var(--white);
+    color: var(--accent);
+    border-color: #E8E0D5;
+    cursor: pointer;
+}
+.time-slot.available:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+.time-slot.selected {
+    background-color: var(--accent) !important;
+    color: var(--white) !important;
+    border-color: var(--accent) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(139, 115, 85, 0.3);
+}
+.time-slot.booked {
+    background-color: #f8f9fa;
+    color: #ced4da;
+    border-color: #e9ecef;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+/* NÚT ĐIỀU HƯỚNG NEXT / PREVIOUS */
+.date-carousel .nav-btn {
+    padding: 12px 15px;
+    font-weight: bold;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.date-carousel .nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: #E8E0D5;
+    color: var(--text-main);
+    background-color: transparent;
+    box-shadow: none;
+}
+
+/* XỬ LÝ MÀU CHỮ CHO NGÀY HÔM NAY */
+.pill-btn .day-text {
+    font-weight: bold;
+    transition: color 0.2s ease;
+}
+.pill-btn.is-today .day-text {
+    color: var(--accent);
+    font-weight: 800;
+}
+.pill-btn.selected.is-today .day-text {
+    color: var(--white);
+}
+
+/* --- UI MỚI: PREMIUM STEPPER CHO PARTY SIZE --- */
+.party-stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #E8E0D5;
+    border-radius: 8px;
+    background: var(--white);
+    height: 54px;
+    overflow: hidden;
+    transition: var(--transition-smooth);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+.party-stepper:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.15);
+}
+
+.stepper-btn {
+    background: none;
+    border: none;
+    padding: 0 20px;
+    font-size: 24px;
+    color: var(--text-main);
+    cursor: pointer;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.stepper-btn:hover {
+    background-color: var(--accent);
+    color: var(--white);
+}
+
+.stepper-value-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    border-left: 1px solid #E8E0D5;
+    border-right: 1px solid #E8E0D5;
+    height: 100%;
+}
+
+.stepper-value-wrapper input {
+    border: none;
+    outline: none;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--accent);
+    width: 35px;
+    text-align: center;
+    background: transparent;
+    font-family: inherit;
+    padding: 0;
+}
+
+/* Ẩn mũi tên mặc định của thẻ input type="number" */
+.stepper-value-wrapper input::-webkit-outer-spin-button,
+.stepper-value-wrapper input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.stepper-value-wrapper input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.stepper-value-wrapper span {
+    font-size: 16px;
+    font-weight: 500;
+    margin-left: 4px;
+    color: var(--text-main);
+}
+
+
+/*----------------------------------------------------
+.reservation-wrapper {
+    padding-top: 120px;
+    padding-bottom: 80px;
+    min-height: 80vh;
+}
+
+/* NÚT BẤM DÙNG CHUNG */
+.pill-btn {
+    padding: 12px 20px;
+    border: 1px solid #E8E0D5;
+    background-color: var(--white);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.pill-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pill-btn.selected {
+    background-color: var(--accent);
+    color: var(--white);
+    border-color: var(--accent);
+    box-shadow: 0 4px 10px rgba(139, 115, 85, 0.3);
+}
+
+/* CẢI TIẾN: PARTY SELECTION CONTAINER */
+.party-selection-container {
+    background-color: #fcfbf9; /* Màu nền nhẹ để tạo khối */
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px dashed #E8E0D5;
+}
+
+.quick-select-label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #999;
+    margin-bottom: 15px;
+}
+
+.stepper-divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    color: #ccc;
+    font-size: 13px;
+}
+.stepper-divider::before, .stepper-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #eee;
+}
+.stepper-divider span { padding: 0 15px; color: #888; }
+
+/* STEPPER */
+.party-stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #E8E0D5;
+    border-radius: 8px;
+    background: var(--white);
+    height: 54px;
+    overflow: hidden;
+}
+.stepper-btn {
+    background: none; border: none; padding: 0 20px;
+    font-size: 24px; color: var(--text-main); cursor: pointer;
+    height: 100%; transition: all 0.2s ease;
+}
+.stepper-btn:hover { background-color: var(--accent); color: var(--white); }
+
+.stepper-value-wrapper {
+    display: flex; align-items: center; padding: 0 20px;
+    border-left: 1px solid #E8E0D5; border-right: 1px solid #E8E0D5;
+    height: 100%;
+}
+.stepper-value-wrapper input {
+    border: none; outline: none; font-size: 18px; font-weight: 800;
+    color: var(--accent); width: 35px; text-align: center; background: transparent;
+}
+.stepper-value-wrapper input::-webkit-outer-spin-button,
+.stepper-value-wrapper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* CÁC PHẦN KHÁC GIỮ NGUYÊN */
+.date-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; flex-grow: 1; }
+.date-grid .pill-btn { padding: 10px 4px; font-size: 13px; width: 100%; }
+
+@media (max-width: 768px) {
+    .date-grid { display: flex; overflow-x: auto; padding-bottom: 10px; }
+    .date-grid .pill-btn { min-width: 80px; }
+}
+
+.time-slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 12px; margin-top: 15px; }
+.time-slot { padding: 12px 8px; text-align: center; border-radius: 8px; font-size: 15px; font-weight: 600; transition: all 0.2s ease; border: 1px solid transparent; cursor: pointer; background: #fff; border: 1px solid #E8E0D5; color: var(--accent); }
+.time-slot.selected { background-color: var(--accent) !important; color: var(--white) !important; transform: translateY(-2px); }
+.time-slot.booked { background-color: #f8f9fa; color: #ced4da; text-decoration: line-through; cursor: not-allowed; }
+
+.date-carousel .nav-btn { padding: 12px 15px; font-weight: bold; font-size: 18px; }
+.date-carousel .nav-btn:disabled { opacity: 0.3; }
+
+.pill-btn.is-today .day-text { color: var(--accent); font-weight: 800; }
+.pill-btn.selected.is-today .day-text { color: var(--white); }
