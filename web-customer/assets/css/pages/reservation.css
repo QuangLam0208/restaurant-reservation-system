@@ -1,0 +1,5 @@
+/* Các style cụ thể chỉ dành riêng cho layout đặt bàn nếu cần */
+.reservation-wrapper {
+    padding-top: 150px;
+    min-height: 80vh;
+}

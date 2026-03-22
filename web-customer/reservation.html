@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Make a Reservation - Saint-Laurent</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+      alert("Vui lòng đăng nhập trước khi đặt bàn!");
+      window.location.href = "index.html";
+    }
+  </script>
+</head>
+<body style="background-color: var(--white);">
+
+<header id="main-header" class="scrolled">
+  <div class="container header-content">
+    <a href="index.html" class="logo" style="color: var(--text-dark);">SAN-LORENZO</a>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-link" style="color: var(--text-dark);">Home</a>
+      <a href="#" class="nav-link" id="logout-btn" style="color: var(--text-dark);">Logout</a>
+    </nav>
+  </div>
+</header>
+
+<section class="section reservation-wrapper">
+  <div class="container">
+    <div class="text-center fade-in" style="margin-bottom: 3rem;">
+      <h2 class="section-title" style="margin-bottom: 0.5rem;">Reserve a Table</h2>
+      <p>Enter your details and we'll get you the best seats</p>
+    </div>
+
+    <div class="form-card fade-in" style="transition-delay: 0.2s; border: 1px solid #E8E0D5;">
+      <form id="booking-form" action="#" method="POST">
+        <div class="grid-2" style="gap: 1.5rem; margin-bottom: 1.5rem; align-items: start;">
+          <div class="form-group">
+            <label class="form-label">Guest Name *</label>
+            <input type="text" class="form-control" placeholder="John Doe" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" class="form-control" placeholder="john@example.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number *</label>
+            <input type="tel" class="form-control" placeholder="+1 (555) 123-4567" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Party Size *</label>
+            <select class="form-control" required>
+              <option value="2">2 guests</option>
+              <option value="4">4 guests</option>
+              <option value="6">6+ guests</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date *</label>
+            <input type="date" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Time *</label>
+            <select class="form-control" required>
+              <option value="19:00">7:00 PM</option>
+              <option value="20:00" selected>8:00 PM</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Special Requests (Optional)</label>
+          <textarea class="form-control" placeholder="Any dietary restrictions, allergies?"></textarea>
+        </div>
+        <button type="submit" class="btn" style="width: 100%; padding: 16px; font-size: 1.1rem;">Confirm Reservation</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer id="contact" style="padding: 20px 0;">
+  <div class="container">
+    <div class="footer-bottom" style="margin-top: 0; border-top: none;">
+      <p>© 2025 by San-Lorenzo. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="js/pages/reservation.js"></script>
+
+</body>
+</html>
