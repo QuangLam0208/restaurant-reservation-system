@@ -326,32 +326,36 @@ public class ReservationService {
             releaseTablesByReservation(reservation);
 
             throw new BadRequestException("Đơn đặt bàn đã quá giờ giữ chỗ (" + gracePeriodMinutes + " phút). Đơn đã bị hủy theo chính sách No-Show.");
-            // Lưu ý: Tùy requirement, bạn có thể return toResponse() thay vì throw Exception.
-            // Nhưng thường check-in thất bại do quá giờ nên báo lỗi cho FE biết.
         }
 
-        // ────── Kịch bản B: Đến sớm (Early Arrival) ──────
-        if (now.isBefore(startTime)) {
-            // Kiểm tra xem tất cả các bàn dự kiến có đang trống không
-            boolean isOriginalTablesAvailable = assignedTables.stream()
-                    .allMatch(t -> t.getStatus() == TableStatus.AVAILABLE && !t.isSoftLocked());
+        // ────── Kịch bản B & C: Kiểm tra trạng thái thực tế của bàn ──────
+        // Logic kiểm tra áp dụng cho CẢ khách đến sớm VÀ khách đến đúng giờ
+        boolean isOriginalTablesAvailable = assignedTables.stream()
+                .allMatch(t -> t.getStatus() == TableStatus.AVAILABLE && !t.isSoftLocked());
 
-            if (!isOriginalTablesAvailable) {
-                boolean hasAlternativeTable = assignmentService.findAlternativeTables(reservation);
+        if (!isOriginalTablesAvailable) {
+            // Cố gắng nhờ AssignmentService tìm và gán tạm bàn thay thế
+            boolean hasAlternativeTable = assignmentService.findAlternativeTables(reservation);
 
-                if (!hasAlternativeTable) {
-                    // Nếu không có bàn thay thế, chặn check-in và yêu cầu khách chờ
+            if (!hasAlternativeTable) {
+                // Không có bàn thay thế -> Rẽ nhánh theo thời gian khách đến
+                if (now.isBefore(startTime)) {
+                    // Kịch bản B: Đến sớm -> Nhẹ nhàng mời ra Waitlist chờ
                     throw new ConflictException("Bàn đặt trước hiện chưa trống và không có bàn thay thế phù hợp. Mời quý khách ngồi chờ ở khu vực Waitlist.");
                 } else {
-                    // Nếu tìm được bàn thay thế, load lại danh sách bàn mới vì getTableMappings() đã được update trong service.
-                    assignedTables = new ArrayList<>(reservation.getTableMappings().stream()
-                            .map(ReservationTableMapping::getTableInfo)
-                            .toList());
+                    // Kịch bản C phẩy: Đúng giờ nhưng bị đè Overstay -> Lỗi vận hành khẩn cấp
+                    throw new ConflictException("OVERSTAY_CONFLICT: Bàn gốc đang bị khách ca trước ngồi quá giờ và không có bàn thay thế trống. Vui lòng sử dụng chức năng Override để xử lý.");
                 }
+            } else {
+                // Nếu tìm được bàn thay thế thành công, load lại danh sách bàn mới từ Mapping
+                assignedTables = new ArrayList<>(reservation.getTableMappings().stream()
+                        .map(ReservationTableMapping::getTableInfo)
+                        .toList());
             }
         }
 
-        // ────── Kịch bản C & Check-in Thành công: Đúng giờ / Trong grace period / Đến sớm và có bàn ──────
+        // ────── Check-in Thành công (Đã có bàn trống: gốc hoặc thay thế) ──────
+
         reservation.checkIn();
         //Cập nhật Table_Info.status = OCCUPIED cho TẤT CẢ bàn trong Mapping
         for (TableInfo t : assignedTables) {
