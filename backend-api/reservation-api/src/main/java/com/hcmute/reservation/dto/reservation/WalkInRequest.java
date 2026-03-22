@@ -12,10 +12,8 @@ public class WalkInRequest {
     @NotNull @Min(1)
     private Integer guestCount;
 
-    @NotBlank
     private String customerName;
 
-    @NotBlank
     private String customerPhone;
 
     // null = auto-detect now
