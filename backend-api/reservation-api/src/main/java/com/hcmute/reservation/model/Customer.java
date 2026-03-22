@@ -2,6 +2,7 @@ package com.hcmute.reservation.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -36,6 +37,17 @@ public class Customer {
     @Column(name = "is_verified", nullable = false)
     @Builder.Default
     private Boolean isVerified = Boolean.FALSE;
+
+    // Token gửi qua email để xác minh tài khoản
+    @Column(name = "verification_token")
+    private String verificationToken;
+
+    // Token và thời hạn dùng cho forgot-password
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "reset_token_expires_at")
+    private LocalDateTime resetTokenExpiresAt;
 
     // Quan hệ 1-N với Reservation (optional từ phía Customer - walk-in)
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
