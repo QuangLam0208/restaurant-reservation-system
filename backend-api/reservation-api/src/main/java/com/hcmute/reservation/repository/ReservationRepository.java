@@ -1,0 +1,48 @@
+package com.hcmute.reservation.repository;
+
+import com.hcmute.reservation.model.Reservation;
+import com.hcmute.reservation.model.enums.ReservationStatus;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Repository
+public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+
+    List<Reservation> findByStatus(ReservationStatus status);
+
+    // Danh sách đơn đang SEATED
+    List<Reservation> findByStatusOrderByStartTimeAsc(ReservationStatus status);
+
+    // Đơn RESERVED sắp đến trong N phút
+    @Query("SELECT r FROM Reservation r WHERE r.status = 'RESERVED' AND r.startTime BETWEEN :now AND :until")
+    List<Reservation> findUpcoming(@Param("now") LocalDateTime now, @Param("until") LocalDateTime until);
+
+    // PENDING_PAYMENT quá hạn → EXPIRED
+    @Query("SELECT r FROM Reservation r WHERE r.status = 'PENDING_PAYMENT' AND r.createdAt < :expiredBefore")
+    List<Reservation> findExpiredPendingPayments(@Param("expiredBefore") LocalDateTime expiredBefore);
+
+    // RESERVED quá grace period → NO_SHOW
+    @Query("SELECT r FROM Reservation r WHERE r.status = 'RESERVED' AND r.startTime < :graceCutoff")
+    List<Reservation> findNoShows(@Param("graceCutoff") LocalDateTime graceCutoff);
+
+    // SEATED quá end_time → OVERSTAY
+    @Query("SELECT r FROM Reservation r WHERE r.status = 'SEATED' AND r.endTime < :now")
+    List<Reservation> findOverstayed(@Param("now") LocalDateTime now);
+
+    // Báo cáo: đơn đặt bàn theo ngày
+    @Query("SELECT DATE(r.createdAt), COUNT(r) FROM Reservation r " +
+           "WHERE r.createdAt BETWEEN :from AND :to GROUP BY DATE(r.createdAt) ORDER BY DATE(r.createdAt)")
+    List<Object[]> countByDate(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    // Báo cáo: no-show rate
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.createdAt BETWEEN :from AND :to AND r.status = 'NO_SHOW'")
+    long countNoShows(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.createdAt BETWEEN :from AND :to AND r.status <> 'CREATED'")
+    long countTotal(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+}

@@ -3,7 +3,6 @@ package com.hcmute.reservation.model;
 import com.hcmute.reservation.model.enums.WaitlistStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
