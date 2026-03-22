@@ -51,7 +51,7 @@ public class SecurityConfig {
 
                 // ── CUSTOMER only ─────────────────────────────────────────────────
                 .requestMatchers(HttpMethod.POST, "/api/reservations/online").hasRole("CUSTOMER")
-                .requestMatchers(HttpMethod.DELETE, "/api/reservations/*").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.DELETE, "/api/reservations/**").hasRole("CUSTOMER")
 
                 // ── STAFF only ────────────────────────────────────────────────────
                 .requestMatchers(HttpMethod.POST, "/api/reservations/walk-in").hasRole("STAFF")

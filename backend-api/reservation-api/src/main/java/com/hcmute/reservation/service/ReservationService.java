@@ -31,6 +31,7 @@ public class ReservationService {
     private final CustomerRepository customerRepository;
     private final TableInfoRepository tableInfoRepository;
     private final ReservationTableMappingRepository mappingRepository;
+    private final AssignmentService assignmentService;
 
     @Value("${reservation.grace-period-minutes:15}")
     private int gracePeriodMinutes;
@@ -83,27 +84,48 @@ public class ReservationService {
                 .stream()
                 .filter(t -> !occupiedTableIds.contains(t.getTableId()))
                 .collect(Collectors.toList());
-        if (available.isEmpty()) {
-            throw new BadRequestException("Hiện không có bàn trống phù hợp. Vui lòng chọn giờ khác.");
+
+        List<TableInfo> selectedTables = new ArrayList<>();
+        if (!available.isEmpty()) {
+            selectedTables.add(available.get(0));
+        } else {
+            // Không đủ bàn tĩnh -> Tìm ghép bàn
+            List<TableInfo> allAvailable = tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE)
+                    .stream()
+                    .filter(t -> !t.isSoftLocked() && !occupiedTableIds.contains(t.getTableId()))
+                    .collect(Collectors.toList());
+            int total = 0;
+            for (TableInfo t : allAvailable) {
+                selectedTables.add(t);
+                total += t.getCapacity();
+                if (total >= req.getGuestCount()) break;
+            }
+            if (total < req.getGuestCount()) {
+                throw new BadRequestException("Hiện không có bàn hoặc tổ hợp bàn trống phù hợp. Vui lòng chọn giờ khác.");
+            }
         }
-        TableInfo table = available.get(0);
 
-
-
+        // Tạo Reservation với status = CREATED
         Reservation reservation = Reservation.builder()
                 .customer(customer)
                 .type(ReservationType.ONLINE)
                 .guestCount(req.getGuestCount())
                 .startTime(start)
                 .endTime(end)
-                .status(ReservationStatus.PENDING_PAYMENT)
+                .status(ReservationStatus.CREATED)
                 .note(req.getNote())
                 .build();
         reservation = reservationRepository.save(reservation);
 
-        // Soft lock bàn 5 phút
-        table.applySoftLock(reservation.getReservationId(), softLockMinutes);
-        tableInfoRepository.save(table);
+        // Soft lock tất cả bàn đã chọn (5 phút)
+        for (TableInfo t : selectedTables) {
+            t.applySoftLock(reservation.getReservationId(), softLockMinutes);
+            tableInfoRepository.save(t);
+        }
+
+        // Chuyển sang status = PENDING_PAYMENT
+        reservation.setStatus(ReservationStatus.PENDING_PAYMENT);
+        reservation = reservationRepository.save(reservation);
 
         return toResponse(reservation);
     }
@@ -124,9 +146,7 @@ public class ReservationService {
 
         // Lưu Reservation_Table_Mapping — tìm bàn đang bị soft-lock bởi reservation này
         final Long reservationId = reservation.getReservationId();
-        List<TableInfo> lockedTables = tableInfoRepository.findAll().stream()
-                .filter(t -> reservationId.equals(t.getLockedByReservationId()))
-                .collect(Collectors.toList());
+        List<TableInfo> lockedTables = tableInfoRepository.findByLockedByReservationId(reservationId);
 
         final Reservation savedRes = reservation;
         for (TableInfo t : lockedTables) {
@@ -174,12 +194,19 @@ public class ReservationService {
             !reservation.getCustomer().getCustomerId().equals(customerId))) {
             throw new BadRequestException("Bạn không có quyền hủy đơn này.");
         }
+        if (reservation.getStatus() == ReservationStatus.PENDING_PAYMENT) {
+            reservation.setStatus(ReservationStatus.CANCELLED);
+            reservationRepository.save(reservation);
+            releaseLockedTable(reservation.getReservationId());
+            return;
+        }
+
         if (reservation.getStatus() != ReservationStatus.RESERVED) {
-            throw new BadRequestException("Chỉ có thể hủy đơn đang ở trạng thái RESERVED.");
+            throw new BadRequestException("Chỉ có thể hủy đơn đang ở trạng thái RESERVED hoặc PENDING_PAYMENT.");
         }
         reservation.cancel();
         reservationRepository.save(reservation);
-        // Giải phóng bàn
+        // Giải phóng bàn (cho đơn đã REVERVED có table mapping)
         releaseTablesByReservation(reservation);
     }
 
@@ -207,9 +234,12 @@ public class ReservationService {
         } else if (req.isMergeTables()) {
             // Ghép bàn tự động
             List<TableInfo> available = tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE);
+            // Lọc các bàn overlap để mergeTables không gom nhầm bàn sắp có khách đặt online
+            LocalDateTime checkEnd = req.getEndTime() != null ? req.getEndTime() : LocalDateTime.now().plusMinutes(durationMinutes + bufferMinutes);
+            Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(LocalDateTime.now(), checkEnd));
             int total = 0;
             for (TableInfo t : available) {
-                if (t.isSoftLocked()) continue;
+                if (t.isSoftLocked() || occupiedIds.contains(t.getTableId())) continue;
                 selectedTables.add(t);
                 total += t.getCapacity();
                 if (total >= req.getGuestCount()) break;
@@ -307,19 +337,16 @@ public class ReservationService {
                     .allMatch(t -> t.getStatus() == TableStatus.AVAILABLE && !t.isSoftLocked());
 
             if (!isOriginalTablesAvailable) {
-                // TODO: Tích hợp AssignmentService ở đây để tìm bàn thay thế (nếu có)
-                boolean hasAlternativeTable = false;
-
-                // Logic giả định: hasAlternativeTable = assignmentService.reassignTable(reservation);
+                boolean hasAlternativeTable = assignmentService.findAlternativeTables(reservation);
 
                 if (!hasAlternativeTable) {
                     // Nếu không có bàn thay thế, chặn check-in và yêu cầu khách chờ
                     throw new ConflictException("Bàn đặt trước hiện chưa trống và không có bàn thay thế phù hợp. Mời quý khách ngồi chờ ở khu vực Waitlist.");
                 } else {
-                    // Nếu tìm được bàn thay thế, load lại danh sách bàn mới
-                    assignedTables = reservation.getTableMappings().stream()
+                    // Nếu tìm được bàn thay thế, load lại danh sách bàn mới vì getTableMappings() đã được update trong service.
+                    assignedTables = new ArrayList<>(reservation.getTableMappings().stream()
                             .map(ReservationTableMapping::getTableInfo)
-                            .toList();
+                            .toList());
                 }
             }
         }
@@ -342,7 +369,8 @@ public class ReservationService {
             throw new BadRequestException("Đơn không ở trạng thái SEATED.");
         }
         reservation.checkOut();
-        reservation.setEndTime(LocalDateTime.now().plusMinutes(bufferMinutesAfterCheckout));
+        // Đặc tả 3.4.4: endTime = lúc checkout thực tế. Scheduler sẽ lo vụ buffer sau.
+        reservation.setEndTime(LocalDateTime.now());
         reservationRepository.save(reservation);
         return toResponse(reservation);
     }
@@ -363,12 +391,10 @@ public class ReservationService {
     // ────── Private helpers ────────────────────────────────────────────
 
     private void releaseLockedTable(Long reservationId) {
-        tableInfoRepository.findAll().stream()
-                .filter(t -> reservationId.equals(t.getLockedByReservationId()))
-                .forEach(t -> {
-                    t.releaseSoftLock();
-                    tableInfoRepository.save(t);
-                });
+        tableInfoRepository.findByLockedByReservationId(reservationId).forEach(t -> {
+            t.releaseSoftLock();
+            tableInfoRepository.save(t);
+        });
     }
 
     private void releaseTablesByReservation(Reservation reservation) {

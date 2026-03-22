@@ -2,6 +2,7 @@ package com.hcmute.reservation.service;
 
 import com.hcmute.reservation.dto.table.AvailableWindowResponse;
 import com.hcmute.reservation.exception.BadRequestException;
+import com.hcmute.reservation.model.Reservation;
 import com.hcmute.reservation.model.TableInfo;
 import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.ReservationRepository;
@@ -83,50 +84,57 @@ public class AvailabilityService {
         List<TableInfo> allActiveTables = tableInfoRepository.findByIsActiveTrue();
         List<AvailableWindowResponse> result = new ArrayList<>();
 
-        // Bàn đủ chỗ và hoàn toàn trống
-        List<TableInfo> fullAvailable = allActiveTables.stream()
-                .filter(t -> t.getCapacity() >= guests
-                        && t.getStatus() == TableStatus.AVAILABLE
-                        && !t.isSoftLocked())
+        // Chỉ xét những bàn hiện đang thực sự AVAILABLE và không bị soft-lock
+        List<TableInfo> availableCurrent = allActiveTables.stream()
+                .filter(t -> t.getStatus() == TableStatus.AVAILABLE && !t.isSoftLocked())
                 .collect(Collectors.toList());
 
-        for (TableInfo t : fullAvailable) {
-            result.add(AvailableWindowResponse.builder()
-                    .tableId(t.getTableId())
-                    .capacity(t.getCapacity())
-                    .availability(AvailableWindowResponse.Availability.FULL_AVAILABLE)
-                    .build());
-        }
+        LocalDateTime maxEndTime = time.plusMinutes(durationMinutes + bufferMinutes);
 
-        // Bàn đang bị soft-lock (sắp trống)
-        List<TableInfo> partialAvailable = allActiveTables.stream()
-                .filter(t -> t.getCapacity() >= guests && t.isSoftLocked())
+        List<TableInfo> singleMatch = availableCurrent.stream()
+                .filter(t -> t.getCapacity() >= guests)
                 .collect(Collectors.toList());
 
-        for (TableInfo t : partialAvailable) {
-            result.add(AvailableWindowResponse.builder()
-                    .tableId(t.getTableId())
-                    .capacity(t.getCapacity())
-                    .availability(AvailableWindowResponse.Availability.PARTIAL_AVAILABLE)
-                    .availableUntil(t.getSoftLockUntil())
-                    .build());
+        for (TableInfo t : singleMatch) {
+            List<Reservation> nextBookings = reservationRepository.findNextBookingForTable(t.getTableId(), time);
+            
+            if (!nextBookings.isEmpty() && nextBookings.get(0).getStartTime().isBefore(maxEndTime)) {
+                // Có booking kế tiếp cắt ngang -> PARTIAL
+                result.add(AvailableWindowResponse.builder()
+                        .tableId(t.getTableId())
+                        .capacity(t.getCapacity())
+                        .availability(AvailableWindowResponse.Availability.PARTIAL_AVAILABLE)
+                        .availableUntil(nextBookings.get(0).getStartTime())
+                        .build());
+            } else {
+                // Trống hoàn toàn trong suốt khoảng thời gian mặc định
+                result.add(AvailableWindowResponse.builder()
+                        .tableId(t.getTableId())
+                        .capacity(t.getCapacity())
+                        .availability(AvailableWindowResponse.Availability.FULL_AVAILABLE)
+                        .build());
+            }
         }
 
-        // Ghép bàn: tìm tổ hợp 2 bàn đủ chỗ
-        List<TableInfo> smallAvailable = allActiveTables.stream()
-                .filter(t -> t.getStatus() == TableStatus.AVAILABLE && !t.isSoftLocked()
-                        && t.getCapacity() < guests)
+        // Ghép bàn: tìm tổ hợp các bàn nhỏ hơn
+        List<TableInfo> smallAvailable = availableCurrent.stream()
+                .filter(t -> t.getCapacity() < guests)
                 .collect(Collectors.toList());
 
         List<Long> mergeCandidates = new ArrayList<>();
         int total = 0;
+        // Bỏ qua những bàn có booking kế tiếp cắt ngang để việc ghép bàn an toàn hơn
         for (TableInfo t : smallAvailable) {
+            List<Reservation> nextBookings = reservationRepository.findNextBookingForTable(t.getTableId(), time);
+            if (!nextBookings.isEmpty() && nextBookings.get(0).getStartTime().isBefore(maxEndTime)) {
+                continue; // Bàn này sắp bị chiếm, không khuyên ghép cho FULL_AVAILABLE
+            }
             mergeCandidates.add(t.getTableId());
             total += t.getCapacity();
             if (total >= guests) break;
         }
+
         if (total >= guests && mergeCandidates.size() > 1) {
-            // Thêm entry gợi ý ghép bàn
             result.add(AvailableWindowResponse.builder()
                     .tableId(null)
                     .capacity(total)

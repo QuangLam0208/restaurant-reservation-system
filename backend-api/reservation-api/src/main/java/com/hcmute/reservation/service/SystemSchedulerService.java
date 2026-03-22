@@ -32,6 +32,9 @@ public class SystemSchedulerService {
     @Value("${reservation.grace-period-minutes:15}")
     private int gracePeriodMinutes;
 
+    @Value("${reservation.buffer-minutes:10}")
+    private int bufferMinutes;
+
     /**
      * POST /api/system/expire-reservations
      * Hết 5 phút PENDING_PAYMENT → EXPIRED, giải phóng soft lock
@@ -114,7 +117,9 @@ public class SystemSchedulerService {
     @Scheduled(fixedDelay = 60_000)
     @Transactional
     public Map<String, Object> releaseCompletedTables() {
-        List<Reservation> completed = reservationRepository.findCompletedWithReleasableTables(LocalDateTime.now());
+        // Đặc tả 3.4.4: Bàn chuyển AVAILABLE khi current_time >= end_time + buffer_time
+        // Nghĩa là: end_time <= current_time - buffer_time
+        List<Reservation> completed = reservationRepository.findCompletedWithReleasableTables(LocalDateTime.now().minusMinutes(bufferMinutes));
         int count = 0;
         for (Reservation r : completed) {
             if (r.getTableMappings() != null) {
@@ -145,12 +150,10 @@ public class SystemSchedulerService {
     // ─── Private helpers ──────────────────────────────────────────────────────
 
     private void releaseLockedTables(Long reservationId) {
-        tableInfoRepository.findAll().stream()
-                .filter(t -> reservationId.equals(t.getLockedByReservationId()))
-                .forEach(t -> {
-                    t.releaseSoftLock();
-                    tableInfoRepository.save(t);
-                });
+        tableInfoRepository.findByLockedByReservationId(reservationId).forEach(t -> {
+            t.releaseSoftLock();
+            tableInfoRepository.save(t);
+        });
     }
 
     private void releaseTablesByReservation(Reservation r) {

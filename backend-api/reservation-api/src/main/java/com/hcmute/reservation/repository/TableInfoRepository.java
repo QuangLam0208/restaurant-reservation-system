@@ -20,4 +20,8 @@ public interface TableInfoRepository extends JpaRepository<TableInfo, Long> {
     @Query("SELECT t FROM TableInfo t WHERE t.status = 'AVAILABLE' AND t.isActive = true " +
            "AND t.capacity >= :guests AND (t.softLockUntil IS NULL OR t.softLockUntil < CURRENT_TIMESTAMP)")
     List<TableInfo> findAvailableTablesForGuests(@Param("guests") int guests);
+
+    // Tìm bàn đang bị soft-lock bởi một reservation (thay thế findAll().stream().filter())
+    @Query("SELECT t FROM TableInfo t WHERE t.lockedByReservationId = :reservationId")
+    List<TableInfo> findByLockedByReservationId(@Param("reservationId") Long reservationId);
 }
