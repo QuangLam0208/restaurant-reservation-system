@@ -42,6 +42,15 @@ public class AuthService {
                 emailService.sendVerificationEmail(req.getEmail(), verificationToken);
                 return; // dừng tại đây, không tạo thêm record
             }
+
+            // ĐÃ ĐĂNG KÝ nhưng chưa verify email (quên check mail)
+            if (c.getPasswordHash() != null && !c.getIsVerified()) {
+                c.setVerificationToken(verificationToken);
+                customerRepository.save(c);
+                emailService.sendVerificationEmail(req.getEmail(), verificationToken);
+                return;
+            }
+
             throw new ConflictException("Email đã được đăng ký: " + req.getEmail());
         }
 
