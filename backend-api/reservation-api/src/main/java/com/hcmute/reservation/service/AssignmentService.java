@@ -28,27 +28,22 @@ public class AssignmentService {
 
     @Transactional
     public boolean findAlternativeTables(Reservation reservation) {
-        // Tìm bàn trống có đủ capacity hoặc ghép bàn
-        // Loại trừ các bàn overlap với khoảng thời gian của reservation
-        LocalDateTime start = reservation.getStartTime();
+        LocalDateTime now = LocalDateTime.now();
+        // Thời điểm bắt đầu cần kiểm tra là thời gian khách thực tế muốn vào ngồi (NOW)
+        // Nếu khách đến sớm, phải đảm bảo bàn trống từ NOW đến lúc kết thúc.
+        LocalDateTime actualStart = now.isBefore(reservation.getStartTime()) ? now : reservation.getStartTime();
         LocalDateTime end = reservation.getEndTime();
-        Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(start, end));
+        Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(actualStart, end));
 
-        // Giải phóng mapping cũ (bàn ảo ban đầu)
-        if (reservation.getTableMappings() != null) {
-            for (ReservationTableMapping m : reservation.getTableMappings()) {
-                mappingRepository.delete(m);
-            }
-            reservation.getTableMappings().clear();
-        }
-
+        // ĐẦU TIÊN PHẢI TÌM XEM CÓ BÀN THAY KHÔNG
+        List<TableInfo> selectedTables = new ArrayList<>();
         // Ưu tiên bàn đơn
         List<TableInfo> availableSingle = tableInfoRepository.findAvailableTablesForGuests(reservation.getGuestCount())
                 .stream()
-                .filter(t -> !occupiedIds.contains(t.getTableId()))
+                // Thêm !t.isSoftLocked() để không cướp bàn của khách online đang thanh toán
+                .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
                 .collect(Collectors.toList());
 
-        List<TableInfo> selectedTables = new ArrayList<>();
         if (!availableSingle.isEmpty()) {
             selectedTables.add(availableSingle.get(0));
         } else {
@@ -57,16 +52,25 @@ public class AssignmentService {
                     .stream()
                     .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
                     .collect(Collectors.toList());
+
             int total = 0;
             for (TableInfo t : availableMerge) {
                 selectedTables.add(t);
                 total += t.getCapacity();
                 if (total >= reservation.getGuestCount()) break;
             }
+            // Nếu không đủ bàn ghép, THẤT BẠI VÀ RETURN NGAY, bảo toàn 100% Mapping cũ
             if (total < reservation.getGuestCount()) {
-                // Không tìm được bàn thay thế
                 return false;
             }
+        }
+
+        // TÌM THẤY BÀN -> XÓA MAPPING CŨ & LƯU MAPPING MỚI
+        if (reservation.getTableMappings() != null && !reservation.getTableMappings().isEmpty()) {
+            mappingRepository.deleteAll(reservation.getTableMappings());
+            reservation.getTableMappings().clear();
+        } else {
+            reservation.setTableMappings(new ArrayList<>());
         }
 
         // Tạo mapping mới
