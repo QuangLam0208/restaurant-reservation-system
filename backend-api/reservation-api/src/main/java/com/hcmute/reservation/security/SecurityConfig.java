@@ -71,6 +71,7 @@ public class SecurityConfig {
 
                 // ── STAFF or MANAGER ──────────────────────────────────────────────
                 .requestMatchers(HttpMethod.GET, "/api/tables/floor-map").hasAnyRole("STAFF", "MANAGER")
+                .requestMatchers(HttpMethod.GET, "/api/tables/available-windows").hasAnyRole("STAFF", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/api/reservations/active").hasAnyRole("STAFF", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/api/reservations/upcoming").hasAnyRole("STAFF", "MANAGER")
 

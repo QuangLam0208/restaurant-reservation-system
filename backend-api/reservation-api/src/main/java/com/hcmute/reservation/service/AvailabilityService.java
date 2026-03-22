@@ -27,6 +27,9 @@ public class AvailabilityService {
     @Value("${reservation.duration-minutes:120}")
     private int durationMinutes;
 
+    @Value("${reservation.buffer-minutes:10}")
+    private int bufferMinutes;
+
     /**
      * GET /api/reservations/availability
      * Trả về danh sách bàn khả dụng và gợi ý giờ thay thế
@@ -36,7 +39,7 @@ public class AvailabilityService {
         if (requestedStart.isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Thời gian đặt bàn phải trong tương lai.");
         }
-        LocalDateTime requestedEnd = requestedStart.plusMinutes(durationMinutes);
+        LocalDateTime requestedEnd = requestedStart.plusMinutes(durationMinutes + bufferMinutes); // 130p: duration + buffer
 
         // Tìm tableId đã bị đặt trong khoảng thời gian này
         List<Long> occupiedIds = reservationRepository.findOccupiedTableIds(requestedStart, requestedEnd);

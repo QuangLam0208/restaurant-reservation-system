@@ -2,6 +2,7 @@ package com.hcmute.reservation.service;
 
 import com.hcmute.reservation.model.Reservation;
 import com.hcmute.reservation.model.TableInfo;
+import com.hcmute.reservation.model.enums.ReservationStatus;
 import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.repository.TableInfoRepository;
@@ -119,7 +120,14 @@ public class SystemSchedulerService {
             if (r.getTableMappings() != null) {
                 for (var m : r.getTableMappings()) {
                     TableInfo t = m.getTableInfo();
-                    if (t.getStatus() == TableStatus.OCCUPIED || t.getStatus() == TableStatus.OVERSTAY) {
+                    // Guard: kiểm tra bàn không có ca SEATED/RESERVED khác đang chạy
+                    boolean hasActiveSession = t.getMappings() != null &&
+                        t.getMappings().stream().anyMatch(other ->
+                            !other.getReservation().getReservationId().equals(r.getReservationId()) &&
+                            (other.getReservation().getStatus() == ReservationStatus.SEATED ||
+                             other.getReservation().getStatus() == ReservationStatus.RESERVED));
+                    if (!hasActiveSession &&
+                        (t.getStatus() == TableStatus.OCCUPIED || t.getStatus() == TableStatus.OVERSTAY)) {
                         t.setStatus(TableStatus.AVAILABLE);
                         tableInfoRepository.save(t);
                         count++;
