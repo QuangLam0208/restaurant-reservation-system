@@ -1,0 +1,24 @@
+footer {
+    background-color: var(--bg-footer);
+    color: var(--bg-primary);
+    padding: 64px 0 32px;
+}
+footer h3 {
+    font-weight: 300;
+    font-size: 20px;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+}
+footer p, footer address {
+    color: rgba(245, 241, 235, 0.7);
+    font-style: normal;
+    margin-bottom: 8px;
+}
+.footer-bottom {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(245, 241, 235, 0.2);
+    color: rgba(245, 241, 235, 0.5);
+    font-size: 14px;
+}

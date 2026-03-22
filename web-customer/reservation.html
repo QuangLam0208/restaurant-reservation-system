@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Make a Reservation - Saint-Laurent</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+      alert("Vui lòng đăng nhập trước khi đặt bàn!");
+      window.location.href = "index.html";
+    }
+  </script>
+</head>
+<body style="background-color: var(--bg-primary);">
+
+<header id="main-header" class="scrolled">
+  <div class="container header-content">
+    <a href="index.html" class="logo" style="color: var(--text-dark);">SAN-LORENZO</a>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-link" style="color: var(--text-dark);">Home</a>
+      <a href="#" class="nav-link" id="logout-btn" style="color: var(--text-dark);">Logout</a>
+    </nav>
+  </div>
+</header>
+
+<section class="section reservation-wrapper">
+  <div class="container">
+    <div class="text-center fade-in" style="text-align: center; margin-bottom: 2rem;">
+      <h2 class="section-title" style="margin-bottom: 0.5rem;">Book Your Table</h2>
+      <p>Welcome back! Select your party size, date and time.</p>
+    </div>
+
+    <div class="form-card fade-in" style="transition-delay: 0.2s; max-width: 950px;">
+      <form id="booking-form" action="#" method="POST">
+
+        <div class="form-group" style="margin-bottom: 2.5rem;">
+          <label class="form-label" style="font-size: 1.1rem; border-bottom: 1px solid #E8E0D5; padding-bottom: 10px;">1. Party Size</label>
+
+          <div class="party-selection-container" style="margin-top: 20px;">
+            <div class="quick-select-label">Quick select:</div>
+            <div class="pill-group" id="quick-party-sizes" style="margin-bottom: 20px;">
+              <button type="button" class="pill-btn quick-btn" data-value="2">2 People</button>
+              <button type="button" class="pill-btn quick-btn" data-value="4">4 People</button>
+              <button type="button" class="pill-btn quick-btn" data-value="6">6 People</button>
+              <button type="button" class="pill-btn quick-btn" data-value="8">8+ People</button>
+            </div>
+
+            <div class="stepper-divider">
+              <span>Or use custom amount:</span>
+            </div>
+
+            <div class="party-stepper">
+              <button type="button" id="btn-minus" class="stepper-btn">&minus;</button>
+              <div class="stepper-value-wrapper">
+                <input type="number" id="party-input" value="2" min="1" max="99">
+                <span>People</span>
+              </div>
+              <button type="button" id="btn-plus" class="stepper-btn">&plus;</button>
+            </div>
+          </div>
+          <input type="hidden" id="selected-party" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label class="form-label" style="font-size: 1.1rem; border-bottom: 1px solid #E8E0D5; padding-bottom: 10px;">2. Date</label>
+          <div class="date-carousel" style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
+            <button type="button" id="prev-week-btn" class="pill-btn nav-btn">&lt;</button>
+            <div class="date-grid" id="date-container"></div>
+            <button type="button" id="next-week-btn" class="pill-btn nav-btn">&gt;</button>
+          </div>
+          <input type="hidden" id="res-date" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label class="form-label" style="font-size: 1.1rem; border-bottom: 1px solid #E8E0D5; padding-bottom: 10px;">3. Time</label>
+          <div id="time-slots-container" class="time-slots-grid">
+            <p style="color: #888; font-size: 14px; margin-top: 10px;">Loading available time slots...</p>
+          </div>
+          <input type="hidden" id="selected-time" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label class="form-label">Special Requests (Optional)</label>
+          <textarea class="form-control" placeholder="Any dietary restrictions, allergies, or special occasion?"></textarea>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; padding: 16px; font-size: 1.1rem;">Confirm Reservation</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer id="contact" style="padding: 20px 0;">
+  <div class="container">
+    <div class="footer-bottom" style="margin-top: 0; border-top: none;">
+      <p>© 2025 by San-Lorenzo. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="js/pages/reservation.js"></script>
+</body>
+</html>
