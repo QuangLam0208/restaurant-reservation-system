@@ -1,43 +1,95 @@
 @startuml
-title Sequence Diagram - Check-out và xử lý Overstay
+title Sequence Diagram - Check-out, Alert Overstay & Override (Implementation Level)
+autonumber
+skinparam maxMessageSize 150
+skinparam sequence {
+    ParticipantPadding 20
+    MessageAlign center
+}
 
-actor "Lễ tân / Quản lý" as Staff
-participant "POS UI" as UI
-participant "Dining Controller" as DC
-participant "Monitoring Service" as MS
-database "Reservation DB" as RDB
-database "Table DB" as TDB
-database "Override Log DB" as LDB
+actor "Hệ thống\n(System)" as System
+actor "Nhân viên Lễ tân\n(Receptionist)" as Receptionist
+boundary "Màn hình POS" as POS
+control "Dining Controller" as Controller
+database "Database (3NF)\nMySQL / SQL Server" as DB
 
-== Giám sát Overstay (Chạy ngầm) ==
-loop Định kỳ liên tục
-    MS -> RDB : Quét đơn SEATED có current_time > end_time
-    RDB --> MS : Danh sách đơn vi phạm
-    MS -> TDB : Cập nhật Table status = OVERSTAY
-    MS -> UI : Phát cảnh báo OVERSTAY tại sơ đồ bàn
+== Phân luồng 1: [UC_AlertOverstay] Hệ thống tự động giám sát ==
+System -> Controller : trigger checkOverstay(current_time)
+activate Controller
+
+Controller -> DB : SELECT * FROM Reservation \nWHERE status='SEATED' AND end_time < NOW
+activate DB
+DB --> Controller : list_overstay_reservations
+deactivate DB
+
+loop Cho mỗi đơn bị Overstay
+    Controller -> DB : UPDATE Table_Info SET status = 'OVERSTAY'
+    note right of Controller
+        Lưu ý: Reservation.status vẫn = SEATED
+        (Khách chưa check-out)
+    end note
+
+    Controller -> DB : checkConflict(next_online_booking)
+    activate DB
+    DB --> Controller : conflict_status
+    deactivate DB
+
+    alt Có xung đột với Booking Online kế tiếp
+        Controller -> POS : pushAlert("Cảnh báo Đỏ: Bàn Overstay & Trùng lịch!")
+    else Không xung đột
+        Controller -> POS : pushAlert("Cảnh báo: Bàn đang Overstay")
+    end
 end
+deactivate Controller
 
-== Luồng Check-out thông thường ==
-Staff -> UI : Thực hiện Check-out (reservation_id)
-UI -> DC : completeReservation(id)
+== Phân luồng 2: [UC_CheckOut] Khách rời đi bình thường ==
+Receptionist -> POS : Yêu cầu Check-out (reservation_id)
+activate POS
+POS -> Controller : processCheckout(reservation_id)
+activate Controller
 
-DC -> RDB : update status = COMPLETED, end_time = current_time
-DC -> TDB : update status = AVAILABLE (sau end_time + 10p buffer)
-DC --> UI : Hoàn tất Check-out và giải phóng bàn
+Controller -> DB : UPDATE Reservation \nSET end_time = current_time, status = 'COMPLETED'
 
-== Luồng Xử lý Xung đột Overstay ==
-Note over Staff, UI: Khi có Online Booking sắp đến nhưng bàn vẫn OVERSTAY
+Controller -> Controller : scheduleBufferRelease(table_id, current_time + buffer_time)
+note right of Controller
+    Job ngầm (Scheduler/Async) được kích hoạt.
+    Khi đến giờ, Job sẽ thực thi lệnh:
+    UPDATE Table_Info SET status = 'AVAILABLE'
+end note
 
-alt Nhân viên yêu cầu khách rời đi
-    Staff -> UI : Thực hiện Check-out sớm
-    UI -> DC : completeReservation(id)
-    DC -> RDB : update status = COMPLETED
-    DC -> TDB : Giải phóng bàn cho lượt tiếp theo
-else Tình huống bất khả kháng (Cần Override)
-    Staff -> UI : Chọn Ghi đè (Override) + Nhập lý do
-    UI -> DC : overrideConflict(id, account_id, reason)
-    DC -> LDB : save Override_Log (reservation_id, account_id, reason)
-    DC -> RDB : Cập nhật ghi chú xử lý thủ công
-    DC --> UI : Ghi log thành công (Audit Trail)
-end
+Controller --> POS : Báo Check-out thành công
+deactivate Controller
+deactivate POS
+
+== Phân luồng 3: [UC_Override] & [UC_Log] Ghi đè thủ công khi xung đột ==
+note over Receptionist, POS
+    Trường hợp khách cũ Overstay không chịu rời đi,
+    trong khi khách Online đã đến. Lễ tân phải can thiệp.
+end note
+
+Receptionist -> POS : Chọn "Ghi đè" & Nhập lý do (reason)
+activate POS
+POS -> Controller : executeOverride(reservation_id, account_id, reason)
+activate Controller
+
+' Thực thi UC_Log (include)
+note right of Controller: <<include>> UC_Log
+Controller -> DB : INSERT INTO Override_Log(reservation_id, account_id, reason)
+activate DB
+DB --> Controller : log_success
+deactivate DB
+
+' Ép kết thúc đơn cũ và giải phóng bàn ngay lập tức
+Controller -> DB : UPDATE Reservation \nSET end_time = current_time, status = 'COMPLETED'
+Controller -> DB : UPDATE Table_Info SET status = 'AVAILABLE'
+
+note right of Controller
+    Giải phóng bàn ngay lập tức (bỏ qua buffer_time)
+    để Lễ tân có thể Check-in ngay cho khách Online.
+end note
+
+Controller --> POS : Ghi log & Override thành công
+deactivate Controller
+deactivate POS
+
 @enduml

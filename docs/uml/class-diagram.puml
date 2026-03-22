@@ -1,14 +1,23 @@
 @startuml
-title Class Diagram - Restaurant Reservation System (Standardized)
+title Class Diagram - Restaurant Reservation System
 
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 
 package "Domain Entities" {
+
     class Customer {
         - customerId: Long {PK}
         - name: String
         - phone: String
+        - email: String {UNIQUE}
+        - passwordHash: String
+        - isVerified: Boolean
+        --
+        + register(name, phone, email, password): void
+        + verifyEmail(token): void
+        + login(email, password): String
+        + resetPassword(token, newPassword): void
     }
 
     class Table_Info {
@@ -16,10 +25,15 @@ package "Domain Entities" {
         - capacity: int
         - status: TableStatus
         - version: int {Optimistic Lock}
+        --
+        + isAvailable(startTime, endTime): Boolean
+        + getAvailableWindow(): TimeRange
     }
 
     class Reservation {
         - reservationId: Long {PK}
+        - customerId: Long {FK, Nullable}
+        - accountId: Long {FK, Nullable}
         - type: ReservationType
         - guestCount: int
         - startTime: DateTime
@@ -27,30 +41,53 @@ package "Domain Entities" {
         - status: ReservationStatus
         - note: String
         - createdAt: DateTime
+        --
+        + checkIn(): void
+        + checkOut(): void
+        + cancel(): void
+        + markNoShow(): void
+        + markExpired(): void
+        + isOverstay(): Boolean
+    }
+
+    class Reservation_Table_Mapping {
+        - mappingId: Long {PK}
+        - reservationId: Long {FK}
+        - tableId: Long {FK}
     }
 
     class Waitlist {
         - waitlistId: Long {PK}
+        - customerId: Long {FK}
         - guestCount: int
         - joinedAt: DateTime
         - status: WaitlistStatus
+        --
+        + seat(): void
+        + skip(): void
     }
 
     class Account {
         - accountId: Long {PK}
         - username: String
-        - password: String
+        - passwordHash: String
         - role: UserRole
+        --
+        + login(username, password): String
+        + handleWalkIn(guestCount): Reservation
+        + override(reservationId, reason): void
     }
 
     class Override_Log {
         - logId: Long {PK}
+        - reservationId: Long {FK}
+        - accountId: Long {FK}
         - reason: String
         - createdAt: DateTime
     }
 }
 
-package "Value Objects / Enums" {
+package "Enums" {
     enum TableStatus {
         AVAILABLE
         OCCUPIED
@@ -85,22 +122,30 @@ package "Value Objects / Enums" {
     }
 }
 
-' Mối quan hệ giữa các thực thể
-Customer "1" -- "0..*" Reservation : "makes"
-Customer "1" -- "0..*" Waitlist : "joins"
+' ==========================================
+' RELATIONSHIPS
+' ==========================================
 
-' Quan hệ Nhiều - Nhiều cho nghiệp vụ Ghép bàn
-Reservation "0..*" -- "1..*" Table_Info : "occupies"
-(Reservation, Table_Info) .. Reservation_Table_Mapping
+' Customer
+Customer "1" -- "0..*" Reservation : makes >
+Customer "1" -- "0..*" Waitlist : joins >
 
-class Reservation_Table_Mapping {
-    - mapping_id: Long {PK}
-    - reservation_id: Long {FK}
-    - table_id: Long {FK}
-}
+' Reservation ↔ Table_Info (Many-to-Many qua bảng trung gian)
+Reservation "1" -- "1..*" Reservation_Table_Mapping : contains >
+Table_Info "1" -- "0..*" Reservation_Table_Mapping : mapped by >
 
-Account "1" -- "0..*" Reservation : "handles"
-Account "1" -- "0..*" Override_Log : "records"
-Reservation "1" -- "0..1" Override_Log : "triggers"
+' Account
+Account "1" -- "0..*" Reservation : handles >
+Account "1" -- "0..*" Override_Log : records >
+
+' Override_Log
+Reservation "1" -- "0..1" Override_Log : triggers >
+
+' Enum dependencies
+Table_Info ..> TableStatus : <<use>>
+Reservation ..> ReservationStatus : <<use>>
+Reservation ..> ReservationType : <<use>>
+Waitlist ..> WaitlistStatus : <<use>>
+Account ..> UserRole : <<use>>
 
 @enduml
