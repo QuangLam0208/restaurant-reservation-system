@@ -1,5 +1,6 @@
 package com.hcmute.reservation.dto.table;
 
+import com.hcmute.reservation.model.enums.TableStatus;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -10,4 +11,8 @@ public class TableRequest {
     private Integer capacity;
 
     private Boolean isActive = true;
+    // Bổ sung thêm status để quản lý có thể cập nhật trạng thái thủ công (trong service)
+    private TableStatus status;
+    // Bổ sung version để hỗ trợ Optimistic Locking khi update (trong service)
+    private Long version;
 }
