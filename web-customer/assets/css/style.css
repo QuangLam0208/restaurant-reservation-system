@@ -1,0 +1,254 @@
+/* --- BIẾN TOÀN CỤC (Tuân thủ Open/Closed Principle) --- */
+:root {
+    --bg-primary: #F5F1EB;
+    --bg-footer: #2C2416;
+    --text-main: #6B5D4F;
+    --text-dark: #3D352E;
+    --accent: #8B7355;
+    --accent-hover: #6b5840;
+    --white: #ffffff;
+    --transition-smooth: all 0.3s ease;
+}
+
+/* --- RESET & CƠ BẢN --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: var(--text-main);
+    background-color: var(--bg-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* --- LAYOUTS --- */
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    align-items: center;
+}
+@media (min-width: 768px) {
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+@media (min-width: 768px) {
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* --- COMPONENTS --- */
+.btn {
+    display: inline-block;
+    padding: 12px 32px;
+    background-color: var(--accent);
+    color: var(--white);
+    text-decoration: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    font-size: 16px;
+}
+.btn:hover { background-color: var(--accent-hover); }
+
+/* --- HEADER --- */
+header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 0;
+    transition: var(--transition-smooth);
+}
+header.scrolled {
+    background-color: rgba(245, 241, 235, 0.95);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.logo {
+    font-size: 24px;
+    letter-spacing: 0.3em;
+    color: var(--white);
+    text-decoration: none;
+    transition: var(--transition-smooth);
+}
+header.scrolled .logo,
+header.scrolled .nav-link {
+    color: var(--text-dark);
+}
+.nav-links { display: none; gap: 32px; }
+@media (min-width: 768px) { .nav-links { display: flex; } }
+.nav-link {
+    color: var(--white);
+    text-decoration: none;
+    font-size: 14px;
+    transition: var(--transition-smooth);
+}
+.nav-link:hover { opacity: 0.7; }
+
+/* --- HERO SECTION --- */
+.hero {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--white);
+}
+.hero-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: url('https://horizons-cdn.hostinger.com/6707bb84-8c4f-444d-b6a9-fda62e5d70c9/e9a65078d983be32679738e7dfc48bbd-VM2jJ.webp') center/cover no-repeat;
+    z-index: 1;
+}
+.hero-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.2));
+    z-index: 2;
+}
+.hero-content {
+    position: relative;
+    z-index: 3;
+}
+.hero h1 {
+    font-size: 4rem;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    margin: 16px 0 24px;
+}
+@media (min-width: 768px) { .hero h1 { font-size: 6rem; } }
+.hero-subtitle {
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+}
+
+/* --- SECTIONS (About, Menu, Contact) --- */
+.section { padding: 96px 0; }
+.bg-white { background-color: var(--white); }
+
+.tagline {
+    color: var(--accent);
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: block;
+}
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--text-main);
+    margin-bottom: 24px;
+    line-height: 1.2;
+}
+@media (min-width: 768px) { .section-title { font-size: 3rem; } }
+
+.image-wrapper {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    aspect-ratio: 4/3;
+}
+.image-wrapper img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s ease;
+}
+.image-wrapper:hover img { transform: scale(1.05); }
+
+/* --- RESERVATION FORM --- */
+.form-card {
+    background: var(--white);
+    padding: 32px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    max-width: 800px;
+    margin: 0 auto;
+}
+.form-group { margin-bottom: 24px; }
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #E8E0D5;
+    border-radius: 4px;
+    font-size: 16px;
+    outline: none;
+    transition: border 0.3s ease;
+}
+.form-control:focus { border-color: var(--accent); }
+textarea.form-control { min-height: 100px; resize: vertical; }
+
+/* --- CONTACT ICONS --- */
+.contact-card { text-align: center; }
+.icon-box {
+    display: inline-flex;
+    padding: 16px;
+    background-color: var(--bg-primary);
+    border-radius: 50%;
+    margin-bottom: 16px;
+    color: var(--accent);
+}
+
+/* --- FOOTER --- */
+footer {
+    background-color: var(--bg-footer);
+    color: var(--bg-primary);
+    padding: 64px 0 32px;
+}
+footer h3 {
+    font-weight: 300;
+    font-size: 20px;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+}
+footer p, footer address {
+    color: rgba(245, 241, 235, 0.7);
+    font-style: normal;
+    margin-bottom: 8px;
+}
+.footer-bottom {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(245, 241, 235, 0.2);
+    color: rgba(245, 241, 235, 0.5);
+    font-size: 14px;
+}
+
+/* --- ANIMATIONS (Thay thế Framer Motion) --- */
+.fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.fade-in.appear {
+    opacity: 1;
+    transform: translateY(0);
+}
