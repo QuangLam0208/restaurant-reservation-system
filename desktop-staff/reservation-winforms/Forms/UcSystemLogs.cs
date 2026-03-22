@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace reservation_winforms.Forms
 {
-    public partial class WalkInForm: Form
+    public partial class UcSystemLogs : UserControl
     {
-        public WalkInForm()
+        public UcSystemLogs()
         {
             InitializeComponent();
         }

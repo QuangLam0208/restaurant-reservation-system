@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace reservation_winforms
+namespace reservation_winforms.Forms
 {
-    public partial class MainForm: Form
+    public partial class UcReports : UserControl
     {
-        public MainForm()
+        public UcReports()
         {
             InitializeComponent();
         }
