@@ -35,4 +35,14 @@ public class StaffAuthService {
         return new StaffLoginResponse(sessionToken, account.getAccountId(),
                                      account.getUsername(), account.getRole().name());
     }
+
+    @Transactional
+    public void logout(String token) {
+        // Tìm tài khoản dựa trên session token đang hoạt động
+        accountRepository.findBySessionToken(token).ifPresent(account -> {
+            account.setSessionToken(null);
+            account.setSessionExpiresAt(null);
+            accountRepository.save(account);
+        });
+    }
 }
