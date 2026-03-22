@@ -2,6 +2,7 @@ package com.hcmute.reservation.controller;
 
 import com.hcmute.reservation.dto.override.OverrideLogResponse;
 import com.hcmute.reservation.dto.override.OverrideRequest;
+import com.hcmute.reservation.exception.UnauthorizedException;
 import com.hcmute.reservation.model.Account;
 import com.hcmute.reservation.service.OverrideService;
 import jakarta.validation.Valid;
@@ -26,7 +27,9 @@ public class OverrideController {
             @PathVariable Long id,
             @Valid @RequestBody OverrideRequest req,
             Authentication auth) {
-        Account account = (Account) auth.getPrincipal();
+        if (!(auth.getPrincipal() instanceof Account account)) {
+            throw new UnauthorizedException("Chỉ nhân viên mới có thể thực hiện override.");
+        }
         return ResponseEntity.ok(overrideService.override(id, req, account.getAccountId()));
     }
 
@@ -39,3 +42,4 @@ public class OverrideController {
         return ResponseEntity.ok(overrideService.getLogs(from, to, accountId));
     }
 }
+

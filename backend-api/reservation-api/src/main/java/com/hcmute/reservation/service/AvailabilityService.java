@@ -4,8 +4,10 @@ import com.hcmute.reservation.dto.table.AvailableWindowResponse;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.model.TableInfo;
 import com.hcmute.reservation.model.enums.TableStatus;
+import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.repository.TableInfoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,10 @@ import java.util.stream.Collectors;
 public class AvailabilityService {
 
     private final TableInfoRepository tableInfoRepository;
+    private final ReservationRepository reservationRepository;
+
+    @Value("${reservation.duration-minutes:120}")
+    private int durationMinutes;
 
     /**
      * GET /api/reservations/availability
@@ -30,8 +36,16 @@ public class AvailabilityService {
         if (requestedStart.isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Thời gian đặt bàn phải trong tương lai.");
         }
+        LocalDateTime requestedEnd = requestedStart.plusMinutes(durationMinutes);
 
-        List<TableInfo> availableTables = tableInfoRepository.findAvailableTablesForGuests(guests);
+        // Tìm tableId đã bị đặt trong khoảng thời gian này
+        List<Long> occupiedIds = reservationRepository.findOccupiedTableIds(requestedStart, requestedEnd);
+        Set<Long> occupiedSet = new HashSet<>(occupiedIds);
+
+        List<TableInfo> availableTables = tableInfoRepository.findAvailableTablesForGuests(guests)
+                .stream()
+                .filter(t -> !occupiedSet.contains(t.getTableId()))
+                .collect(Collectors.toList());
 
         List<Map<String, Object>> tables = availableTables.stream().map(t -> {
             Map<String, Object> m = new LinkedHashMap<>();
@@ -48,7 +62,6 @@ public class AvailabilityService {
         result.put("hasAvailability", !tables.isEmpty());
 
         if (tables.isEmpty()) {
-            // Gợi ý +30 phút / +60 phút
             List<String> suggestions = List.of(
                 requestedStart.plusMinutes(30).toString(),
                 requestedStart.plusMinutes(60).toString()

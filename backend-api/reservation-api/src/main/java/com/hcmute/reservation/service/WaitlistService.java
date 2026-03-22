@@ -35,10 +35,8 @@ public class WaitlistService {
 
     @Transactional
     public WaitlistResponse addToWaitlist(WaitlistRequest req) {
-        // Tìm hoặc tạo walk-in customer
-        Customer customer = customerRepository.findAll().stream()
-                .filter(c -> c.getPhone().equals(req.getPhone()) && c.getPasswordHash() == null)
-                .findFirst()
+        // Tìm hoặc tạo walk-in customer (dùng query có index thay vì findAll)
+        Customer customer = customerRepository.findByPhoneAndPasswordHashIsNull(req.getPhone())
                 .orElseGet(() -> customerRepository.save(Customer.builder()
                         .name(req.getName())
                         .phone(req.getPhone())

@@ -68,7 +68,8 @@ public class ReservationController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> cancelReservation(
             @PathVariable Long id, Authentication auth) {
-        Long customerId = (Long) auth.getDetails();
+        // auth.getDetails() là Long cho CUSTOMER token; null cho STAFF token
+        Long customerId = (auth.getDetails() instanceof Long id2) ? id2 : null;
         reservationService.cancelReservation(id, customerId);
         return ResponseEntity.ok(Map.of("message", "Đơn đặt bàn đã được hủy thành công."));
     }

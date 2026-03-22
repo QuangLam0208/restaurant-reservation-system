@@ -31,4 +31,10 @@ public class SystemController {
     public ResponseEntity<Map<String, Object>> checkOverstay() {
         return ResponseEntity.ok(schedulerService.checkOverstay());
     }
+
+    /** POST /api/system/release-completed */
+    @PostMapping("/release-completed")
+    public ResponseEntity<Map<String, Object>> releaseCompleted() {
+        return ResponseEntity.ok(schedulerService.releaseCompletedTables());
+    }
 }

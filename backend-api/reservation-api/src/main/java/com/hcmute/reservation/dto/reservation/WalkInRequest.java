@@ -21,6 +21,9 @@ public class WalkInRequest {
     // null = auto-detect now
     private LocalDateTime startTime;
 
+    // Thời gian kết thúc dự kiến do Frontend tính toán truyền xuống
+    private LocalDateTime endTime;
+
     // Cho phép chỉ định bàn cụ thể (optional, null = auto-assign)
     private Long tableId;
 

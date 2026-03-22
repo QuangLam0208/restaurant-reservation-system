@@ -18,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +31,9 @@ public class ReservationService {
     private final CustomerRepository customerRepository;
     private final TableInfoRepository tableInfoRepository;
     private final ReservationTableMappingRepository mappingRepository;
+
+    @Value("${reservation.grace-period-minutes:15}")
+    private int gracePeriodMinutes;
 
     @Value("${reservation.duration-minutes:120}")
     private int durationMinutes;
@@ -69,15 +74,21 @@ public class ReservationService {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khách hàng."));
 
-        // Auto-assign bàn + soft lock
-        List<TableInfo> available = tableInfoRepository.findAvailableTablesForGuests(req.getGuestCount());
+        LocalDateTime start = req.getStartTime();
+        LocalDateTime end = start.plusMinutes(durationMinutes + bufferMinutes);
+
+        // Lọc bàn theo overlap startTime/endTime — không chỉ dựa vào TableInfo.status
+        Set<Long> occupiedTableIds = new HashSet<>(reservationRepository.findOccupiedTableIds(start, end));
+        List<TableInfo> available = tableInfoRepository.findAvailableTablesForGuests(req.getGuestCount())
+                .stream()
+                .filter(t -> !occupiedTableIds.contains(t.getTableId()))
+                .collect(Collectors.toList());
         if (available.isEmpty()) {
             throw new BadRequestException("Hiện không có bàn trống phù hợp. Vui lòng chọn giờ khác.");
         }
         TableInfo table = available.get(0);
 
-        LocalDateTime start = req.getStartTime();
-        LocalDateTime end = start.plusMinutes(durationMinutes + bufferMinutes);
+
 
         Reservation reservation = Reservation.builder()
                 .customer(customer)
@@ -176,10 +187,8 @@ public class ReservationService {
 
     @Transactional
     public ReservationResponse createWalkIn(WalkInRequest req) {
-        // Tạo walk-in customer tạm nếu chưa có
-        Customer customer = customerRepository.findAll().stream()
-                .filter(c -> c.getPhone().equals(req.getCustomerPhone()) && c.getPasswordHash() == null)
-                .findFirst()
+        // Tìm walk-in customer bằng query có index (thay vì findAll)
+        Customer customer = customerRepository.findByPhoneAndPasswordHashIsNull(req.getCustomerPhone())
                 .orElseGet(() -> customerRepository.save(Customer.builder()
                         .name(req.getCustomerName())
                         .phone(req.getCustomerPhone())
@@ -215,14 +224,34 @@ public class ReservationService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime end = now.plusMinutes(durationMinutes + bufferMinutes);
+        LocalDateTime calculatedEndTime = now.plusMinutes(durationMinutes + bufferMinutes); // Mặc định FULL AVAILABLE
 
+        if (req.getEndTime() != null) {
+            // Nếu Frontend truyền lên (từ AvailabilityService) thì sử dụng
+            calculatedEndTime = req.getEndTime();
+        } else {
+            // Backend tự rà soát nếu Frontend không truyền
+            LocalDateTime earliestNextBooking = null;
+            for (TableInfo t : selectedTables) {
+                List<Reservation> nextBookings = reservationRepository.findNextBookingForTable(t.getTableId(), now);
+                if (!nextBookings.isEmpty()) {
+                    LocalDateTime nextStart = nextBookings.get(0).getStartTime();
+                    if (earliestNextBooking == null || nextStart.isBefore(earliestNextBooking)) {
+                        earliestNextBooking = nextStart;
+                    }
+                }
+            }
+            // Nếu có booking kế tiếp cắt ngang (PARTIAL AVAILABLE), cập nhật endTime thành thời gian booking đó bắt đầu
+            if (earliestNextBooking != null && earliestNextBooking.isBefore(calculatedEndTime)) {
+                calculatedEndTime = earliestNextBooking;
+            }
+        }
         Reservation reservation = Reservation.builder()
                 .customer(customer)
                 .type(ReservationType.WALK_IN)
                 .guestCount(req.getGuestCount())
                 .startTime(now)
-                .endTime(end)
+                .endTime(calculatedEndTime)
                 .status(ReservationStatus.SEATED) // walk-in ngồi ngay
                 .note(req.getNote())
                 .build();
@@ -245,10 +274,63 @@ public class ReservationService {
     public ReservationResponse checkIn(Long id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn đặt bàn #" + id + " không tồn tại."));
+
         if (reservation.getStatus() != ReservationStatus.RESERVED) {
             throw new BadRequestException("Đơn không ở trạng thái RESERVED.");
         }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startTime = reservation.getStartTime();
+
+        // Lấy danh sách bàn đang được mapping với đơn đặt bàn này
+        List<TableInfo> assignedTables = reservation.getTableMappings().stream()
+                .map(ReservationTableMapping::getTableInfo)
+                .toList();
+
+        // ────── Kịch bản A: Quá grace period (No-Show) ──────
+        if (now.isAfter(startTime.plusMinutes(gracePeriodMinutes))) {
+            reservation.markNoShow();
+            reservationRepository.save(reservation);
+
+            // Giải phóng bàn để khách khác có thể đặt
+            releaseTablesByReservation(reservation);
+
+            throw new BadRequestException("Đơn đặt bàn đã quá giờ giữ chỗ (" + gracePeriodMinutes + " phút). Đơn đã bị hủy theo chính sách No-Show.");
+            // Lưu ý: Tùy requirement, bạn có thể return toResponse() thay vì throw Exception.
+            // Nhưng thường check-in thất bại do quá giờ nên báo lỗi cho FE biết.
+        }
+
+        // ────── Kịch bản B: Đến sớm (Early Arrival) ──────
+        if (now.isBefore(startTime)) {
+            // Kiểm tra xem tất cả các bàn dự kiến có đang trống không
+            boolean isOriginalTablesAvailable = assignedTables.stream()
+                    .allMatch(t -> t.getStatus() == TableStatus.AVAILABLE && !t.isSoftLocked());
+
+            if (!isOriginalTablesAvailable) {
+                // TODO: Tích hợp AssignmentService ở đây để tìm bàn thay thế (nếu có)
+                boolean hasAlternativeTable = false;
+
+                // Logic giả định: hasAlternativeTable = assignmentService.reassignTable(reservation);
+
+                if (!hasAlternativeTable) {
+                    // Nếu không có bàn thay thế, chặn check-in và yêu cầu khách chờ
+                    throw new ConflictException("Bàn đặt trước hiện chưa trống và không có bàn thay thế phù hợp. Mời quý khách ngồi chờ ở khu vực Waitlist.");
+                } else {
+                    // Nếu tìm được bàn thay thế, load lại danh sách bàn mới
+                    assignedTables = reservation.getTableMappings().stream()
+                            .map(ReservationTableMapping::getTableInfo)
+                            .toList();
+                }
+            }
+        }
+
+        // ────── Kịch bản C & Check-in Thành công: Đúng giờ / Trong grace period / Đến sớm và có bàn ──────
         reservation.checkIn();
+        //Cập nhật Table_Info.status = OCCUPIED cho TẤT CẢ bàn trong Mapping
+        for (TableInfo t : assignedTables) {
+            t.setStatus(TableStatus.OCCUPIED);
+            tableInfoRepository.save(t);
+        }
         return toResponse(reservationRepository.save(reservation));
     }
 

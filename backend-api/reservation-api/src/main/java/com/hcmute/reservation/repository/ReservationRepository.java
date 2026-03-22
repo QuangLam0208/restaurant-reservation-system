@@ -18,6 +18,11 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     // Danh sách đơn đang SEATED
     List<Reservation> findByStatusOrderByStartTimeAsc(ReservationStatus status);
 
+    // Truy vấn booking kế tiếp của một bàn cụ thể
+    @Query("SELECT r FROM Reservation r JOIN r.tableMappings m WHERE m.tableInfo.tableId = :tableId " +
+            "AND r.status IN ('RESERVED','SEATED') AND r.startTime > :now ORDER BY r.startTime ASC")
+    List<Reservation> findNextBookingForTable(@Param("tableId") Long tableId, @Param("now") LocalDateTime now);
+
     // Đơn RESERVED sắp đến trong N phút
     @Query("SELECT r FROM Reservation r WHERE r.status = 'RESERVED' AND r.startTime BETWEEN :now AND :until")
     List<Reservation> findUpcoming(@Param("now") LocalDateTime now, @Param("until") LocalDateTime until);
@@ -45,4 +50,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query("SELECT COUNT(r) FROM Reservation r WHERE r.createdAt BETWEEN :from AND :to AND r.status <> 'CREATED'")
     long countTotal(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    // Tìm các tableId đã có reservation RESERVED/SEATED giao với khoảng [startTime, endTime]
+    @Query("SELECT DISTINCT m.tableInfo.tableId FROM ReservationTableMapping m " +
+           "WHERE m.reservation.status IN ('RESERVED','SEATED') " +
+           "AND m.reservation.startTime < :endTime AND m.reservation.endTime > :startTime")
+    List<Long> findOccupiedTableIds(@Param("startTime") LocalDateTime startTime,
+                                    @Param("endTime") LocalDateTime endTime);
+
+    // Tìm reservation COMPLETED có endTime < now (bàn cần được giải phóng)
+    @Query("SELECT r FROM Reservation r WHERE r.status = 'COMPLETED' AND r.endTime < :now")
+    List<Reservation> findCompletedWithReleasableTables(@Param("now") LocalDateTime now);
 }

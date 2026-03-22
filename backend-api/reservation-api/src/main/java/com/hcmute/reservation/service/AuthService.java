@@ -26,10 +26,26 @@ public class AuthService {
 
     @Transactional
     public void register(RegisterRequest req) {
-        if (customerRepository.existsByEmail(req.getEmail())) {
+        String verificationToken = UUID.randomUUID().toString();
+
+        var existing = customerRepository.findByEmail(req.getEmail());
+        if (existing.isPresent()) {
+            Customer c = existing.get();
+            if (c.getPasswordHash() == null && !c.getIsVerified()) {
+                // Walk-in customer chưa có tài khoản thật → nâng cấp thay vì từ chối
+                c.setName(req.getName());
+                c.setPhone(req.getPhone());
+                c.setPasswordHash(passwordEncoder.encode(req.getPassword()));
+                c.setIsVerified(false);
+                c.setVerificationToken(verificationToken);
+                customerRepository.save(c);
+                emailService.sendVerificationEmail(req.getEmail(), verificationToken);
+                return; // dừng tại đây, không tạo thêm record
+            }
             throw new ConflictException("Email đã được đăng ký: " + req.getEmail());
         }
-        String verificationToken = UUID.randomUUID().toString();
+
+        // Email chưa tồn tại → tạo tài khoản mới
         Customer customer = Customer.builder()
                 .name(req.getName())
                 .phone(req.getPhone())
