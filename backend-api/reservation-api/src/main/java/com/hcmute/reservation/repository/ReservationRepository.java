@@ -32,7 +32,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findExpiredPendingPayments(@Param("expiredBefore") LocalDateTime expiredBefore);
 
     // RESERVED quá grace period → NO_SHOW
-    @Query("SELECT r FROM Reservation r WHERE r.status = 'RESERVED' AND r.startTime < :graceCutoff")
+    @Query("SELECT r FROM Reservation r WHERE r.type = 'ONLINE' " +
+            "AND r.status = 'RESERVED' AND r.startTime < :graceCutoff")
     List<Reservation> findNoShows(@Param("graceCutoff") LocalDateTime graceCutoff);
 
     // SEATED quá end_time → OVERSTAY
@@ -45,15 +46,26 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Object[]> countByDate(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
     // Báo cáo: no-show rate
-    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.createdAt BETWEEN :from AND :to AND r.status = 'NO_SHOW'")
-    long countNoShows(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+    @Query(value = "SELECT COUNT(*) FROM reservation " +
+            "WHERE type = 'ONLINE' " +
+            "AND status IN ('RESERVED', 'SEATED', 'COMPLETED', 'NO_SHOW') " +
+            "AND created_at BETWEEN :from AND :to",
+            nativeQuery = true)
+    long countTotal(@Param("from") LocalDateTime from,
+                    @Param("to") LocalDateTime to);
 
-    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.createdAt BETWEEN :from AND :to AND r.status <> 'CREATED'")
-    long countTotal(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+    @Query(value = "SELECT COUNT(*) FROM reservation " +
+            "WHERE type = 'ONLINE' " +
+            "AND status = 'NO_SHOW' " +
+            "AND created_at BETWEEN :from AND :to",
+            nativeQuery = true)
+    long countNoShows(@Param("from") LocalDateTime from,
+                      @Param("to") LocalDateTime to);
 
     // Tìm các tableId đã có reservation RESERVED/SEATED giao với khoảng [startTime, endTime]
+    // Hoặc các tableId đang bị Soft Lock reservation CREATED/PENDING_PAYMENT (có người dùng online đang đặt)
     @Query("SELECT DISTINCT m.tableInfo.tableId FROM ReservationTableMapping m " +
-           "WHERE m.reservation.status IN ('RESERVED','SEATED') " +
+           "WHERE m.reservation.status IN ('CREATED','PENDING_PAYMENT','RESERVED','SEATED') " +
            "AND m.reservation.startTime < :endTime AND m.reservation.endTime > :startTime")
     List<Long> findOccupiedTableIds(@Param("startTime") LocalDateTime startTime,
                                     @Param("endTime") LocalDateTime endTime);
