@@ -1,5 +1,6 @@
 package com.hcmute.reservation.dto.table;
 
+import com.hcmute.reservation.model.enums.ReservationStatus;
 import com.hcmute.reservation.model.enums.TableStatus;
 import lombok.Builder;
 import lombok.Data;
@@ -14,4 +15,5 @@ public class FloorMapTableResponse {
     // null nếu không có đơn
     private Long currentReservationId;
     private String currentCustomerName;
+    private ReservationStatus currentReservationStatus;
 }
