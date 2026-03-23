@@ -181,10 +181,22 @@ public class SystemSchedulerService {
 
     private void releaseTablesByReservation(Reservation r) {
         if (r.getTableMappings() != null) {
-            r.getTableMappings().forEach(m -> {
-                m.getTableInfo().setStatus(TableStatus.AVAILABLE);
-                tableInfoRepository.save(m.getTableInfo());
-            });
+            for (var m : r.getTableMappings()) {
+                TableInfo t = m.getTableInfo();
+
+                // Guard: Kiểm tra xem bàn này có đang bị một ca SEATED nào khác chiếm dụng vật lý không
+                // (Đề phòng trường hợp khách Walk-in đang "Ngồi tạm" - Short Seating)
+                boolean isPhysicallyOccupiedByOthers = t.getMappings() != null &&
+                        t.getMappings().stream().anyMatch(other ->
+                                !other.getReservation().getReservationId().equals(r.getReservationId()) &&
+                                        other.getReservation().getStatus() == ReservationStatus.SEATED);
+
+                // Chỉ trả về AVAILABLE nếu không có ai đang ngồi thực tế
+                if (!isPhysicallyOccupiedByOthers) {
+                    t.setStatus(TableStatus.AVAILABLE);
+                    tableInfoRepository.save(t);
+                }
+            }
         }
     }
 }
