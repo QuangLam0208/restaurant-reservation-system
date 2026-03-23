@@ -3,6 +3,7 @@ package com.hcmute.reservation.service;
 import com.hcmute.reservation.dto.override.OverrideLogResponse;
 import com.hcmute.reservation.dto.override.OverrideRequest;
 import com.hcmute.reservation.exception.BadRequestException;
+import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.ResourceNotFoundException;
 import com.hcmute.reservation.model.Account;
 import com.hcmute.reservation.model.OverrideLog;
@@ -15,6 +16,7 @@ import com.hcmute.reservation.repository.OverrideLogRepository;
 import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.repository.TableInfoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,8 +49,13 @@ public class OverrideService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn #" + reservationId + " không tồn tại."));
 
-        // Kiểm tra xem có bàn nào thuộc đơn này đang ở trạng thái OVERSTAY không
-        boolean isAnyTableOverstay = reservation.getTableMappings().stream()
+        if (reservation.getStatus() != ReservationStatus.SEATED) {
+            throw new BadRequestException("Chỉ có thể ghi đè các đơn đang ở trạng thái SEATED (Đang ngồi).");
+        }
+
+        // Kiểm tra xem có bàn nào thuộc đơn OVERSTAY không
+        boolean isAnyTableOverstay = reservation.getTableMappings() != null &&
+                reservation.getTableMappings().stream()
                 .anyMatch(m -> m.getTableInfo().getStatus() == TableStatus.OVERSTAY);
 
         if (!isAnyTableOverstay) {
@@ -58,18 +65,21 @@ public class OverrideService {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nhân viên #" + accountId + " không tồn tại."));
 
-        // Ghi đè → COMPLETED ngay, bỏ qua buffer_time
-        reservation.setStatus(ReservationStatus.COMPLETED);
-        reservation.setEndTime(LocalDateTime.now());
+        // Gọi checkOut của Reservation: status = COMPLETED, endTime = now
+        reservation.checkOut();
         reservationRepository.save(reservation);
 
-        // Giải phóng bàn ngay
-        if (reservation.getTableMappings() != null) {
-            reservation.getTableMappings().forEach(m -> {
-                TableInfo t = m.getTableInfo();
-                t.setStatus(TableStatus.AVAILABLE);
-                tableInfoRepository.save(t);
-            });
+        try {
+            // Giải phóng bàn ngay
+            if (reservation.getTableMappings() != null) {
+                reservation.getTableMappings().forEach(m -> {
+                    TableInfo t = m.getTableInfo();
+                    t.setStatus(TableStatus.AVAILABLE);
+                    tableInfoRepository.saveAndFlush(t);
+                });
+            }
+        } catch (ObjectOptimisticLockingFailureException e) {
+            throw new ConflictException("Bàn này đang được hệ thống hoặc nhân viên khác xử lý. Vui lòng tải lại trang và thử lại.");
         }
 
         // Ghi log
