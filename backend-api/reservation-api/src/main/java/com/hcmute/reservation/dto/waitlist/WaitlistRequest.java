@@ -15,4 +15,5 @@ public class WaitlistRequest {
 
     @NotNull @Min(1)
     private Integer guestCount;
+    private boolean allowShortSeating;
 }
