@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +90,8 @@ public class SystemSchedulerService {
     @Transactional
     public Map<String, Object> checkOverstay() {
         List<Reservation> overstayed = reservationRepository.findOverstayed(LocalDateTime.now());
-        int count = 0;
+        List<Long> overstayTableIds = new ArrayList<>(); // Danh sách ID bàn
+
         for (Reservation r : overstayed) {
             if (r.getTableMappings() != null) {
                 r.getTableMappings().forEach(m -> {
@@ -97,14 +99,18 @@ public class SystemSchedulerService {
                     if (t.getStatus() == TableStatus.OCCUPIED) {
                         t.setStatus(TableStatus.OVERSTAY);
                         tableInfoRepository.save(t);
+                        overstayTableIds.add(t.getTableId()); // Lưu lại ID bàn
                     }
                 });
             }
-            count++;
         }
-        if (count > 0) log.info("[Scheduler] checkOverstay: {} đơn overstay.", count);
+
+        if (!overstayTableIds.isEmpty()) {
+            log.info("[Scheduler] checkOverstay: Các bàn bị overstay {}", overstayTableIds);
+        }
+
         Map<String, Object> result = new HashMap<>();
-        result.put("overstayDetected", count);
+        result.put("overstayTableIds", overstayTableIds); // Trả về list ID cụ thể
         result.put("executedAt", LocalDateTime.now().toString());
         return result;
     }
@@ -117,22 +123,24 @@ public class SystemSchedulerService {
     @Scheduled(fixedDelay = 60_000)
     @Transactional
     public Map<String, Object> releaseCompletedTables() {
-        // Đặc tả 3.4.4: Bàn chuyển AVAILABLE khi current_time >= end_time + buffer_time
-        // Nghĩa là: end_time <= current_time - buffer_time
-        List<Reservation> completed = reservationRepository.findCompletedWithReleasableTables(LocalDateTime.now().minusMinutes(bufferMinutes));
+        // Lấy các đơn cần nhả bàn theo query tối ưu mới
+        List<Reservation> toRelease = reservationRepository.findReservationsNeedingTableRelease(LocalDateTime.now().minusMinutes(bufferMinutes));
         int count = 0;
-        for (Reservation r : completed) {
+
+        for (Reservation r : toRelease) {
             if (r.getTableMappings() != null) {
                 for (var m : r.getTableMappings()) {
                     TableInfo t = m.getTableInfo();
+
                     // Guard: kiểm tra bàn không có ca SEATED/RESERVED khác đang chạy
                     boolean hasActiveSession = t.getMappings() != null &&
-                        t.getMappings().stream().anyMatch(other ->
-                            !other.getReservation().getReservationId().equals(r.getReservationId()) &&
-                            (other.getReservation().getStatus() == ReservationStatus.SEATED ||
-                             other.getReservation().getStatus() == ReservationStatus.RESERVED));
+                            t.getMappings().stream().anyMatch(other ->
+                                    !other.getReservation().getReservationId().equals(r.getReservationId()) &&
+                                            (other.getReservation().getStatus() == ReservationStatus.SEATED ||
+                                                    other.getReservation().getStatus() == ReservationStatus.RESERVED));
+
                     if (!hasActiveSession &&
-                        (t.getStatus() == TableStatus.OCCUPIED || t.getStatus() == TableStatus.OVERSTAY)) {
+                            (t.getStatus() == TableStatus.OCCUPIED || t.getStatus() == TableStatus.OVERSTAY)) {
                         t.setStatus(TableStatus.AVAILABLE);
                         tableInfoRepository.save(t);
                         count++;
@@ -140,7 +148,9 @@ public class SystemSchedulerService {
                 }
             }
         }
-        if (count > 0) log.info("[Scheduler] releaseCompletedTables: {} bàn được giải phóng.", count);
+
+        if (count > 0) log.info("[Scheduler] releaseCompletedTables: {} bàn được giải phóng từ các đơn COMPLETED/CANCELLED.", count);
+
         Map<String, Object> result = new HashMap<>();
         result.put("tablesReleased", count);
         result.put("executedAt", LocalDateTime.now().toString());

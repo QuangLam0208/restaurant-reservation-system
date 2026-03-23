@@ -4,6 +4,7 @@ import com.hcmute.reservation.dto.table.FloorMapTableResponse;
 import com.hcmute.reservation.dto.table.TableRequest;
 import com.hcmute.reservation.dto.table.TableResponse;
 import com.hcmute.reservation.exception.BadRequestException;
+import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.ResourceNotFoundException;
 import com.hcmute.reservation.model.TableInfo;
 import com.hcmute.reservation.model.enums.ReservationStatus;
@@ -62,7 +63,7 @@ public class TableService {
         }
 
         if (req.getVersion() != null && !req.getVersion().equals(table.getVersion())) {
-            throw new BadRequestException("Dữ liệu bàn đã bị thay đổi bởi một giao dịch khác. Vui lòng tải lại.");
+            throw new ConflictException("Dữ liệu bàn đã bị thay đổi bởi một giao dịch khác. Vui lòng tải lại.");
         }
 
         if (req.getCapacity() < table.getCapacity() && table.getMappings() != null) {
@@ -84,9 +85,9 @@ public class TableService {
         table.setCapacity(req.getCapacity());
         if (req.getIsActive() != null) table.setIsActive(req.getIsActive());
 
-        if (req.getStatus() != null) {
-            table.setStatus(req.getStatus());
-        }
+//        if (req.getStatus() != null) {
+//            table.setStatus(req.getStatus());
+//        }
 
         return toResponse(tableInfoRepository.save(table));
     }
@@ -95,7 +96,9 @@ public class TableService {
     public void deleteTable(Long id) {
         TableInfo table = tableInfoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bàn #" + id + " không tồn tại."));
-
+        if (table.getStatus() != TableStatus.AVAILABLE || table.isSoftLocked()) {
+            throw new BadRequestException("Không thể xóa bàn không ở trạng thái sẵn sàng hoặc đang bị khóa tạm.");
+        }
         boolean hasActiveReservation = table.getMappings() != null && table.getMappings().stream()
                 .filter(m -> m != null && m.getReservation() != null)
                 .anyMatch(m -> {

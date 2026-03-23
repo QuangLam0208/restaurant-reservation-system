@@ -61,4 +61,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     // Tìm reservation COMPLETED có endTime < now (bàn cần được giải phóng)
     @Query("SELECT r FROM Reservation r WHERE r.status = 'COMPLETED' AND r.endTime < :now")
     List<Reservation> findCompletedWithReleasableTables(@Param("now") LocalDateTime now);
+    @Query("""
+            SELECT DISTINCT r FROM Reservation r
+            JOIN r.tableMappings m
+            JOIN m.tableInfo t
+            WHERE (
+                    (r.status = 'COMPLETED' AND r.endTime < :now)
+                 OR (r.status = 'CANCELLED' AND r.endTime >= :now)
+                  )
+              AND t.status IN ('OCCUPIED', 'OVERSTAY')
+            """)
+    List<Reservation> findReservationsNeedingTableRelease(@Param("now") LocalDateTime now);
 }
