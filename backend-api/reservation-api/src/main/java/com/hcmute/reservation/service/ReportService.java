@@ -2,6 +2,7 @@ package com.hcmute.reservation.service;
 
 import com.hcmute.reservation.dto.report.DailyReservationReport;
 import com.hcmute.reservation.dto.report.NoShowRateResponse;
+import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +21,9 @@ public class ReportService {
     private final ReservationRepository reservationRepository;
 
     public List<DailyReservationReport> getReservationsByDate(LocalDate from, LocalDate to) {
+        if (from.isAfter(to)) {
+            throw new BadRequestException("Ngày bắt đầu không được nằm sau ngày kết thúc.");
+        }
         LocalDateTime fromDt = from.atStartOfDay();
         LocalDateTime toDt = to.atTime(LocalTime.MAX);
         List<Object[]> rows = reservationRepository.countByDate(fromDt, toDt);
@@ -28,6 +33,9 @@ public class ReportService {
     }
 
     public NoShowRateResponse getNoShowRate(LocalDate from, LocalDate to) {
+        if (from.isAfter(to)) {
+            throw new BadRequestException("Ngày bắt đầu không được nằm sau ngày kết thúc.");
+        }
         LocalDateTime fromDt = from.atStartOfDay();
         LocalDateTime toDt = to.atTime(LocalTime.MAX);
         long total = reservationRepository.countTotal(fromDt, toDt);
