@@ -55,7 +55,9 @@ public class AssignmentService {
             List<TableInfo> availableMerge = tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE)
                     .stream()
                     .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
+                    .sorted((t1, t2) -> Integer.compare(t2.getCapacity(), t1.getCapacity()))
                     .collect(Collectors.toList());
+
 
             int total = 0;
             for (TableInfo t : availableMerge) {
