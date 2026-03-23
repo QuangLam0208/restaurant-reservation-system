@@ -8,6 +8,7 @@ import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.repository.ReservationTableMappingRepository;
 import com.hcmute.reservation.repository.TableInfoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,9 @@ public class AssignmentService {
     private final ReservationTableMappingRepository mappingRepository;
     private final ReservationRepository reservationRepository;
 
+    @Value("${reservation.buffer-minutes:10}")
+    private int bufferMinutes;
+
     @Transactional
     public boolean findAlternativeTables(Reservation reservation) {
         LocalDateTime now = LocalDateTime.now();
@@ -33,7 +37,7 @@ public class AssignmentService {
         // Nếu khách đến sớm, phải đảm bảo bàn trống từ NOW đến lúc kết thúc.
         LocalDateTime actualStart = now.isBefore(reservation.getStartTime()) ? now : reservation.getStartTime();
         LocalDateTime end = reservation.getEndTime();
-        Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(actualStart, end));
+        Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(actualStart, end.plusMinutes(bufferMinutes)));
 
         // ĐẦU TIÊN PHẢI TÌM XEM CÓ BÀN THAY KHÔNG
         List<TableInfo> selectedTables = new ArrayList<>();
