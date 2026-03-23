@@ -46,9 +46,15 @@ public class OverrideService {
     public OverrideLogResponse override(Long reservationId, OverrideRequest req, Long accountId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn #" + reservationId + " không tồn tại."));
-        if (reservation.getStatus() != ReservationStatus.SEATED) {
-            throw new BadRequestException("Chỉ có thể ghi đè đơn đang ở trạng thái SEATED (Overstay).");
+
+        // Kiểm tra xem có bàn nào thuộc đơn này đang ở trạng thái OVERSTAY không
+        boolean isAnyTableOverstay = reservation.getTableMappings().stream()
+                .anyMatch(m -> m.getTableInfo().getStatus() == TableStatus.OVERSTAY);
+
+        if (!isAnyTableOverstay) {
+            throw new BadRequestException("Chỉ có thể ghi đè khi bàn đã chuyển sang trạng thái cảnh báo OVERSTAY.");
         }
+
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Nhân viên #" + accountId + " không tồn tại."));
 

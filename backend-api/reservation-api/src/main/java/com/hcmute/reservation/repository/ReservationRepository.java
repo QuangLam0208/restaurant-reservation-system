@@ -18,6 +18,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     // Danh sách đơn đang SEATED
     List<Reservation> findByStatusOrderByStartTimeAsc(ReservationStatus status);
 
+    List<Reservation> findByStatusAndEndTimeBefore(ReservationStatus status, LocalDateTime endTime);
+
     // Truy vấn booking kế tiếp của một bàn cụ thể
     @Query("SELECT r FROM Reservation r JOIN r.tableMappings m WHERE m.tableInfo.tableId = :tableId " +
             "AND r.status IN ('RESERVED','SEATED') AND r.startTime > :now ORDER BY r.startTime ASC")

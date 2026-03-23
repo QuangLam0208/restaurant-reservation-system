@@ -109,6 +109,29 @@ public class SystemSchedulerService {
         return result;
     }
 
+    @Scheduled(fixedRate = 60000)
+    @Transactional
+    public void scanAndMarkOverstay() {
+        LocalDateTime now = LocalDateTime.now();
+
+        // 1. Tìm tất cả các đơn đang ngồi (SEATED) mà giờ kết thúc đã qua (end_time < now)
+        List<Reservation> overstayReservations = reservationRepository
+                .findByStatusAndEndTimeBefore(ReservationStatus.SEATED, now);
+
+        for (Reservation res : overstayReservations) {
+            if (res.getTableMappings() != null) {
+                res.getTableMappings().forEach(mapping -> {
+                    TableInfo table = mapping.getTableInfo();
+                    // 2. Chuyển trạng thái bàn vật lý sang OVERSTAY
+                    if (table.getStatus() != TableStatus.OVERSTAY) {
+                        table.setStatus(TableStatus.OVERSTAY);
+                        tableInfoRepository.save(table);
+                    }
+                });
+            }
+        }
+    }
+
     /**
      * POST /api/system/release-completed
      * Giải phóng bàn sau buffer_time kể từ khi checkout.
