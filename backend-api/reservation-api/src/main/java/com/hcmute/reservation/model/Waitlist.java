@@ -27,6 +27,10 @@ public class Waitlist {
     @Column(name = "guest_count", nullable = false)
     private int guestCount;
 
+    @Column(name = "allow_short_seating", nullable = false)
+    @Builder.Default
+    private boolean allowShortSeating = false;
+
     @Column(name = "joined_at", nullable = false, updatable = false)
     private LocalDateTime joinedAt;
 
