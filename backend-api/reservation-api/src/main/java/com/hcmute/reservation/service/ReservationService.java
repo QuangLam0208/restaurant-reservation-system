@@ -76,10 +76,11 @@ public class ReservationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khách hàng."));
 
         LocalDateTime start = req.getStartTime();
-        LocalDateTime end = start.plusMinutes(durationMinutes + bufferMinutes);
+        LocalDateTime end = start.plusMinutes(durationMinutes);
 
-        // Lọc bàn theo overlap startTime/endTime
-        Set<Long> occupiedTableIds = new HashSet<>(reservationRepository.findOccupiedTableIds(start, end));
+        // Lọc bàn theo overlap
+        LocalDateTime blockUntil = end.plusMinutes(bufferMinutes);
+        Set<Long> occupiedTableIds = new HashSet<>(reservationRepository.findOccupiedTableIds(start, blockUntil));
         // Tìm bàn đơn
         List<TableInfo> available = tableInfoRepository.findAvailableTablesForGuests(req.getGuestCount())
                 .stream()
@@ -258,7 +259,7 @@ public class ReservationService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime defaultEnd = now.plusMinutes(durationMinutes + bufferMinutes);
+        LocalDateTime defaultEnd = now.plusMinutes(durationMinutes);
         LocalDateTime checkEnd = req.getEndTime() != null ? req.getEndTime() : defaultEnd;
 
         // Chọn bàn và xly short seating
@@ -274,7 +275,8 @@ public class ReservationService {
         } else if (req.isMergeTables()) {
             // Ghép bàn tự động
             List<TableInfo> available = tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE);
-            Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(LocalDateTime.now(), checkEnd));
+            LocalDateTime blockUntil = checkEnd.plusMinutes(bufferMinutes);
+            Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(LocalDateTime.now(), blockUntil));
 
             // Lọc bàn đủ điều kiện ghép (không bị soft lock, không overlap, và sức chứa < guestCount)
             List<TableInfo> availableMerge = available.stream()
@@ -293,8 +295,8 @@ public class ReservationService {
                 throw new BadRequestException("Không đủ bàn để ghép. Cần " + req.getGuestCount() + " chỗ.");
             }
         } else {
-            Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(now, checkEnd));
-
+            LocalDateTime blockUntil = checkEnd.plusMinutes(bufferMinutes);
+            Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(now, blockUntil));
             // Ưu tiên 1: Tìm bàn FULL AVAILABLE (Trống hoàn toàn trong khung giờ dự kiến)
             List<TableInfo> fullAvailable = tableInfoRepository.findAvailableTablesForGuests(req.getGuestCount())
                     .stream()
@@ -329,8 +331,11 @@ public class ReservationService {
                 }
             }
             // Nếu có booking kế tiếp cắt ngang (PARTIAL AVAILABLE), cập nhật endTime thành thời gian booking đó bắt đầu
-            if (earliestNextBooking != null && earliestNextBooking.isBefore(calculatedEndTime)) {
-                calculatedEndTime = earliestNextBooking;
+            if (earliestNextBooking != null) {
+                LocalDateTime maxAllowedEndTime = earliestNextBooking.minusMinutes(bufferMinutes);
+                if (maxAllowedEndTime.isBefore(calculatedEndTime)) {
+                    calculatedEndTime = maxAllowedEndTime;
+                }
             }
         }
         Reservation reservation = Reservation.builder()
@@ -418,7 +423,7 @@ public class ReservationService {
         // ────── Check-in Thành công  ──────
 
         reservation.checkIn();
-        reservation.setEndTime(now.plusMinutes(durationMinutes + bufferMinutes));
+        reservation.setEndTime(now.plusMinutes(durationMinutes));
         //Cập nhật Table_Info.status = OCCUPIED cho TẤT CẢ bàn trong Mapping
         for (TableInfo t : assignedTables) {
             t.setStatus(TableStatus.OCCUPIED);
