@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ public class SystemSchedulerService {
 
     private final ReservationRepository reservationRepository;
     private final TableInfoRepository tableInfoRepository;
+    private final TransactionTemplate transactionTemplate;
 
     @Value("${reservation.soft-lock-minutes:5}")
     private int softLockMinutes;
@@ -40,17 +42,30 @@ public class SystemSchedulerService {
      * Hết 5 phút PENDING_PAYMENT → EXPIRED, giải phóng soft lock
      */
     @Scheduled(fixedDelay = 60_000)
-    @Transactional
     public Map<String, Object> expireReservations() {
-        LocalDateTime expiredBefore = LocalDateTime.now().minusMinutes(softLockMinutes);
-        List<Reservation> toExpire = reservationRepository.findExpiredPendingPayments(expiredBefore);
+        List<Reservation> toExpire = reservationRepository
+                .findExpiredPendingPayments(LocalDateTime.now().minusMinutes(softLockMinutes));
         int count = 0;
+
         for (Reservation r : toExpire) {
-            r.markExpired();
-            reservationRepository.save(r);
-            releaseLockedTables(r.getReservationId());
-            count++;
+            try {
+                transactionTemplate.executeWithoutResult(status -> {
+                    // Re-fetch để tránh stale state
+                    Reservation fresh = reservationRepository.findById(r.getReservationId())
+                            .orElse(null);
+                    if (fresh == null || fresh.getStatus() != ReservationStatus.PENDING_PAYMENT) {
+                        return; // Đã được xử lý bởi luồng khác, bỏ qua
+                    }
+                    fresh.markExpired();
+                    reservationRepository.save(fresh);
+                    releaseLockedTables(fresh.getReservationId());
+                });
+                count++;
+            } catch (Exception e) {
+                log.error("[Scheduler] Lỗi khi hủy đơn {}: {}", r.getReservationId(), e.getMessage());
+            }
         }
+
         if (count > 0) log.info("[Scheduler] expireReservations: {} đơn hết hạn.", count);
         Map<String, Object> result = new HashMap<>();
         result.put("expired", count);
@@ -63,17 +78,29 @@ public class SystemSchedulerService {
      * Quá grace period 15 phút → NO_SHOW, giải phóng bàn
      */
     @Scheduled(fixedDelay = 60_000)
-    @Transactional
     public Map<String, Object> releaseNoShow() {
-        LocalDateTime graceCutoff = LocalDateTime.now().minusMinutes(gracePeriodMinutes);
-        List<Reservation> toNoShow = reservationRepository.findNoShows(graceCutoff);
+        List<Reservation> toNoShow = reservationRepository
+                .findNoShows(LocalDateTime.now().minusMinutes(gracePeriodMinutes));
         int count = 0;
+
         for (Reservation r : toNoShow) {
-            r.markNoShow();
-            reservationRepository.save(r);
-            releaseTablesByReservation(r);
-            count++;
+            try {
+                transactionTemplate.executeWithoutResult(status -> {
+                    Reservation fresh = reservationRepository.findById(r.getReservationId())
+                            .orElse(null);
+                    if (fresh == null || fresh.getStatus() != ReservationStatus.RESERVED) {
+                        return;
+                    }
+                    fresh.markNoShow();
+                    reservationRepository.save(fresh);
+                    releaseTablesByReservation(fresh);
+                });
+                count++;
+            } catch (Exception e) {
+                log.error("[Scheduler] Lỗi khi đánh no-show đơn {}: {}", r.getReservationId(), e.getMessage());
+            }
         }
+
         if (count > 0) log.info("[Scheduler] releaseNoShow: {} đơn no-show.", count);
         Map<String, Object> result = new HashMap<>();
         result.put("noShow", count);
@@ -86,50 +113,45 @@ public class SystemSchedulerService {
      * Scan SEATED quá end_time → Cập nhật Table_Info OVERSTAY + alert
      */
     @Scheduled(fixedDelay = 60_000)
-    @Transactional
+    // LƯU Ý: Không dùng @Transactional ở đây nữa, vì đã dùng TransactionTemplate bên trong
     public Map<String, Object> checkOverstay() {
-        List<Reservation> overstayed = reservationRepository.findOverstayed(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+
+        // 1. Tìm tất cả các đơn đang ngồi (SEATED) mà giờ kết thúc đã qua (end_time < now)
+        // Lưu ý: Dùng findByStatusAndEndTimeBefore rất rõ nghĩa và tốt.
+        List<Reservation> overstayReservations = reservationRepository
+                .findByStatusAndEndTimeBefore(ReservationStatus.SEATED, now);
+
         int count = 0;
-        for (Reservation r : overstayed) {
-            if (r.getTableMappings() != null) {
-                r.getTableMappings().forEach(m -> {
-                    TableInfo t = m.getTableInfo();
-                    if (t.getStatus() == TableStatus.OCCUPIED) {
-                        t.setStatus(TableStatus.OVERSTAY);
-                        tableInfoRepository.save(t);
+
+        for (Reservation res : overstayReservations) {
+            try {
+                // 2. Bọc mỗi đơn vào 1 Transaction độc lập để chống lỗi "Chết chùm" (All-or-nothing)
+                transactionTemplate.executeWithoutResult(status -> {
+                    if (res.getTableMappings() != null) {
+                        res.getTableMappings().forEach(mapping -> {
+                            TableInfo table = mapping.getTableInfo();
+
+                            // Chuyển trạng thái bàn vật lý sang OVERSTAY
+                            if (table.getStatus() != TableStatus.OVERSTAY) {
+                                table.setStatus(TableStatus.OVERSTAY);
+                                tableInfoRepository.save(table);
+                            }
+                        });
                     }
                 });
+                count++;
+            } catch (Exception e) {
+                log.error("[Scheduler] Lỗi khi đánh dấu OVERSTAY cho đơn {}: {}", res.getReservationId(), e.getMessage());
             }
-            count++;
         }
-        if (count > 0) log.info("[Scheduler] checkOverstay: {} đơn overstay.", count);
+
+        if (count > 0) log.info("[Scheduler] checkOverstay: {} đơn đã bị đánh dấu OVERSTAY.", count);
+
         Map<String, Object> result = new HashMap<>();
         result.put("overstayDetected", count);
         result.put("executedAt", LocalDateTime.now().toString());
         return result;
-    }
-
-    @Scheduled(fixedRate = 60000)
-    @Transactional
-    public void scanAndMarkOverstay() {
-        LocalDateTime now = LocalDateTime.now();
-
-        // 1. Tìm tất cả các đơn đang ngồi (SEATED) mà giờ kết thúc đã qua (end_time < now)
-        List<Reservation> overstayReservations = reservationRepository
-                .findByStatusAndEndTimeBefore(ReservationStatus.SEATED, now);
-
-        for (Reservation res : overstayReservations) {
-            if (res.getTableMappings() != null) {
-                res.getTableMappings().forEach(mapping -> {
-                    TableInfo table = mapping.getTableInfo();
-                    // 2. Chuyển trạng thái bàn vật lý sang OVERSTAY
-                    if (table.getStatus() != TableStatus.OVERSTAY) {
-                        table.setStatus(TableStatus.OVERSTAY);
-                        tableInfoRepository.save(table);
-                    }
-                });
-            }
-        }
     }
 
     /**
@@ -138,31 +160,50 @@ public class SystemSchedulerService {
      * Tìm reservation COMPLETED có endTime < now → bàn vẫn OCCUPIED/OVERSTAY → set AVAILABLE.
      */
     @Scheduled(fixedDelay = 60_000)
-    @Transactional
     public Map<String, Object> releaseCompletedTables() {
-        // Đặc tả 3.4.4: Bàn chuyển AVAILABLE khi current_time >= end_time + buffer_time
-        // Nghĩa là: end_time <= current_time - buffer_time
-        List<Reservation> completed = reservationRepository.findCompletedWithReleasableTables(LocalDateTime.now().minusMinutes(bufferMinutes));
+        // BUG FIX: Chỉ lấy COMPLETED mà bàn vẫn còn OCCUPIED/OVERSTAY (tránh memory leak)
+        List<Reservation> completed = reservationRepository
+                .findCompletedWithReleasableTables(LocalDateTime.now().minusMinutes(bufferMinutes));
         int count = 0;
+
         for (Reservation r : completed) {
-            if (r.getTableMappings() != null) {
-                for (var m : r.getTableMappings()) {
-                    TableInfo t = m.getTableInfo();
-                    // Guard: kiểm tra bàn không có ca SEATED/RESERVED khác đang chạy
-                    boolean hasActiveSession = t.getMappings() != null &&
-                        t.getMappings().stream().anyMatch(other ->
-                            !other.getReservation().getReservationId().equals(r.getReservationId()) &&
-                            (other.getReservation().getStatus() == ReservationStatus.SEATED ||
-                             other.getReservation().getStatus() == ReservationStatus.RESERVED));
-                    if (!hasActiveSession &&
-                        (t.getStatus() == TableStatus.OCCUPIED || t.getStatus() == TableStatus.OVERSTAY)) {
-                        t.setStatus(TableStatus.AVAILABLE);
-                        tableInfoRepository.save(t);
-                        count++;
+            try {
+                // BUG FIX: Mỗi đơn 1 transaction riêng (chống chết chùm)
+                final int[] released = {0};
+                transactionTemplate.executeWithoutResult(status -> {
+                    Reservation fresh = reservationRepository.findById(r.getReservationId())
+                            .orElse(null);
+                    if (fresh == null || fresh.getStatus() != ReservationStatus.COMPLETED) {
+                        return;
                     }
-                }
+                    if (fresh.getTableMappings() == null) return;
+
+                    for (var m : fresh.getTableMappings()) {
+                        TableInfo t = m.getTableInfo();
+
+                        boolean hasActiveSession = t.getMappings() != null &&
+                                t.getMappings().stream().anyMatch(other ->
+                                        !other.getReservation().getReservationId()
+                                                .equals(fresh.getReservationId()) &&
+                                                (other.getReservation().getStatus() == ReservationStatus.SEATED ||
+                                                        other.getReservation().getStatus() == ReservationStatus.RESERVED));
+
+                        if (!hasActiveSession &&
+                                (t.getStatus() == TableStatus.OCCUPIED ||
+                                        t.getStatus() == TableStatus.OVERSTAY)) {
+                            t.setStatus(TableStatus.AVAILABLE);
+                            tableInfoRepository.save(t);
+                            released[0]++;
+                        }
+                    }
+                });
+                count += released[0];
+            } catch (Exception e) {
+                log.error("[Scheduler] Lỗi khi giải phóng bàn cho đơn {}: {}",
+                        r.getReservationId(), e.getMessage());
             }
         }
+
         if (count > 0) log.info("[Scheduler] releaseCompletedTables: {} bàn được giải phóng.", count);
         Map<String, Object> result = new HashMap<>();
         result.put("tablesReleased", count);
