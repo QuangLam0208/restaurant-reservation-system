@@ -72,7 +72,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Long> findOccupiedTableIds(@Param("startTime") LocalDateTime startTime,
                                     @Param("endTime") LocalDateTime endTime);
 
-    // Tìm reservation COMPLETED có endTime < now (bàn cần được giải phóng)
-    @Query("SELECT r FROM Reservation r WHERE r.status = 'COMPLETED' AND r.endTime < :now")
+    @Query("SELECT DISTINCT r FROM Reservation r JOIN FETCH r.tableMappings m " +
+            "WHERE r.status = 'COMPLETED' AND r.endTime < :now " +
+            "AND m.tableInfo.status IN ('OCCUPIED', 'OVERSTAY')")
     List<Reservation> findCompletedWithReleasableTables(@Param("now") LocalDateTime now);
 }
