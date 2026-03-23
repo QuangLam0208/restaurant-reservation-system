@@ -423,7 +423,11 @@ public class ReservationService {
         // ────── Check-in Thành công  ──────
 
         reservation.checkIn();
-        reservation.setEndTime(now.plusMinutes(durationMinutes));
+        if (now.isBefore(startTime)) {
+            reservation.setEndTime(now.plusMinutes(durationMinutes));
+        } else {
+            reservation.setEndTime(startTime.plusMinutes(durationMinutes));
+        }
         //Cập nhật Table_Info.status = OCCUPIED cho TẤT CẢ bàn trong Mapping
         for (TableInfo t : assignedTables) {
             t.setStatus(TableStatus.OCCUPIED);
