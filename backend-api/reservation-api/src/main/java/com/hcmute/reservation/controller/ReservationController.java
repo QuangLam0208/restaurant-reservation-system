@@ -1,5 +1,6 @@
 package com.hcmute.reservation.controller;
 
+import com.hcmute.reservation.dto.reservation.ChangeTableRequest;
 import com.hcmute.reservation.dto.reservation.OnlineReservationRequest;
 import com.hcmute.reservation.dto.reservation.ReservationResponse;
 import com.hcmute.reservation.dto.reservation.WalkInRequest;
@@ -91,6 +92,14 @@ public class ReservationController {
     public ResponseEntity<ReservationResponse> createWalkIn(@Valid @RequestBody WalkInRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(reservationService.createWalkIn(req));
+    }
+
+    /** POST /api/reservations/{id}/change-table */
+    @PostMapping("/{id}/change-table")
+    public ResponseEntity<ReservationResponse> changeTable(
+            @PathVariable Long id,
+            @Valid @RequestBody ChangeTableRequest req) {
+        return ResponseEntity.ok(reservationService.changeTable(id, req));
     }
 
     /** POST /api/reservations/{id}/check-in */
