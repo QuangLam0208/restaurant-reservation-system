@@ -70,6 +70,12 @@
     <Compile Include="Forms\OverrideDialog.Designer.cs">
       <DependentUpon>OverrideDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\RegisterForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\RegisterForm.Designer.cs">
+      <DependentUpon>RegisterForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\UcOnlineBooking.cs">
       <SubType>UserControl</SubType>
     </Compile>
