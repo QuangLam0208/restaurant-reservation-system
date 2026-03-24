@@ -1,5 +1,6 @@
 package com.hcmute.reservation.service;
 
+import com.hcmute.reservation.dto.reservation.ChangeTableRequest;
 import com.hcmute.reservation.dto.reservation.OnlineReservationRequest;
 import com.hcmute.reservation.dto.reservation.ReservationResponse;
 import com.hcmute.reservation.dto.reservation.WalkInRequest;
@@ -403,6 +404,97 @@ public class ReservationService {
         }
 
         return toResponse(reservation);
+    }
+
+    // ────── Change Table ────────────────────────────────────────────────────
+    @Transactional
+    public ReservationResponse changeTable(Long reservationId, ChangeTableRequest req) {
+        // Lấy reservation
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Đơn #" + reservationId + " không tồn tại."));
+
+        // Chỉ cho phép change khi RESERVED hoặc SEATED
+        if (reservation.getStatus() != ReservationStatus.SEATED
+                && reservation.getStatus() != ReservationStatus.RESERVED) {
+            throw new BadRequestException(
+                    "Chỉ có thể đổi bàn khi đơn ở trạng thái RESERVED hoặc SEATED. " +
+                            "Trạng thái hiện tại: " + reservation.getStatus());
+        }
+
+        // Validate new list table
+        List<TableInfo> newTables = new ArrayList<>();
+        for (Long tableId : req.getTableIds()) {
+            TableInfo table = tableInfoRepository.findById(tableId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Bàn #" + tableId + " không tồn tại."));
+
+            if (!table.getIsActive()) {
+                throw new BadRequestException("Bàn #" + tableId + " đang bị vô hiệu hóa.");
+            }
+
+            // Lấy ID bàn cũ của đơn này để loại trừ khi kiểm tra conflict
+            Set<Long> currentTableIds = reservation.getTableMappings().stream()
+                    .map(m -> m.getTableInfo().getTableId())
+                    .collect(Collectors.toSet());
+
+            // Nếu bàn mới không phải bàn cũ → kiểm tra trạng thái
+            if (!currentTableIds.contains(tableId)) {
+                if (table.isSoftLocked()) {
+                    throw new ConflictException("Bàn #" + tableId + " đang được giữ tạm cho giao dịch thanh toán khác.");
+                }
+                if (table.getStatus() != TableStatus.AVAILABLE) {
+                    throw new ConflictException("Bàn #" + tableId + " hiện không trống (Trạng thái: " + table.getStatus() + ").");
+                }
+
+                // Kiểm tra overlap với booking khác (trừ chính đơn này)
+                LocalDateTime start = reservation.getStartTime();
+                LocalDateTime end = reservation.getEndTime().plusMinutes(bufferMinutes);
+                List<Long> overlappingReservationTableIds = reservationRepository.findOccupiedTableIds(start, end);
+                // Loại bỏ chính các bàn của đơn này khỏi danh sách "đang bận"
+                overlappingReservationTableIds.removeAll(currentTableIds);
+
+                if (overlappingReservationTableIds.contains(tableId)) {
+                    throw new ConflictException("Bàn #" + tableId + " đã có lịch đặt trùng trong khung giờ này.");
+                }
+            }
+
+            newTables.add(table);
+        }
+
+        // Giải phóng bàn cũ
+        if (reservation.getTableMappings() != null) {
+            for (ReservationTableMapping mapping : reservation.getTableMappings()) {
+                TableInfo oldTable = mapping.getTableInfo();
+                // Chỉ giải phóng nếu bàn cũ KHÔNG nằm trong danh sách bàn mới
+                boolean isKeptTable = req.getTableIds().contains(oldTable.getTableId());
+                if (!isKeptTable) {
+                    oldTable.setStatus(TableStatus.AVAILABLE);
+                    tableInfoRepository.save(oldTable);
+                }
+            }
+            mappingRepository.deleteAll(reservation.getTableMappings());
+            reservation.getTableMappings().clear();
+        }
+
+        // Gán bàn mới và tạo mapping
+        try {
+            for (TableInfo table : newTables) {
+                // Chỉ set OCCUPIED nếu khách đang ngồi thực tế
+                if (reservation.getStatus() == ReservationStatus.SEATED) {
+                    table.setStatus(TableStatus.OCCUPIED);
+                }
+                // Nếu RESERVED thì giữ nguyên AVAILABLE — bàn chỉ bị "chiếm" khi check-in
+                tableInfoRepository.saveAndFlush(table);
+
+                mappingRepository.save(ReservationTableMapping.builder()
+                        .reservation(reservation)
+                        .tableInfo(table)
+                        .build());
+            }
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+            throw new ConflictException("Một trong các bàn vừa bị thay đổi bởi giao dịch khác. Vui lòng tải lại và thử lại.");
+        }
+
+        return toResponse(reservationRepository.save(reservation));
     }
 
     // ────── Check-in / Check-out ───────────────────────────────────────
