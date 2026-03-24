@@ -301,13 +301,15 @@ public class ReservationService {
         // Chọn bàn và xly short seating
         List<TableInfo> selectedTables = new ArrayList<>();
 
-        if (req.getTableId() != null) {
-            TableInfo t = tableInfoRepository.findById(req.getTableId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Bàn #" + req.getTableId() + " không tồn tại."));
-            if (t.getStatus() != TableStatus.AVAILABLE || t.isSoftLocked()) {
-                throw new ConflictException("Bàn #" + req.getTableId() + " hiện không khả dụng.");
+        if (req.getTableId() != null && !req.getTableId().isEmpty()) {
+            for (Long tableId : req.getTableId()) {
+                TableInfo t = tableInfoRepository.findById(tableId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Bàn #" + tableId + " không tồn tại."));
+                if (t.getStatus() != TableStatus.AVAILABLE || t.isSoftLocked()) {
+                    throw new ConflictException("Bàn #" + tableId + " hiện không khả dụng.");
+                }
+                selectedTables.add(t);
             }
-            selectedTables.add(t);
         } else if (req.isMergeTables()) {
             // Ghép bàn tự động
             List<TableInfo> available = tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE);

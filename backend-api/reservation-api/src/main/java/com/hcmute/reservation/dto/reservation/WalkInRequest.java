@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class WalkInRequest {
@@ -23,7 +24,7 @@ public class WalkInRequest {
     private LocalDateTime endTime;
 
     // Cho phép chỉ định bàn cụ thể (optional, null = auto-assign)
-    private Long tableId;
+    private List<Long> tableId;
 
     // Ghép bàn: nếu 1 bàn không đủ
     private boolean mergeTables;
