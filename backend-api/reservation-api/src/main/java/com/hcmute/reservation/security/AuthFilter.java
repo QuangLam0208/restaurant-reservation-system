@@ -44,7 +44,7 @@ public class AuthFilter extends OncePerRequestFilter {
                     account.getSessionExpiresAt().isAfter(LocalDateTime.now())) {
                     var auth = new UsernamePasswordAuthenticationToken(
                             account, null,
-                            List.of(new SimpleGrantedAuthority("ROLE_STAFF"),
+                            List.of(new SimpleGrantedAuthority("ROLE_RECEPTIONIST"),
                                     new SimpleGrantedAuthority("ROLE_" + account.getRole().name())));
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }

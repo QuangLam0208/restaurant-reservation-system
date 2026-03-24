@@ -2,12 +2,15 @@ package com.hcmute.reservation.controller;
 
 import com.hcmute.reservation.dto.auth.StaffLoginRequest;
 import com.hcmute.reservation.dto.auth.StaffLoginResponse;
+import com.hcmute.reservation.dto.auth.StaffRegisterRequest;
 import com.hcmute.reservation.service.StaffAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/staff/auth")
@@ -29,6 +32,13 @@ public class StaffAuthController {
             staffAuthService.logout(token);
         }
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<Map<String, String>> registerStaff(@Valid @RequestBody StaffRegisterRequest req) {
+        staffAuthService.register(req);
+        return ResponseEntity.ok(Map.of("message",
+                "Tạo tài khoản " + req.getRole().name() + " thành công!"));
     }
 
     // Hàm bổ trợ để trích xuất token từ Header tùy chỉnh

@@ -126,10 +126,19 @@ public class SystemSchedulerService {
 
         for (Reservation res : overstayReservations) {
             try {
-                // 2. Bọc mỗi đơn vào 1 Transaction độc lập để chống lỗi "Chết chùm" (All-or-nothing)
                 transactionTemplate.executeWithoutResult(status -> {
-                    if (res.getTableMappings() != null) {
-                        res.getTableMappings().forEach(mapping -> {
+                    // ────── BUG FIX: Truy vấn lại đơn đặt bàn để gắn nó vào Session mới ──────
+                    Reservation fresh = reservationRepository.findById(res.getReservationId())
+                            .orElse(null);
+
+                    // Double-check: Lỡ trong 1 giây qua có ai đó check-out đơn này rồi thì bỏ qua
+                    if (fresh == null || fresh.getStatus() != ReservationStatus.SEATED) {
+                        return;
+                    }
+
+                    // ────── LƯU Ý: Gọi fresh.getTableMappings() thay vì res.getTableMappings() ──────
+                    if (fresh.getTableMappings() != null) {
+                        fresh.getTableMappings().forEach(mapping -> {
                             TableInfo table = mapping.getTableInfo();
 
                             // Chuyển trạng thái bàn vật lý sang OVERSTAY

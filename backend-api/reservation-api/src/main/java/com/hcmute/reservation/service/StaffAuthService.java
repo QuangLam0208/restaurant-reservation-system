@@ -2,6 +2,8 @@ package com.hcmute.reservation.service;
 
 import com.hcmute.reservation.dto.auth.StaffLoginRequest;
 import com.hcmute.reservation.dto.auth.StaffLoginResponse;
+import com.hcmute.reservation.dto.auth.StaffRegisterRequest;
+import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.UnauthorizedException;
 import com.hcmute.reservation.model.Account;
 import com.hcmute.reservation.repository.AccountRepository;
@@ -44,5 +46,22 @@ public class StaffAuthService {
             account.setSessionExpiresAt(null);
             accountRepository.save(account);
         });
+    }
+
+    @Transactional
+    public void register(StaffRegisterRequest req) {
+        // Kiểm tra xem username đã tồn tại chưa
+        if (accountRepository.findByUsername(req.getUsername()).isPresent()) {
+            throw new ConflictException("Tên đăng nhập đã tồn tại trong hệ thống.");
+        }
+
+        // Tạo tài khoản mới, mã hóa mật khẩu trước khi lưu
+        Account newAccount = Account.builder()
+                .username(req.getUsername())
+                .passwordHash(passwordEncoder.encode(req.getPassword()))
+                .role(req.getRole())
+                .build();
+
+        accountRepository.save(newAccount);
     }
 }
