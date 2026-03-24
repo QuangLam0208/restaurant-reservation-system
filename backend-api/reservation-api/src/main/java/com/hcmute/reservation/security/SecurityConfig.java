@@ -50,18 +50,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/reservations/availability").permitAll()
 
                 // ── CUSTOMER only ─────────────────────────────────────────────────
-                .requestMatchers(HttpMethod.POST, "/api/reservations/online").hasRole("CUSTOMER")
-                .requestMatchers(HttpMethod.DELETE, "/api/reservations/**").hasRole("CUSTOMER")
-
-                // ── STAFF only ────────────────────────────────────────────────────
-                .requestMatchers(HttpMethod.POST, "/api/reservations/walk-in").hasRole("RECEPTIONIST")
-                .requestMatchers(HttpMethod.POST, "/api/reservations/*/check-in").hasRole("RECEPTIONIST")
-                .requestMatchers(HttpMethod.POST, "/api/reservations/*/check-out").hasRole("RECEPTIONIST")
-                .requestMatchers(HttpMethod.POST, "/api/reservations/*/override").hasRole("RECEPTIONIST")
-                .requestMatchers("/api/waitlist/**").hasRole("RECEPTIONIST")
+                .requestMatchers(HttpMethod.POST, "/api/reservations/online").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/reservations/**").authenticated()
 
                 // ── MANAGER only ──────────────────────────────────────────────────
-                    .requestMatchers(HttpMethod.POST, "/api/staff/auth/register").hasRole("MANAGER")
+                .requestMatchers(HttpMethod.POST, "/api/staff/auth/register").hasRole("MANAGER")
                 .requestMatchers(HttpMethod.POST, "/api/tables").hasRole("MANAGER")
                 .requestMatchers(HttpMethod.PUT, "/api/tables/*").hasRole("MANAGER")
                 .requestMatchers(HttpMethod.DELETE, "/api/tables/*").hasRole("MANAGER")
@@ -71,6 +64,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/system/**").hasRole("MANAGER")
 
                 // ── STAFF or MANAGER ──────────────────────────────────────────────
+                .requestMatchers(HttpMethod.POST, "/api/reservations/walk-in").hasAnyRole("RECEPTIONIST", "MANAGER")
+                .requestMatchers(HttpMethod.POST, "/api/reservations/*/check-in").hasAnyRole("RECEPTIONIST", "MANAGER")
+                .requestMatchers(HttpMethod.POST, "/api/reservations/*/check-out").hasAnyRole("RECEPTIONIST", "MANAGER")
+                .requestMatchers(HttpMethod.POST, "/api/reservations/*/override").hasAnyRole("RECEPTIONIST", "MANAGER")
+                .requestMatchers("/api/waitlist/**").hasAnyRole("RECEPTIONIST", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/api/tables/floor-map").hasAnyRole("RECEPTIONIST", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/api/tables/available-windows").hasAnyRole("RECEPTIONIST", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/api/reservations/active").hasAnyRole("RECEPTIONIST", "MANAGER")
