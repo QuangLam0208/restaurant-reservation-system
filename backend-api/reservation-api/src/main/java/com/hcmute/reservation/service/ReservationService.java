@@ -17,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,6 +65,46 @@ public class ReservationService {
                 .build();
     }
 
+    // ────── Thuật toán ghép bàn thông minh ────────────────────────────
+    private List<TableInfo> findBestTableCombination(List<TableInfo> availableTables, int targetGuests) {
+        // Ép sắp xếp giảm dần (Ví dụ: 8, 4, 4) để chộp bàn to trước
+        List<TableInfo> sortedTables = availableTables.stream()
+                .sorted(Comparator.comparingInt(TableInfo::getCapacity).reversed())
+                .collect(Collectors.toList());
+
+        List<TableInfo> bestCombination = new ArrayList<>();
+        int[] bestDiff = {Integer.MAX_VALUE};
+        int[] minTables = {Integer.MAX_VALUE};
+
+        backtrack(sortedTables, targetGuests, 0, new ArrayList<>(), 0, bestCombination, bestDiff, minTables);
+
+        return bestCombination;
+    }
+
+    private void backtrack(List<TableInfo> tables, int target, int start,
+                           List<TableInfo> currentCombo, int currentSum,
+                           List<TableInfo> bestCombo, int[] bestDiff, int[] minTables) {
+        if (currentSum >= target) {
+            int diff = currentSum - target;
+            if (diff < bestDiff[0] || (diff == bestDiff[0] && currentCombo.size() < minTables[0])) {
+                bestDiff[0] = diff;
+                minTables[0] = currentCombo.size();
+                bestCombo.clear();
+                bestCombo.addAll(currentCombo);
+            }
+            return;
+        }
+
+        // Tối đa cho phép ghép 4 bàn
+        if (currentCombo.size() > 4) return;
+
+        for (int i = start; i < tables.size(); i++) {
+            currentCombo.add(tables.get(i));
+            backtrack(tables, target, i + 1, currentCombo, currentSum + tables.get(i).getCapacity(), bestCombo, bestDiff, minTables);
+            currentCombo.remove(currentCombo.size() - 1);
+        }
+    }
+
     // ────── 3.2.2 Online booking ──────────────────────────────────────
 
     @Transactional
@@ -95,18 +132,17 @@ public class ReservationService {
             List<TableInfo> allAvailable = tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE)
                     .stream()
                     .filter(t -> !t.isSoftLocked() && !occupiedTableIds.contains(t.getTableId()))
-                    .filter(t -> t.getCapacity() < req.getGuestCount())
-                    .sorted((t1, t2) -> Integer.compare(t2.getCapacity(), t1.getCapacity())) // Sort DESC
                     .collect(Collectors.toList());
 
-            int total = 0;
             for (TableInfo t : allAvailable) {
-                selectedTables.add(t);
-                total += t.getCapacity();
-                if (total >= req.getGuestCount()) break;
+                System.out.print(t.getCapacity() + " ");
             }
-            if (total < req.getGuestCount()) {
-                throw new BadRequestException("Hiện không có bàn hoặc tổ hợp bàn trống phù hợp. Vui lòng chọn giờ khác.");
+
+            // Gọi "Bộ não" ghép bàn
+            selectedTables = findBestTableCombination(allAvailable, req.getGuestCount());
+
+            if (selectedTables.isEmpty()) {
+                throw new BadRequestException("Hiện không có tổ hợp bàn trống phù hợp để ghép cho " + req.getGuestCount() + " người. Vui lòng chọn giờ khác.");
             }
         }
 
