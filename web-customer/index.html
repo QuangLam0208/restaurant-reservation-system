@@ -10,11 +10,11 @@
 <body>
 
 <header id="main-header">
-    <a href="index.html" class="logo">San — Lorenzo</a>
+    <a href="index.html" class="logo">SAN-LORENZO</a>
     <nav class="nav-links">
         <a href="#about" class="nav-link">About</a>
-        <a href="#" class="nav-link auth-action-btn" id="header-auth-btn">Login</a>
-        <a href="#" class="nav-link hidden" id="logout-btn">Sign Out</a>
+        <a href="#" class="nav-link auth-action-btn" id="header-auth-btn" style="color: var(--gold); font-weight: bold;">Login</a>
+        <a href="#" class="nav-link hidden" id="logout-btn">Logout</a>
     </nav>
 </header>
 
@@ -76,7 +76,7 @@
         <div class="grid-3">
             <div class="fade-in">
                 <h3>Address</h3>
-                <address>770 Scalinata di Trinita dei Monti<br>Rome, Italy 11472</address>
+                <address>1 Vo Van Ngan St<br>Linh Chieu Ward, Thu Duc City, Ho Chi Minh City</address>
             </div>
             <div class="fade-in" style="transition-delay: 0.2s;">
                 <h3>Opening Hours</h3>
@@ -85,7 +85,7 @@
             </div>
             <div class="fade-in" style="transition-delay: 0.4s;">
                 <h3>Contact Us</h3>
-                <p>info@examplesite.com</p>
+                <p>minhminh20925@gmail.com</p>
                 <p>123-456-7890</p>
             </div>
         </div>
@@ -97,7 +97,7 @@
 
 <div id="login-modal" class="modal-overlay hidden">
     <div class="modal-container fade-in appear">
-        <button id="close-modal" class="close-btn">&times;</button>
+        <button class="close-btn">&times;</button>
         <div class="form-card" style="margin: 0; box-shadow: none;">
             <div class="text-center" style="margin-bottom: 2rem;">
                 <h2 class="section-title" style="margin-bottom: 0.5rem; font-size: 2rem;">Welcome</h2>
@@ -108,7 +108,7 @@
                     <label class="form-label">Email *</label>
                     <input type="email" id="login-email" class="form-control" placeholder="minh@gmail.com" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 10px;">
                     <label class="form-label">Password *</label>
                     <div class="password-wrapper">
                         <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
@@ -116,6 +116,9 @@
                             <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
                     </div>
+                </div>
+                <div style="text-align: right; margin-bottom: 24px;">
+                    <a href="#" id="show-forgot-btn" style="color: var(--text-main); font-size: 0.85rem; text-decoration: underline;">Forgot password?</a>
                 </div>
                 <button type="submit" class="btn" style="width: 100%; padding: 16px; font-size: 1.1rem;">Login</button>
                 <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem;">
@@ -128,7 +131,7 @@
 
 <div id="register-modal" class="modal-overlay hidden">
     <div class="modal-container fade-in appear" style="max-height: 90vh; overflow-y: auto;">
-        <button id="close-register-modal" class="close-btn">&times;</button>
+        <button class="close-btn">&times;</button>
         <div class="form-card" style="margin: 0; box-shadow: none;">
             <div class="text-center" style="margin-bottom: 2rem;">
                 <h2 class="section-title" style="margin-bottom: 0.5rem; font-size: 2rem;">Create Account</h2>
@@ -168,6 +171,61 @@
                 <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem;">
                     Already have an account? <a href="#" id="show-login-btn" style="color: var(--accent); font-weight: bold;">Login here</a>
                 </p>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="forgot-modal" class="modal-overlay hidden">
+    <div class="modal-container fade-in appear">
+        <button class="close-btn">&times;</button>
+        <div class="form-card" style="margin: 0; box-shadow: none;">
+            <div class="text-center" style="margin-bottom: 2rem;">
+                <h2 class="section-title" style="margin-bottom: 0.5rem; font-size: 2rem;">Reset Password</h2>
+                <p>Enter your email to receive a reset link</p>
+            </div>
+            <form id="forgot-form">
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" id="forgot-email" class="form-control" placeholder="minh@gmail.com" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%; padding: 16px; font-size: 1.1rem;">Continue</button>
+                <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem;">
+                    Remembered? <a href="#" id="back-to-login-btn" style="color: var(--accent); font-weight: bold;">Back to Login</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="reset-modal" class="modal-overlay hidden">
+    <div class="modal-container fade-in appear">
+        <button class="close-btn">&times;</button>
+        <div class="form-card" style="margin: 0; box-shadow: none;">
+            <div class="text-center" style="margin-bottom: 2rem;">
+                <h2 class="section-title" style="margin-bottom: 0.5rem; font-size: 2rem;">New Password</h2>
+                <p>Please create a new password</p>
+            </div>
+            <form id="reset-form">
+                <div class="form-group">
+                    <label class="form-label">New Password *</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="reset-password" class="form-control" placeholder="••••••••" required>
+                        <button type="button" class="toggle-password" tabindex="-1" aria-label="Toggle password visibility">
+                            <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password *</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="reset-confirm" class="form-control" placeholder="••••••••" required>
+                        <button type="button" class="toggle-password" tabindex="-1" aria-label="Toggle password visibility">
+                            <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn" style="width: 100%; padding: 16px; font-size: 1.1rem;">Update Password</button>
             </form>
         </div>
     </div>
