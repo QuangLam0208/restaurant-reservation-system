@@ -171,7 +171,7 @@ public class WaitlistService {
 
     private void applySuggestionToWalkInRequest(WalkInRequest walkInReq, AvailableWindowResponse suggestion) {
         if (suggestion.getTableId() != null) {
-            walkInReq.setTableId(suggestion.getTableId());
+            walkInReq.setTableId(List.of(suggestion.getTableId()));
         } else if (suggestion.getMergeCandidateIds() != null && !suggestion.getMergeCandidateIds().isEmpty()) {
             walkInReq.setMergeTables(true);
         }
