@@ -54,12 +54,12 @@ namespace reservation_winforms.Services
     {
         private static readonly string BaseUrl = "http://localhost:8081/api/staff/auth";
         private static readonly HttpClient client = new HttpClient();
+        public static string CurrentToken { get; private set; }
+        public static string CurrentRole { get; private set; }
 
         public async Task<StaffLoginResponse> LoginAsync(string username, string password)
         {
             var loginData = new StaffLoginRequest { Username = username, Password = password };
-
-            // Dùng JsonConvert của Newtonsoft
             var json = JsonConvert.SerializeObject(loginData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
@@ -69,13 +69,20 @@ namespace reservation_winforms.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var responseString = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<StaffLoginResponse>(responseString);
+                    var result = JsonConvert.DeserializeObject<StaffLoginResponse>(responseString);
+
+                    // LƯU LẠI TOKEN VÀ CHỨC VỤ SAU KHI ĐĂNG NHẬP THÀNH CÔNG
+                    CurrentToken = result.SessionToken;
+                    CurrentRole = result.Role;
+
+                    // Gắn token vào Header để dùng cho mọi API gửi đi sau này (như API tạo tài khoản)
+                    client.DefaultRequestHeaders.Clear();
+                    client.DefaultRequestHeaders.Add("X-Staff-Token", CurrentToken);
+
+                    return result;
                 }
             }
-            catch (Exception)
-            {
-                // Bỏ qua lỗi kết nối (nếu Server chưa bật)
-            }
+            catch (Exception) { }
             return null;
         }
 
@@ -90,16 +97,10 @@ namespace reservation_winforms.Services
                 var response = await client.PostAsync($"{BaseUrl}/register", content);
                 var responseString = await response.Content.ReadAsStringAsync();
 
-                if (response.IsSuccessStatusCode)
-                {
-                    return "Đăng ký thành công!";
-                }
+                if (response.IsSuccessStatusCode) return "Tạo tài khoản thành công!";
                 return "Lỗi server: " + responseString;
             }
-            catch (Exception ex)
-            {
-                return "Lỗi kết nối tới Server: " + ex.Message;
-            }
+            catch (Exception ex) { return "Lỗi kết nối: " + ex.Message; }
         }
     }
 }

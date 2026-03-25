@@ -12,7 +12,7 @@ namespace reservation_winforms.Forms
 
             // Gắn sự kiện Click cho cả 3 nút
             btnLogin.Click += BtnLogin_Click;
-            btnRegister.Click += btnRegister_Click;// Gọi hàm Đăng ký
+            //btnRegister.Click += btnRegister_Click;// Gọi hàm Đăng ký
             btnExit.Click += btnExit_Click;         // Gọi hàm Thoát
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using reservation_winforms.Services;
 
 namespace reservation_winforms.Forms
 {
@@ -22,6 +23,32 @@ namespace reservation_winforms.Forms
 
             // 3. Nút Đăng xuất
             btnLogout.Click += BtnLogout_Click;
+            btnLogout.Click += BtnLogout_Click;
+
+            // ==========================================
+            // THÊM NÚT TẠO TÀI KHOẢN DÀNH RIÊNG CHO MANAGER
+            // ==========================================
+            if (ApiService.CurrentRole == "MANAGER")
+            {
+                Button btnCreateStaff = new Button();
+                btnCreateStaff.Text = "Tạo TK Lễ Tân";
+                btnCreateStaff.Size = new System.Drawing.Size(150, 40);
+                btnCreateStaff.Location = new System.Drawing.Point(20, 500); // Bạn có thể chỉnh sửa tọa độ (X, Y) để đặt nút ở vị trí đẹp trên thanh menu
+                btnCreateStaff.BackColor = System.Drawing.Color.MediumSeaGreen;
+                btnCreateStaff.ForeColor = System.Drawing.Color.White;
+                btnCreateStaff.Cursor = Cursors.Hand;
+
+                // Khi bấm nút này sẽ mở form đăng ký
+                btnCreateStaff.Click += (s, e) =>
+                {
+                    RegisterForm register = new RegisterForm();
+                    register.ShowDialog();
+                };
+
+                // Thêm nút vào Form
+                this.Controls.Add(btnCreateStaff);
+                btnCreateStaff.BringToFront();
+            }
         }
 
         // =========================================================
@@ -86,5 +113,6 @@ namespace reservation_winforms.Forms
                 this.Close(); // Đóng Dashboard. Code bên LoginForm sẽ tự động hiện lại màn hình Login.
             }
         }
+
     }
 }
