@@ -45,7 +45,7 @@ public class SecurityConfig {
 //                    "/api/auth/reset-password"
 //                ).permitAll()
                             // ── Public: staff auth (POS login) ────────────────────────────────
-                            .requestMatchers("/api/staff/auth/login", "/api/staff/auth/register").permitAll()
+//                            .requestMatchers("/api/staff/auth/login", "/api/staff/auth/register").permitAll()
                 // ── Public: staff auth (POS login) ────────────────────────────────
                 .requestMatchers("/api/staff/auth/login").permitAll()
                 // ── Public: availability check ────────────────────────────────────
@@ -56,7 +56,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/reservations/**").authenticated()
 
                 // ── MANAGER only ──────────────────────────────────────────────────
-//                .requestMatchers(HttpMethod.POST, "/api/staff/auth/register").hasRole("MANAGER")
+                .requestMatchers(HttpMethod.POST, "/api/staff/auth/register").hasRole("MANAGER")
                 .requestMatchers(HttpMethod.POST, "/api/tables").hasRole("MANAGER")
                 .requestMatchers(HttpMethod.PUT, "/api/tables/*").hasRole("MANAGER")
                 .requestMatchers(HttpMethod.DELETE, "/api/tables/*").hasRole("MANAGER")
