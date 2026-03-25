@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using reservation_winforms.Services; // Chứa ApiService
 
 namespace reservation_winforms.Forms
 {
@@ -9,35 +10,73 @@ namespace reservation_winforms.Forms
         {
             InitializeComponent();
 
-            // Gắn sự kiện click cho nút Đăng nhập
+            // Gắn sự kiện Click cho cả 3 nút
             btnLogin.Click += BtnLogin_Click;
+            btnRegister.Click += btnRegister_Click;// Gọi hàm Đăng ký
+            btnExit.Click += btnExit_Click;         // Gọi hàm Thoát
         }
 
-        private void BtnLogin_Click(object sender, EventArgs e)
+
+        // ==========================================
+        // 1. XỬ LÝ NÚT ĐĂNG NHẬP (GỌI API)
+        // ==========================================
+        private async void BtnLogin_Click(object sender, EventArgs e)
         {
-            // 1. Tạo tài khoản mẫu cứng (Hardcode)
             string user = txtUsername.Text.Trim();
             string pass = txtPassword.Text.Trim();
 
-            if (user == "admin" && pass == "123")
+            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
             {
-                // 2. Khởi tạo màn hình Dashboard
+                lblMessage.Text = "Vui lòng nhập tên đăng nhập và mật khẩu!";
+                return;
+            }
+
+            // Hiệu ứng đang xử lý
+            btnLogin.Enabled = false;
+            btnLogin.Text = "Đang kiểm tra...";
+            lblMessage.Text = "";
+
+            var apiService = new ApiService();
+            var response = await apiService.LoginAsync(user, pass);
+
+            btnLogin.Enabled = true;
+            btnLogin.Text = "ĐĂNG NHẬP";
+
+            if (response != null)
+            {
+                // Đăng nhập thành công, mở Dashboard
                 MainDashboardForm dashboard = new MainDashboardForm();
-
-                // 3. Ẩn form Login
                 this.Hide();
-
-                // 4. Mở Dashboard và chờ người dùng thao tác
                 dashboard.ShowDialog();
 
-                // 5. Khi Dashboard bị đóng (do ấn Đăng xuất), Code sẽ chạy tiếp xuống đây
-                txtPassword.Clear(); // Xóa pass cũ
-                this.Show();         // Hiện lại màn hình Login
+                // Sau khi đăng xuất (tắt Dashboard), quay lại đây
+                txtPassword.Clear();
+                this.Show();
             }
             else
             {
-                MessageBox.Show("Sai tên đăng nhập hoặc mật khẩu! (Dùng admin/123)", "Lỗi đăng nhập", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                lblMessage.Text = "Sai tên đăng nhập hoặc mật khẩu!";
             }
         }
+
+        private void btnRegister_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+
+            // 2. Mở form Đăng ký lên và chờ người dùng thao tác
+            RegisterForm register = new RegisterForm();
+            register.ShowDialog();
+
+            // 3. Sau khi form Đăng ký bị đóng (bấm Hủy hoặc Đăng ký thành công), 
+            // code sẽ chạy tiếp xuống đây và hiện lại form Đăng nhập
+            this.Show();
+        }
+
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+
     }
 }
