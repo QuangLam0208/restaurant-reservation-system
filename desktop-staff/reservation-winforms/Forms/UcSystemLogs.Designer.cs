@@ -49,9 +49,8 @@
             this.pnlHeader.Controls.Add(this.lblTitle);
             this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlHeader.Location = new System.Drawing.Point(0, 0);
-            this.pnlHeader.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlHeader.Name = "pnlHeader";
-            this.pnlHeader.Size = new System.Drawing.Size(1530, 92);
+            this.pnlHeader.Size = new System.Drawing.Size(1020, 60);
             this.pnlHeader.TabIndex = 5;
             // 
             // lblTitle
@@ -59,10 +58,9 @@
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblTitle.Location = new System.Drawing.Point(30, 22);
-            this.lblTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblTitle.Location = new System.Drawing.Point(20, 14);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(646, 48);
+            this.lblTitle.Size = new System.Drawing.Size(541, 41);
             this.lblTitle.TabIndex = 0;
             this.lblTitle.Text = "NHẬT KÝ HỆ THỐNG (SYSTEM LOGS)";
             // 
@@ -78,19 +76,17 @@
             this.pnlFilter.Controls.Add(this.dtpFrom);
             this.pnlFilter.Controls.Add(this.lblFrom);
             this.pnlFilter.Controls.Add(this.lblFilterTitle);
-            this.pnlFilter.Location = new System.Drawing.Point(30, 123);
-            this.pnlFilter.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.pnlFilter.Location = new System.Drawing.Point(20, 80);
             this.pnlFilter.Name = "pnlFilter";
-            this.pnlFilter.Size = new System.Drawing.Size(1469, 199);
+            this.pnlFilter.Size = new System.Drawing.Size(980, 130);
             this.pnlFilter.TabIndex = 6;
             // 
             // txtSearch
             // 
             this.txtSearch.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtSearch.Location = new System.Drawing.Point(276, 115);
-            this.txtSearch.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.txtSearch.Location = new System.Drawing.Point(184, 75);
             this.txtSearch.Name = "txtSearch";
-            this.txtSearch.Size = new System.Drawing.Size(772, 39);
+            this.txtSearch.Size = new System.Drawing.Size(516, 34);
             this.txtSearch.TabIndex = 7;
             this.txtSearch.Text = "Nhập tên nhân viên hoặc mã đơn...";
             // 
@@ -99,10 +95,9 @@
             this.lblSearch.AutoSize = true;
             this.lblSearch.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblSearch.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblSearch.Location = new System.Drawing.Point(30, 120);
-            this.lblSearch.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblSearch.Location = new System.Drawing.Point(20, 78);
             this.lblSearch.Name = "lblSearch";
-            this.lblSearch.Size = new System.Drawing.Size(118, 32);
+            this.lblSearch.Size = new System.Drawing.Size(95, 28);
             this.lblSearch.TabIndex = 6;
             this.lblSearch.Text = "Tìm kiếm:";
             // 
@@ -114,10 +109,9 @@
             this.btnFilter.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFilter.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnFilter.ForeColor = System.Drawing.Color.White;
-            this.btnFilter.Location = new System.Drawing.Point(1230, 106);
-            this.btnFilter.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnFilter.Location = new System.Drawing.Point(820, 69);
             this.btnFilter.Name = "btnFilter";
-            this.btnFilter.Size = new System.Drawing.Size(210, 62);
+            this.btnFilter.Size = new System.Drawing.Size(140, 40);
             this.btnFilter.TabIndex = 5;
             this.btnFilter.Text = "LỌC DỮ LIỆU";
             this.btnFilter.UseVisualStyleBackColor = false;
@@ -127,10 +121,9 @@
             this.dtpTo.CalendarFont = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtpTo.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtpTo.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpTo.Location = new System.Drawing.Point(810, 37);
-            this.dtpTo.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.dtpTo.Location = new System.Drawing.Point(540, 24);
             this.dtpTo.Name = "dtpTo";
-            this.dtpTo.Size = new System.Drawing.Size(238, 39);
+            this.dtpTo.Size = new System.Drawing.Size(160, 34);
             this.dtpTo.TabIndex = 4;
             // 
             // lblTo
@@ -138,10 +131,9 @@
             this.lblTo.AutoSize = true;
             this.lblTo.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblTo.Location = new System.Drawing.Point(675, 46);
-            this.lblTo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblTo.Location = new System.Drawing.Point(450, 30);
             this.lblTo.Name = "lblTo";
-            this.lblTo.Size = new System.Drawing.Size(122, 32);
+            this.lblTo.Size = new System.Drawing.Size(99, 28);
             this.lblTo.TabIndex = 3;
             this.lblTo.Text = "Đến ngày:";
             // 
@@ -150,10 +142,9 @@
             this.dtpFrom.CalendarFont = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtpFrom.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtpFrom.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpFrom.Location = new System.Drawing.Point(390, 37);
-            this.dtpFrom.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.dtpFrom.Location = new System.Drawing.Point(260, 24);
             this.dtpFrom.Name = "dtpFrom";
-            this.dtpFrom.Size = new System.Drawing.Size(238, 39);
+            this.dtpFrom.Size = new System.Drawing.Size(160, 34);
             this.dtpFrom.TabIndex = 2;
             // 
             // lblFrom
@@ -161,10 +152,9 @@
             this.lblFrom.AutoSize = true;
             this.lblFrom.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblFrom.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblFrom.Location = new System.Drawing.Point(270, 46);
-            this.lblFrom.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblFrom.Location = new System.Drawing.Point(180, 30);
             this.lblFrom.Name = "lblFrom";
-            this.lblFrom.Size = new System.Drawing.Size(105, 32);
+            this.lblFrom.Size = new System.Drawing.Size(86, 28);
             this.lblFrom.TabIndex = 1;
             this.lblFrom.Text = "Từ ngày:";
             // 
@@ -173,10 +163,9 @@
             this.lblFilterTitle.AutoSize = true;
             this.lblFilterTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblFilterTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
-            this.lblFilterTitle.Location = new System.Drawing.Point(30, 42);
-            this.lblFilterTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblFilterTitle.Location = new System.Drawing.Point(20, 27);
             this.lblFilterTitle.Name = "lblFilterTitle";
-            this.lblFilterTitle.Size = new System.Drawing.Size(195, 38);
+            this.lblFilterTitle.Size = new System.Drawing.Size(169, 32);
             this.lblFilterTitle.TabIndex = 0;
             this.lblFilterTitle.Text = "Thời gian lọc:";
             // 
@@ -186,11 +175,10 @@
             this.pnlList.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlList.Controls.Add(this.dgvLogs);
             this.pnlList.Controls.Add(this.lblListTitle);
-            this.pnlList.Location = new System.Drawing.Point(30, 354);
-            this.pnlList.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.pnlList.Location = new System.Drawing.Point(20, 230);
             this.pnlList.Name = "pnlList";
-            this.pnlList.Padding = new System.Windows.Forms.Padding(30, 31, 30, 31);
-            this.pnlList.Size = new System.Drawing.Size(1469, 737);
+            this.pnlList.Padding = new System.Windows.Forms.Padding(20, 20, 20, 20);
+            this.pnlList.Size = new System.Drawing.Size(980, 480);
             this.pnlList.TabIndex = 8;
             // 
             // dgvLogs
@@ -224,15 +212,14 @@
             this.dgvLogs.DefaultCellStyle = dataGridViewCellStyle2;
             this.dgvLogs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvLogs.EnableHeadersVisualStyles = false;
-            this.dgvLogs.Location = new System.Drawing.Point(30, 92);
-            this.dgvLogs.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.dgvLogs.Location = new System.Drawing.Point(20, 67);
             this.dgvLogs.Name = "dgvLogs";
             this.dgvLogs.ReadOnly = true;
             this.dgvLogs.RowHeadersVisible = false;
             this.dgvLogs.RowHeadersWidth = 62;
             this.dgvLogs.RowTemplate.Height = 55;
             this.dgvLogs.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvLogs.Size = new System.Drawing.Size(1407, 612);
+            this.dgvLogs.Size = new System.Drawing.Size(938, 391);
             this.dgvLogs.TabIndex = 2;
             // 
             // colTime
@@ -273,25 +260,23 @@
             this.lblListTitle.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblListTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblListTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblListTitle.Location = new System.Drawing.Point(30, 31);
-            this.lblListTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblListTitle.Location = new System.Drawing.Point(20, 20);
             this.lblListTitle.Name = "lblListTitle";
-            this.lblListTitle.Padding = new System.Windows.Forms.Padding(0, 0, 0, 23);
-            this.lblListTitle.Size = new System.Drawing.Size(376, 61);
+            this.lblListTitle.Padding = new System.Windows.Forms.Padding(0, 0, 0, 15);
+            this.lblListTitle.Size = new System.Drawing.Size(321, 47);
             this.lblListTitle.TabIndex = 1;
             this.lblListTitle.Text = "DANH SÁCH LỊCH SỬ LOGS";
             // 
             // UcSystemLogs
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(246)))), ((int)(((byte)(250)))));
             this.Controls.Add(this.pnlList);
             this.Controls.Add(this.pnlFilter);
             this.Controls.Add(this.pnlHeader);
-            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "UcSystemLogs";
-            this.Size = new System.Drawing.Size(1530, 1122);
+            this.Size = new System.Drawing.Size(1020, 729);
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
             this.pnlFilter.ResumeLayout(false);

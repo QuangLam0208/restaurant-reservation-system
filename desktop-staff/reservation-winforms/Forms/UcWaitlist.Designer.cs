@@ -52,9 +52,8 @@
             this.pnlHeader.Controls.Add(this.lblTitle);
             this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlHeader.Location = new System.Drawing.Point(0, 0);
-            this.pnlHeader.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlHeader.Name = "pnlHeader";
-            this.pnlHeader.Size = new System.Drawing.Size(1530, 92);
+            this.pnlHeader.Size = new System.Drawing.Size(1020, 60);
             this.pnlHeader.TabIndex = 2;
             // 
             // lblTitle
@@ -62,10 +61,9 @@
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblTitle.Location = new System.Drawing.Point(30, 22);
-            this.lblTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblTitle.Location = new System.Drawing.Point(20, 14);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(518, 48);
+            this.lblTitle.Size = new System.Drawing.Size(437, 41);
             this.lblTitle.TabIndex = 0;
             this.lblTitle.Text = "DANH SÁCH CHỜ (WAITLIST)";
             // 
@@ -82,11 +80,10 @@
             this.pnlAddWaitlist.Controls.Add(this.lblName);
             this.pnlAddWaitlist.Controls.Add(this.lblAddTitle);
             this.pnlAddWaitlist.Dock = System.Windows.Forms.DockStyle.Left;
-            this.pnlAddWaitlist.Location = new System.Drawing.Point(0, 92);
-            this.pnlAddWaitlist.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.pnlAddWaitlist.Location = new System.Drawing.Point(0, 60);
             this.pnlAddWaitlist.Name = "pnlAddWaitlist";
-            this.pnlAddWaitlist.Padding = new System.Windows.Forms.Padding(30, 31, 30, 31);
-            this.pnlAddWaitlist.Size = new System.Drawing.Size(347, 1030);
+            this.pnlAddWaitlist.Padding = new System.Windows.Forms.Padding(20, 20, 20, 20);
+            this.pnlAddWaitlist.Size = new System.Drawing.Size(232, 669);
             this.pnlAddWaitlist.TabIndex = 3;
             // 
             // btnAdd
@@ -97,10 +94,9 @@
             this.btnAdd.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAdd.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnAdd.ForeColor = System.Drawing.Color.White;
-            this.btnAdd.Location = new System.Drawing.Point(30, 554);
-            this.btnAdd.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnAdd.Location = new System.Drawing.Point(20, 360);
             this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(286, 77);
+            this.btnAdd.Size = new System.Drawing.Size(191, 50);
             this.btnAdd.TabIndex = 7;
             this.btnAdd.Text = "THÊM VÀO HÀNG ĐỢI";
             this.btnAdd.UseVisualStyleBackColor = false;
@@ -108,10 +104,9 @@
             // nudGuests
             // 
             this.nudGuests.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudGuests.Location = new System.Drawing.Point(30, 431);
-            this.nudGuests.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.nudGuests.Location = new System.Drawing.Point(20, 280);
             this.nudGuests.Name = "nudGuests";
-            this.nudGuests.Size = new System.Drawing.Size(286, 45);
+            this.nudGuests.Size = new System.Drawing.Size(191, 39);
             this.nudGuests.TabIndex = 6;
             this.nudGuests.Value = new decimal(new int[] {
             2,
@@ -124,20 +119,18 @@
             this.lblGuests.AutoSize = true;
             this.lblGuests.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblGuests.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblGuests.Location = new System.Drawing.Point(30, 385);
-            this.lblGuests.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblGuests.Location = new System.Drawing.Point(20, 250);
             this.lblGuests.Name = "lblGuests";
-            this.lblGuests.Size = new System.Drawing.Size(185, 32);
+            this.lblGuests.Size = new System.Drawing.Size(152, 28);
             this.lblGuests.TabIndex = 5;
             this.lblGuests.Text = "Số lượng khách:";
             // 
             // txtPhone
             // 
             this.txtPhone.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtPhone.Location = new System.Drawing.Point(30, 292);
-            this.txtPhone.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.txtPhone.Location = new System.Drawing.Point(20, 190);
             this.txtPhone.Name = "txtPhone";
-            this.txtPhone.Size = new System.Drawing.Size(284, 45);
+            this.txtPhone.Size = new System.Drawing.Size(191, 39);
             this.txtPhone.TabIndex = 4;
             // 
             // lblPhone
@@ -145,20 +138,18 @@
             this.lblPhone.AutoSize = true;
             this.lblPhone.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblPhone.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblPhone.Location = new System.Drawing.Point(30, 246);
-            this.lblPhone.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblPhone.Location = new System.Drawing.Point(20, 160);
             this.lblPhone.Name = "lblPhone";
-            this.lblPhone.Size = new System.Drawing.Size(192, 32);
+            this.lblPhone.Size = new System.Drawing.Size(157, 28);
             this.lblPhone.TabIndex = 3;
             this.lblPhone.Text = "Số điện thoại (*):";
             // 
             // txtName
             // 
             this.txtName.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtName.Location = new System.Drawing.Point(30, 154);
-            this.txtName.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.txtName.Location = new System.Drawing.Point(20, 100);
             this.txtName.Name = "txtName";
-            this.txtName.Size = new System.Drawing.Size(284, 45);
+            this.txtName.Size = new System.Drawing.Size(191, 39);
             this.txtName.TabIndex = 2;
             // 
             // lblName
@@ -166,10 +157,9 @@
             this.lblName.AutoSize = true;
             this.lblName.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblName.Location = new System.Drawing.Point(30, 108);
-            this.lblName.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblName.Location = new System.Drawing.Point(20, 70);
             this.lblName.Name = "lblName";
-            this.lblName.Size = new System.Drawing.Size(178, 32);
+            this.lblName.Size = new System.Drawing.Size(143, 28);
             this.lblName.TabIndex = 1;
             this.lblName.Text = "Tên gọi nhớ (*):";
             // 
@@ -178,10 +168,9 @@
             this.lblAddTitle.AutoSize = true;
             this.lblAddTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblAddTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
-            this.lblAddTitle.Location = new System.Drawing.Point(30, 31);
-            this.lblAddTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblAddTitle.Location = new System.Drawing.Point(20, 20);
             this.lblAddTitle.Name = "lblAddTitle";
-            this.lblAddTitle.Size = new System.Drawing.Size(267, 38);
+            this.lblAddTitle.Size = new System.Drawing.Size(230, 32);
             this.lblAddTitle.TabIndex = 0;
             this.lblAddTitle.Text = "THÊM KHÁCH MỚI";
             // 
@@ -191,11 +180,10 @@
             this.pnlList.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlList.Controls.Add(this.dgvWaitlist);
             this.pnlList.Controls.Add(this.lblListTitle);
-            this.pnlList.Location = new System.Drawing.Point(368, 123);
-            this.pnlList.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.pnlList.Location = new System.Drawing.Point(245, 80);
             this.pnlList.Name = "pnlList";
-            this.pnlList.Padding = new System.Windows.Forms.Padding(30, 31, 30, 31);
-            this.pnlList.Size = new System.Drawing.Size(1131, 953);
+            this.pnlList.Padding = new System.Windows.Forms.Padding(20, 20, 20, 20);
+            this.pnlList.Size = new System.Drawing.Size(755, 620);
             this.pnlList.TabIndex = 4;
             // 
             // dgvWaitlist
@@ -231,15 +219,14 @@
             this.dgvWaitlist.DefaultCellStyle = dataGridViewCellStyle2;
             this.dgvWaitlist.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvWaitlist.EnableHeadersVisualStyles = false;
-            this.dgvWaitlist.Location = new System.Drawing.Point(30, 92);
-            this.dgvWaitlist.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.dgvWaitlist.Location = new System.Drawing.Point(20, 67);
             this.dgvWaitlist.Name = "dgvWaitlist";
             this.dgvWaitlist.ReadOnly = true;
             this.dgvWaitlist.RowHeadersVisible = false;
             this.dgvWaitlist.RowHeadersWidth = 62;
             this.dgvWaitlist.RowTemplate.Height = 50;
             this.dgvWaitlist.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvWaitlist.Size = new System.Drawing.Size(1069, 828);
+            this.dgvWaitlist.Size = new System.Drawing.Size(713, 531);
             this.dgvWaitlist.TabIndex = 2;
             // 
             // colStt
@@ -300,25 +287,23 @@
             this.lblListTitle.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblListTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblListTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblListTitle.Location = new System.Drawing.Point(30, 31);
-            this.lblListTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblListTitle.Location = new System.Drawing.Point(20, 20);
             this.lblListTitle.Name = "lblListTitle";
-            this.lblListTitle.Padding = new System.Windows.Forms.Padding(0, 0, 0, 23);
-            this.lblListTitle.Size = new System.Drawing.Size(374, 61);
+            this.lblListTitle.Padding = new System.Windows.Forms.Padding(0, 0, 0, 15);
+            this.lblListTitle.Size = new System.Drawing.Size(323, 47);
             this.lblListTitle.TabIndex = 1;
             this.lblListTitle.Text = "ĐANG CHỜ (2 Khách hàng)";
             // 
             // UcWaitlist
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(246)))), ((int)(((byte)(250)))));
             this.Controls.Add(this.pnlList);
             this.Controls.Add(this.pnlAddWaitlist);
             this.Controls.Add(this.pnlHeader);
-            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "UcWaitlist";
-            this.Size = new System.Drawing.Size(1530, 1122);
+            this.Size = new System.Drawing.Size(1020, 729);
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
             this.pnlAddWaitlist.ResumeLayout(false);
