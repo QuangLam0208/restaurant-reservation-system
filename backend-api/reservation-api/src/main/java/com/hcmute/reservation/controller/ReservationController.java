@@ -1,9 +1,6 @@
 package com.hcmute.reservation.controller;
 
-import com.hcmute.reservation.model.dto.reservation.ChangeTableRequest;
-import com.hcmute.reservation.model.dto.reservation.OnlineReservationRequest;
-import com.hcmute.reservation.model.dto.reservation.ReservationResponse;
-import com.hcmute.reservation.model.dto.reservation.WalkInRequest;
+import com.hcmute.reservation.model.dto.reservation.*;
 import com.hcmute.reservation.service.AvailabilityService;
 import com.hcmute.reservation.service.ReservationService;
 import jakarta.validation.Valid;
@@ -87,12 +84,45 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.cancelPayment(id));
     }
 
-    /** POST /api/reservations/walk-in */
-    @PostMapping("/walk-in")
-    public ResponseEntity<ReservationResponse> createWalkIn(@Valid @RequestBody WalkInRequest req) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(reservationService.createWalkIn(req));
+    /**
+     * POST /api/reservations/walk-in/suggest
+     Tìm bàn gợi ý, soft-lock lại, trả về WalkInSuggestionResponse.
+     */
+    @PostMapping("/walk-in/suggest")
+    public ResponseEntity<WalkInSuggestionResponse> suggestWalkIn(
+            @Valid @RequestBody WalkInRequest req) {
+        return ResponseEntity.ok(reservationService.suggestWalkIn(req));
     }
+
+    /**
+     * POST /api/reservations/walk-in/confirm/{suggestionId}
+     Lễ tân xác nhận → tạo reservation chính thức (SEATED) + OCCUPIED.
+     */
+    @PostMapping("/walk-in/confirm/{suggestionId}")
+    public ResponseEntity<ReservationResponse> confirmWalkIn(
+            @PathVariable Long suggestionId) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(reservationService.confirmWalkIn(suggestionId));
+    }
+
+    /**
+     * POST /api/reservations/walk-in/cancel-suggestion/{suggestionId}
+    Lễ tân hủy gợi ý → giải phóng soft-lock, hủy reservation tạm.
+     * Idempotent: gọi nhiều lần không gây lỗi.
+     */
+    @PostMapping("/walk-in/cancel-suggestion/{suggestionId}")
+    public ResponseEntity<Map<String, String>> cancelWalkInSuggestion(
+            @PathVariable Long suggestionId) {
+        reservationService.cancelWalkInSuggestion(suggestionId);
+        return ResponseEntity.ok(Map.of("message", "Da huy goi y ban thanh cong."));
+    }
+
+    /** POST /api/reservations/walk-in */
+//    @PostMapping("/walk-in")
+//    public ResponseEntity<ReservationResponse> createWalkIn(@Valid @RequestBody WalkInRequest req) {
+//        return ResponseEntity.status(HttpStatus.CREATED)
+//                .body(reservationService.createWalkIn(req));
+//    }
 
     /** POST /api/reservations/{id}/change-table */
     @PostMapping("/{id}/change-table")
