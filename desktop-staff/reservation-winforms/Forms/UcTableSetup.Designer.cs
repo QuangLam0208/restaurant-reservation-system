@@ -1,4 +1,4 @@
-﻿namespace reservation_winforms.Forms
+namespace reservation_winforms.Forms
 {
     partial class UcTableSetup
     {
@@ -53,8 +53,9 @@
             this.pnlHeader.Controls.Add(this.lblTitle);
             this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlHeader.Location = new System.Drawing.Point(0, 0);
+            this.pnlHeader.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlHeader.Name = "pnlHeader";
-            this.pnlHeader.Size = new System.Drawing.Size(1020, 60);
+            this.pnlHeader.Size = new System.Drawing.Size(1530, 92);
             this.pnlHeader.TabIndex = 3;
             // 
             // lblTitle
@@ -62,9 +63,10 @@
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblTitle.Location = new System.Drawing.Point(20, 14);
+            this.lblTitle.Location = new System.Drawing.Point(30, 22);
+            this.lblTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(436, 41);
+            this.lblTitle.Size = new System.Drawing.Size(517, 48);
             this.lblTitle.TabIndex = 0;
             this.lblTitle.Text = "QUẢN LÝ BÀN (TABLE SETUP)";
             // 
@@ -84,10 +86,11 @@
             this.pnlForm.Controls.Add(this.lblTableId);
             this.pnlForm.Controls.Add(this.lblFormTitle);
             this.pnlForm.Dock = System.Windows.Forms.DockStyle.Left;
-            this.pnlForm.Location = new System.Drawing.Point(0, 60);
+            this.pnlForm.Location = new System.Drawing.Point(0, 92);
+            this.pnlForm.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlForm.Name = "pnlForm";
-            this.pnlForm.Padding = new System.Windows.Forms.Padding(20, 20, 20, 20);
-            this.pnlForm.Size = new System.Drawing.Size(350, 669);
+            this.pnlForm.Padding = new System.Windows.Forms.Padding(30, 31, 30, 31);
+            this.pnlForm.Size = new System.Drawing.Size(524, 1030);
             this.pnlForm.TabIndex = 4;
             // 
             // btnClear
@@ -98,9 +101,10 @@
             this.btnClear.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnClear.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnClear.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.btnClear.Location = new System.Drawing.Point(170, 440);
+            this.btnClear.Location = new System.Drawing.Point(255, 677);
+            this.btnClear.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnClear.Name = "btnClear";
-            this.btnClear.Size = new System.Drawing.Size(140, 50);
+            this.btnClear.Size = new System.Drawing.Size(210, 77);
             this.btnClear.TabIndex = 10;
             this.btnClear.Text = "Làm mới";
             this.btnClear.UseVisualStyleBackColor = false;
@@ -114,9 +118,10 @@
             this.btnDelete.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnDelete.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnDelete.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
-            this.btnDelete.Location = new System.Drawing.Point(20, 440);
+            this.btnDelete.Location = new System.Drawing.Point(30, 677);
+            this.btnDelete.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnDelete.Name = "btnDelete";
-            this.btnDelete.Size = new System.Drawing.Size(140, 50);
+            this.btnDelete.Size = new System.Drawing.Size(210, 77);
             this.btnDelete.TabIndex = 9;
             this.btnDelete.Text = "Xóa Bàn";
             this.btnDelete.UseVisualStyleBackColor = false;
@@ -129,9 +134,10 @@
             this.btnUpdate.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnUpdate.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnUpdate.ForeColor = System.Drawing.Color.White;
-            this.btnUpdate.Location = new System.Drawing.Point(170, 370);
+            this.btnUpdate.Location = new System.Drawing.Point(255, 569);
+            this.btnUpdate.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnUpdate.Name = "btnUpdate";
-            this.btnUpdate.Size = new System.Drawing.Size(140, 50);
+            this.btnUpdate.Size = new System.Drawing.Size(210, 77);
             this.btnUpdate.TabIndex = 8;
             this.btnUpdate.Text = "Cập nhật";
             this.btnUpdate.UseVisualStyleBackColor = false;
@@ -144,9 +150,10 @@
             this.btnAdd.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAdd.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnAdd.ForeColor = System.Drawing.Color.White;
-            this.btnAdd.Location = new System.Drawing.Point(20, 370);
+            this.btnAdd.Location = new System.Drawing.Point(30, 569);
+            this.btnAdd.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(140, 50);
+            this.btnAdd.Size = new System.Drawing.Size(210, 77);
             this.btnAdd.TabIndex = 7;
             this.btnAdd.Text = "Thêm Mới";
             this.btnAdd.UseVisualStyleBackColor = false;
@@ -159,9 +166,10 @@
             this.cboStatus.Items.AddRange(new object[] {
             "AVAILABLE (Sẵn sàng)",
             "MAINTENANCE (Bảo trì)"});
-            this.cboStatus.Location = new System.Drawing.Point(20, 280);
+            this.cboStatus.Location = new System.Drawing.Point(30, 431);
+            this.cboStatus.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.cboStatus.Name = "cboStatus";
-            this.cboStatus.Size = new System.Drawing.Size(290, 39);
+            this.cboStatus.Size = new System.Drawing.Size(433, 46);
             this.cboStatus.TabIndex = 6;
             // 
             // lblStatus
@@ -169,18 +177,20 @@
             this.lblStatus.AutoSize = true;
             this.lblStatus.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblStatus.Location = new System.Drawing.Point(20, 250);
+            this.lblStatus.Location = new System.Drawing.Point(30, 385);
+            this.lblStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(179, 28);
+            this.lblStatus.Size = new System.Drawing.Size(220, 32);
             this.lblStatus.TabIndex = 5;
             this.lblStatus.Text = "Trạng thái vật lý (*):";
             // 
             // nudCapacity
             // 
             this.nudCapacity.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudCapacity.Location = new System.Drawing.Point(20, 190);
+            this.nudCapacity.Location = new System.Drawing.Point(30, 292);
+            this.nudCapacity.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nudCapacity.Name = "nudCapacity";
-            this.nudCapacity.Size = new System.Drawing.Size(290, 39);
+            this.nudCapacity.Size = new System.Drawing.Size(435, 45);
             this.nudCapacity.TabIndex = 4;
             this.nudCapacity.Value = new decimal(new int[] {
             4,
@@ -193,18 +203,20 @@
             this.lblCapacity.AutoSize = true;
             this.lblCapacity.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCapacity.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblCapacity.Location = new System.Drawing.Point(20, 160);
+            this.lblCapacity.Location = new System.Drawing.Point(30, 246);
+            this.lblCapacity.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblCapacity.Name = "lblCapacity";
-            this.lblCapacity.Size = new System.Drawing.Size(151, 28);
+            this.lblCapacity.Size = new System.Drawing.Size(183, 32);
             this.lblCapacity.TabIndex = 3;
             this.lblCapacity.Text = "Sức chứa tối đa:";
             // 
             // txtTableId
             // 
             this.txtTableId.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtTableId.Location = new System.Drawing.Point(20, 100);
+            this.txtTableId.Location = new System.Drawing.Point(30, 154);
+            this.txtTableId.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtTableId.Name = "txtTableId";
-            this.txtTableId.Size = new System.Drawing.Size(290, 39);
+            this.txtTableId.Size = new System.Drawing.Size(433, 45);
             this.txtTableId.TabIndex = 2;
             // 
             // lblTableId
@@ -212,9 +224,10 @@
             this.lblTableId.AutoSize = true;
             this.lblTableId.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTableId.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblTableId.Location = new System.Drawing.Point(20, 70);
+            this.lblTableId.Location = new System.Drawing.Point(30, 108);
+            this.lblTableId.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTableId.Name = "lblTableId";
-            this.lblTableId.Size = new System.Drawing.Size(144, 28);
+            this.lblTableId.Size = new System.Drawing.Size(178, 32);
             this.lblTableId.TabIndex = 1;
             this.lblTableId.Text = "Mã/Tên bàn (*):";
             // 
@@ -223,9 +236,10 @@
             this.lblFormTitle.AutoSize = true;
             this.lblFormTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblFormTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
-            this.lblFormTitle.Location = new System.Drawing.Point(20, 20);
+            this.lblFormTitle.Location = new System.Drawing.Point(30, 31);
+            this.lblFormTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblFormTitle.Name = "lblFormTitle";
-            this.lblFormTitle.Size = new System.Drawing.Size(206, 32);
+            this.lblFormTitle.Size = new System.Drawing.Size(240, 38);
             this.lblFormTitle.TabIndex = 0;
             this.lblFormTitle.Text = "THÔNG TIN BÀN";
             // 
@@ -236,10 +250,11 @@
             this.pnlList.Controls.Add(this.dgvTables);
             this.pnlList.Controls.Add(this.lblListTitle);
             this.pnlList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlList.Location = new System.Drawing.Point(350, 60);
+            this.pnlList.Location = new System.Drawing.Point(524, 92);
+            this.pnlList.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlList.Name = "pnlList";
-            this.pnlList.Padding = new System.Windows.Forms.Padding(20, 20, 20, 20);
-            this.pnlList.Size = new System.Drawing.Size(670, 669);
+            this.pnlList.Padding = new System.Windows.Forms.Padding(30, 31, 30, 31);
+            this.pnlList.Size = new System.Drawing.Size(1006, 1030);
             this.pnlList.TabIndex = 5;
             // 
             // dgvTables
@@ -272,14 +287,15 @@
             this.dgvTables.DefaultCellStyle = dataGridViewCellStyle6;
             this.dgvTables.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvTables.EnableHeadersVisualStyles = false;
-            this.dgvTables.Location = new System.Drawing.Point(20, 67);
+            this.dgvTables.Location = new System.Drawing.Point(30, 92);
+            this.dgvTables.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.dgvTables.Name = "dgvTables";
             this.dgvTables.ReadOnly = true;
             this.dgvTables.RowHeadersVisible = false;
             this.dgvTables.RowHeadersWidth = 62;
             this.dgvTables.RowTemplate.Height = 45;
             this.dgvTables.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvTables.Size = new System.Drawing.Size(628, 580);
+            this.dgvTables.Size = new System.Drawing.Size(944, 905);
             this.dgvTables.TabIndex = 2;
             // 
             // colTableId
@@ -314,23 +330,25 @@
             this.lblListTitle.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblListTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblListTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblListTitle.Location = new System.Drawing.Point(20, 20);
+            this.lblListTitle.Location = new System.Drawing.Point(30, 31);
+            this.lblListTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblListTitle.Name = "lblListTitle";
-            this.lblListTitle.Padding = new System.Windows.Forms.Padding(0, 0, 0, 15);
-            this.lblListTitle.Size = new System.Drawing.Size(307, 47);
+            this.lblListTitle.Padding = new System.Windows.Forms.Padding(0, 0, 0, 23);
+            this.lblListTitle.Size = new System.Drawing.Size(357, 61);
             this.lblListTitle.TabIndex = 1;
             this.lblListTitle.Text = "DANH SÁCH BÀN (Tất cả)";
             // 
             // UcTableSetup
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(246)))), ((int)(((byte)(250)))));
             this.Controls.Add(this.pnlList);
             this.Controls.Add(this.pnlForm);
             this.Controls.Add(this.pnlHeader);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "UcTableSetup";
-            this.Size = new System.Drawing.Size(1020, 729);
+            this.Size = new System.Drawing.Size(1530, 1122);
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
             this.pnlForm.ResumeLayout(false);
