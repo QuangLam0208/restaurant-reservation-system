@@ -18,6 +18,7 @@
         private void InitializeComponent()
         {
             this.pnlSidebar = new System.Windows.Forms.Panel();
+            this.btnRegisterStaff = new System.Windows.Forms.Button();
             this.btnSystemLogs = new System.Windows.Forms.Button();
             this.btnReports = new System.Windows.Forms.Button();
             this.btnTableSetup = new System.Windows.Forms.Button();
@@ -39,6 +40,7 @@
             // pnlSidebar
             // 
             this.pnlSidebar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.pnlSidebar.Controls.Add(this.btnRegisterStaff);
             this.pnlSidebar.Controls.Add(this.btnSystemLogs);
             this.pnlSidebar.Controls.Add(this.btnReports);
             this.pnlSidebar.Controls.Add(this.btnTableSetup);
@@ -54,6 +56,25 @@
             this.pnlSidebar.Name = "pnlSidebar";
             this.pnlSidebar.Size = new System.Drawing.Size(260, 729);
             this.pnlSidebar.TabIndex = 0;
+            // 
+            // btnRegisterStaff
+            // 
+            this.btnRegisterStaff.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnRegisterStaff.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnRegisterStaff.FlatAppearance.BorderSize = 0;
+            this.btnRegisterStaff.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.btnRegisterStaff.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRegisterStaff.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnRegisterStaff.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
+            this.btnRegisterStaff.Location = new System.Drawing.Point(0, 480);
+            this.btnRegisterStaff.Name = "btnRegisterStaff";
+            this.btnRegisterStaff.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
+            this.btnRegisterStaff.Size = new System.Drawing.Size(260, 50);
+            this.btnRegisterStaff.TabIndex = 10;
+            this.btnRegisterStaff.Text = "👤 Đăng ký Lễ tân";
+            this.btnRegisterStaff.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnRegisterStaff.UseVisualStyleBackColor = true;
+            this.btnRegisterStaff.Click += new System.EventHandler(this.btnRegisterStaff_Click);
             // 
             // btnSystemLogs
             // 
@@ -282,6 +303,7 @@
         private System.Windows.Forms.Button btnSystemLogs;
         private System.Windows.Forms.Button btnReports;
         private System.Windows.Forms.Button btnTableSetup;
+        private System.Windows.Forms.Button btnRegisterStaff;
         private System.Windows.Forms.Button btnLogout;
         private System.Windows.Forms.Panel pnlMainContent;
         private System.Windows.Forms.Label lblWelcome;

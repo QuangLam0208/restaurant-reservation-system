@@ -1,6 +1,6 @@
 ﻿namespace reservation_winforms.Forms
 {
-    partial class RegisterForm
+    partial class UcRegister
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -13,7 +13,7 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
+        #region Component Designer generated code
 
         private void InitializeComponent()
         {
@@ -108,8 +108,7 @@
             this.cboRole.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cboRole.FormattingEnabled = true;
             this.cboRole.Items.AddRange(new object[] {
-            "STAFF",
-            "ADMIN",
+            "RECEPTIONIST", // Đã sửa lại khớp với Backend của bạn
             "MANAGER"});
             this.cboRole.Location = new System.Drawing.Point(70, 269);
             this.cboRole.Name = "cboRole";
@@ -145,7 +144,7 @@
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(123, 35);
             this.btnCancel.TabIndex = 10;
-            this.btnCancel.Text = "Hủy bỏ";
+            this.btnCancel.Text = "Hủy";
             this.btnCancel.UseVisualStyleBackColor = false;
             // 
             // lblMessage
@@ -158,13 +157,11 @@
             this.lblMessage.TabIndex = 8;
             this.lblMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // RegisterForm
+            // RegisterControl
             // 
-            this.AcceptButton = this.btnRegister;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(400, 468);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnRegister);
             this.Controls.Add(this.lblMessage);
@@ -176,11 +173,8 @@
             this.Controls.Add(this.lblUsername);
             this.Controls.Add(this.lblSubtitle);
             this.Controls.Add(this.lblTitle);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-            this.Name = "RegisterForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Tạo tài khoản POS";
+            this.Name = "RegisterControl";
+            this.Size = new System.Drawing.Size(400, 468);
             this.ResumeLayout(false);
             this.PerformLayout();
 
