@@ -29,6 +29,19 @@ public class AuthController {
         ));
     }
 
+    /** POST /api/auth/resend-verification */
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Map<String, String>> resendVerification(@RequestBody Map<String, String> req) {
+        String email = req.get("email");
+        authService.resendVerification(email);
+        // Tìm lại token mới nhất để trả về cho frontend restart polling (optional security choice)
+        String newToken = authService.getLatestVerificationToken(email); 
+        return ResponseEntity.ok(Map.of(
+            "message", "Mã xác minh mới đã được gửi tới email của bạn.",
+            "token", newToken
+        ));
+    }
+
     /** GET /api/auth/verify-email?token= — Xác minh xong Redirect về Trang Thành công/Thất bại */
     @GetMapping("/verify-email")
     public ResponseEntity<Void> verifyEmail(@RequestParam String token) {

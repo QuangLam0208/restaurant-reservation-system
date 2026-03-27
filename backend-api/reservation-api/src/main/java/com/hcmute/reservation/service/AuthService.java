@@ -35,6 +35,7 @@ public class AuthService {
     @Transactional
     public String register(RegisterRequest req) {
         String verificationToken = UUID.randomUUID().toString();
+        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(30);
 
         var existing = customerRepository.findByEmail(req.getEmail());
         if (existing.isPresent()) {
@@ -45,6 +46,7 @@ public class AuthService {
                 c.setPasswordHash(passwordEncoder.encode(req.getPassword()));
                 c.setIsVerified(false);
                 c.setVerificationToken(verificationToken);
+                c.setVerificationTokenExpiresAt(expiresAt);
                 customerRepository.save(c);
                 emailService.sendVerificationEmail(req.getEmail(), verificationToken);
                 return verificationToken;
@@ -52,6 +54,7 @@ public class AuthService {
 
             if (c.getPasswordHash() != null && !c.getIsVerified()) {
                 c.setVerificationToken(verificationToken);
+                c.setVerificationTokenExpiresAt(expiresAt);
                 customerRepository.save(c);
                 emailService.sendVerificationEmail(req.getEmail(), verificationToken);
                 return verificationToken;
@@ -67,6 +70,7 @@ public class AuthService {
                 .passwordHash(passwordEncoder.encode(req.getPassword()))
                 .isVerified(false)
                 .verificationToken(verificationToken)
+                .verificationTokenExpiresAt(expiresAt)
                 .build();
         customerRepository.save(customer);
         emailService.sendVerificationEmail(req.getEmail(), verificationToken);
@@ -74,11 +78,32 @@ public class AuthService {
     }
 
     @Transactional
+    public void resendVerification(String email) {
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng với email này."));
+        if (customer.getIsVerified()) {
+            throw new BadRequestException("Tài khoản này đã được xác minh.");
+        }
+        String newToken = UUID.randomUUID().toString();
+        customer.setVerificationToken(newToken);
+        customer.setVerificationTokenExpiresAt(LocalDateTime.now().plusMinutes(30));
+        customerRepository.save(customer);
+        emailService.sendVerificationEmail(email, newToken);
+    }
+
+    @Transactional
     public String verifyEmail(String token) {
         Customer customer = customerRepository.findByVerificationToken(token)
-                .orElseThrow(() -> new BadRequestException("Token xác minh không hợp lệ hoặc đã hết hạn."));
+                .orElseThrow(() -> new BadRequestException("Liên kết xác minh không tồn tại."));
+        
+        if (customer.getVerificationTokenExpiresAt() != null && 
+            customer.getVerificationTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Liên kết xác minh đã hết hạn (30 phút). Vui lòng yêu cầu mã mới.");
+        }
+
         customer.setIsVerified(true);
         customer.setVerificationToken(null);
+        customer.setVerificationTokenExpiresAt(null);
         customerRepository.save(customer);
         return token;
     }
@@ -99,7 +124,13 @@ public class AuthService {
         Customer customer = customerRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new UnauthorizedException("Email hoặc mật khẩu không đúng."));
         if (!customer.getIsVerified()) {
-            throw new UnauthorizedException("Tài khoản chưa được xác minh. Vui lòng kiểm tra email.");
+            // Tự động gửi lại nếu token hết hạn
+            if (customer.getVerificationTokenExpiresAt() != null && 
+                customer.getVerificationTokenExpiresAt().isBefore(LocalDateTime.now())) {
+                resendVerification(customer.getEmail());
+                throw new UnauthorizedException("Tài khoản chưa xác minh và mã đã hết hạn. Một mã mới đã được gửi tới email của bạn.");
+            }
+            throw new UnauthorizedException("Tài khoản chưa được xác minh. Vui lòng kiểm tra email (mã có hiệu lực trong 30 phút).");
         }
         if (!passwordEncoder.matches(req.getPassword(), customer.getPasswordHash())) {
             throw new UnauthorizedException("Email hoặc mật khẩu không đúng.");
@@ -113,7 +144,7 @@ public class AuthService {
         String token = UUID.randomUUID().toString();
         customerRepository.findByEmail(req.getEmail()).ifPresent(customer -> {
             customer.setResetToken(token);
-            customer.setResetTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
+            customer.setResetTokenExpiresAt(LocalDateTime.now().plusMinutes(10));
             customerRepository.save(customer);
             emailService.sendResetPasswordEmail(req.getEmail(), token);
         });
@@ -150,6 +181,12 @@ public class AuthService {
 
     public void removeResetApproval(String token) {
         tokenApprovalMap.remove(token);
+    }
+
+    public String getLatestVerificationToken(String email) {
+        return customerRepository.findByEmail(email)
+                .map(Customer::getVerificationToken)
+                .orElse(null);
     }
 
     public String getBaseUrl() {

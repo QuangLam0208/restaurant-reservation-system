@@ -42,6 +42,9 @@ public class Customer {
     @Column(name = "verification_token")
     private String verificationToken;
 
+    @Column(name = "verification_token_expires_at")
+    private LocalDateTime verificationTokenExpiresAt;
+
     // Token và thời hạn dùng cho forgot-password
     @Column(name = "reset_token")
     private String resetToken;

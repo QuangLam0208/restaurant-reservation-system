@@ -11,15 +11,15 @@ function showFormError(form, message) {
     if (!errorEl) {
         errorEl = document.createElement("p");
         errorEl.className = "form-error";
-        errorEl.style.cssText = "color:#e74c3c;font-size:0.9rem;text-align:center;margin-top:12px;";
+        errorEl.style.cssText = "color:#e74c3c;font-size:0.9rem;text-align:center;margin-top:12px;line-height:1.5;";
         form.appendChild(errorEl);
     }
-    errorEl.textContent = message;
+    errorEl.innerHTML = message;
 }
 
 function clearFormError(form) {
     const errorEl = form.querySelector(".form-error");
-    if (errorEl) errorEl.textContent = "";
+    if (errorEl) errorEl.innerHTML = "";
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -30,10 +30,10 @@ function showFormSuccess(form, message) {
     if (!successEl) {
         successEl = document.createElement("p");
         successEl.className = "form-success";
-        successEl.style.cssText = "color:#27ae60;font-size:0.9rem;text-align:center;margin-top:12px;";
+        successEl.style.cssText = "color:#27ae60;font-size:0.9rem;text-align:center;margin-top:12px;line-height:1.5;";
         form.appendChild(successEl);
     }
-    successEl.textContent = message;
+    successEl.innerHTML = message;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -130,19 +130,42 @@ export function initAuth() {
             submitBtn.disabled = true;
 
             try {
-                const { ok, data } = await callApi("/auth/login", "POST", { email, password });
+                const { ok, status, data } = await callApi("/auth/login", "POST", { email, password });
 
                 if (ok) {
-                    // Lưu token + thông tin user vào localStorage
                     saveUser(data);
                     hideModals();
                     loginForm.reset();
                     updateHeaderAuthUI(true);
                     window.location.href = "reservation.html";
                 } else {
-                    // Hiển thị lỗi từ backend
                     const errorMsg = data?.message || data?.error || "Login failed. Please try again.";
-                    showFormError(loginForm, errorMsg);
+                    
+                    // Nếu lỗi do chưa xác minh, cho người dùng nút Gửi lại link
+                    if (errorMsg.includes("chưa xác minh") || errorMsg.includes("mã đã hết hạn") || status === 401) {
+                         showFormError(loginForm, `${errorMsg} <br><a href="#" id="resend-verify-link" data-email="${email}" style="color: var(--gold); text-decoration: underline; font-weight: 600;">Gửi lại mã xác minh</a>`);
+                         
+                         // Gắn sự kiện cho link mới
+                         document.getElementById("resend-verify-link")?.addEventListener("click", async (e) => {
+                             e.preventDefault();
+                             const resendEmail = e.target.getAttribute("data-email");
+                             try {
+                                 const resendResult = await callApi("/auth/resend-verification", "POST", { email: resendEmail });
+                                 if (resendResult.ok) {
+                                     showToast("Mã xác minh mới đã được gửi! Vui lòng kiểm tra email.", "success");
+                                     if (resendResult.data.token) {
+                                         startVerifyPolling(resendResult.data.token);
+                                     }
+                                 } else {
+                                     showToast(resendResult.data.message || "Không thể gửi lại mã.", "error");
+                                 }
+                             } catch (err) {
+                                 showToast("Lỗi kết nối khi gửi lại mã.", "error");
+                             }
+                         });
+                    } else {
+                        showFormError(loginForm, errorMsg);
+                    }
                 }
             } catch (err) {
                 showFormError(loginForm, "Unable to connect to server. Please try again later.");
@@ -170,8 +193,33 @@ export function initAuth() {
             const password = document.getElementById("reg-password").value;
             const confirmPassword = document.getElementById("reg-confirm-password").value;
 
+            // --- FRONTEND VALIDATION ---
+            if (!name || !email || !phone || !password) {
+                showFormError(registerForm, "Vui lòng nhập đầy đủ tất cả các trường.");
+                return;
+            }
+
+            // Email regex
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showFormError(registerForm, "Email không đúng định dạng.");
+                return;
+            }
+
+            // Vietnamese Phone regex
+            const phoneRegex = /^(0|\+84)(\s|\.)?((3[2-9])|(5[689])|(7[06-9])|(8[1-689])|(9[0-46-9]))(\d)(\s|\.)?(\d{3})(\s|\.)?(\d{3})$/;
+            if (!phoneRegex.test(phone)) {
+                showFormError(registerForm, "Số điện thoại không đúng định dạng Việt Nam.");
+                return;
+            }
+
+            if (password.length < 6) {
+                showFormError(registerForm, "Mật khẩu phải từ 6 ký tự trở lên.");
+                return;
+            }
+
             if (password !== confirmPassword) {
-                showFormError(registerForm, "Passwords do not match! Please try again.");
+                showFormError(registerForm, "Mật khẩu nhập lại không khớp!");
                 return;
             }
 
@@ -190,7 +238,7 @@ export function initAuth() {
                         startVerifyPolling(data.token);
                         hideModals();
                         registerForm.reset();
-                        showToast("Account created! Please check your email to verify. This page will update automatically.", "success", 8000);
+                        showToast("Account created! Please check your email to verify (Link expires in 30m). This page will update automatically.", "success", 8000);
                     } else {
                         hideModals();
                         registerForm.reset();

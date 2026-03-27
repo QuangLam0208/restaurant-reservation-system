@@ -45,7 +45,8 @@ public class SecurityConfig {
                     "/api/auth/reset-password",
                     "/api/auth/reset-password-page",
                     "/api/auth/check-reset-status",
-                    "/api/auth/check-verify-status"
+                    "/api/auth/check-verify-status",
+                    "/api/auth/resend-verification"
                 ).permitAll()
                 // ── Public: static content ────────────────────────────────────────
                 .requestMatchers("/", "/index.html", "/web-customer/**", "/assets/**", "/js/**").permitAll()
