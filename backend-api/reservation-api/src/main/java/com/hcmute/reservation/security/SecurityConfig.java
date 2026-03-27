@@ -36,6 +36,15 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // ── Public: customer auth ─────────────────────────────────────────
+                .requestMatchers(
+                        "/api/auth/register",
+                        "/api/auth/verify-email",
+                        "/api/auth/login",
+                        "/api/auth/forgot-password",
+                        "/api/auth/reset-password",
+                        "/api/auth/reset-password-page"
+                ).permitAll()
                 // ── Public: staff auth (POS login) ────────────────────────────────
                 .requestMatchers("/api/staff/auth/login").permitAll()
                 // ── Public: availability check ────────────────────────────────────

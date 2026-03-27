@@ -1,7 +1,7 @@
 package com.hcmute.reservation.controller;
 
-import com.hcmute.reservation.dto.report.DailyReservationReport;
-import com.hcmute.reservation.dto.report.NoShowRateResponse;
+import com.hcmute.reservation.model.dto.report.DailyReservationReport;
+import com.hcmute.reservation.model.dto.report.NoShowRateResponse;
 import com.hcmute.reservation.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

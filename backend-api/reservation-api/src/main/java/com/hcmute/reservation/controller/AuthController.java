@@ -1,6 +1,6 @@
 package com.hcmute.reservation.controller;
 
-import com.hcmute.reservation.dto.auth.*;
+import com.hcmute.reservation.model.dto.auth.*;
 import com.hcmute.reservation.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

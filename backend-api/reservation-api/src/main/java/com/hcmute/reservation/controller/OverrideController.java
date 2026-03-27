@@ -1,9 +1,9 @@
 package com.hcmute.reservation.controller;
 
-import com.hcmute.reservation.dto.override.OverrideLogResponse;
-import com.hcmute.reservation.dto.override.OverrideRequest;
+import com.hcmute.reservation.model.dto.override.OverrideLogResponse;
+import com.hcmute.reservation.model.dto.override.OverrideRequest;
 import com.hcmute.reservation.exception.UnauthorizedException;
-import com.hcmute.reservation.model.Account;
+import com.hcmute.reservation.model.entity.Account;
 import com.hcmute.reservation.service.OverrideService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

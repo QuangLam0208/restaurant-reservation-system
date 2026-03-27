@@ -1,13 +1,16 @@
 package com.hcmute.reservation.service;
 
-import com.hcmute.reservation.dto.reservation.ChangeTableRequest;
-import com.hcmute.reservation.dto.reservation.OnlineReservationRequest;
-import com.hcmute.reservation.dto.reservation.ReservationResponse;
-import com.hcmute.reservation.dto.reservation.WalkInRequest;
+import com.hcmute.reservation.model.dto.reservation.ChangeTableRequest;
+import com.hcmute.reservation.model.dto.reservation.OnlineReservationRequest;
+import com.hcmute.reservation.model.dto.reservation.ReservationResponse;
+import com.hcmute.reservation.model.dto.reservation.WalkInRequest;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.ResourceNotFoundException;
-import com.hcmute.reservation.model.*;
+import com.hcmute.reservation.model.entity.Customer;
+import com.hcmute.reservation.model.entity.Reservation;
+import com.hcmute.reservation.model.entity.ReservationTableMapping;
+import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.model.enums.ReservationStatus;
 import com.hcmute.reservation.model.enums.ReservationType;
 import com.hcmute.reservation.model.enums.TableStatus;

@@ -1,14 +1,14 @@
 package com.hcmute.reservation.service;
 
-import com.hcmute.reservation.dto.override.OverrideLogResponse;
-import com.hcmute.reservation.dto.override.OverrideRequest;
+import com.hcmute.reservation.model.dto.override.OverrideLogResponse;
+import com.hcmute.reservation.model.dto.override.OverrideRequest;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.ResourceNotFoundException;
-import com.hcmute.reservation.model.Account;
-import com.hcmute.reservation.model.OverrideLog;
-import com.hcmute.reservation.model.Reservation;
-import com.hcmute.reservation.model.TableInfo;
+import com.hcmute.reservation.model.entity.Account;
+import com.hcmute.reservation.model.entity.OverrideLog;
+import com.hcmute.reservation.model.entity.Reservation;
+import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.model.enums.ReservationStatus;
 import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.AccountRepository;

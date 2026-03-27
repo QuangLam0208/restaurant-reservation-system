@@ -1,8 +1,8 @@
 package com.hcmute.reservation.controller;
 
-import com.hcmute.reservation.dto.auth.StaffLoginRequest;
-import com.hcmute.reservation.dto.auth.StaffLoginResponse;
-import com.hcmute.reservation.dto.auth.StaffRegisterRequest;
+import com.hcmute.reservation.model.dto.auth.StaffLoginRequest;
+import com.hcmute.reservation.model.dto.auth.StaffLoginResponse;
+import com.hcmute.reservation.model.dto.auth.StaffRegisterRequest;
 import com.hcmute.reservation.service.StaffAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
