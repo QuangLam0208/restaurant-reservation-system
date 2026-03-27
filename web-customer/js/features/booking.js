@@ -149,8 +149,33 @@ export function initBooking() {
 
     bookingForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        if (!hiddenTime.value) { alert('Please select a time!'); return; }
-        alert(`Reservation Success!\nSize: ${hiddenParty.value}\nDate: ${hiddenDate.value}\nTime: ${hiddenTime.value}`);
-        window.location.href = "index.html";
+
+        // Kiểm tra checkbox đã đọc thông báo chưa (mặc dù HTML required đã lo một phần)
+        const acceptNotice = document.getElementById('accept-notice');
+        if (!acceptNotice.checked) {
+            alert('Vui lòng xác nhận bạn đã đọc Thông báo từ nhà hàng.');
+            return;
+        }
+
+        if (!hiddenTime.value) {
+            alert('Vui lòng chọn khung giờ bạn muốn đặt!');
+            return;
+        }
+
+        const guestName = document.getElementById('guest-name').value;
+        const guestPhone = document.getElementById('guest-phone').value;
+
+        // Giả lập lưu dữ liệu booking vào localStorage để trang Payment có thể đọc
+        const bookingData = {
+            partySize: hiddenParty.value,
+            date: hiddenDate.value,
+            time: hiddenTime.value,
+            guestName: guestName,
+            guestPhone: guestPhone
+        };
+        localStorage.setItem('currentBooking', JSON.stringify(bookingData));
+
+        // Chuyển hướng sang trang thanh toán
+        window.location.href = "payment.html"; // Bạn sẽ cần tạo file này
     });
 }
