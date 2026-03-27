@@ -1,12 +1,12 @@
 package com.hcmute.reservation.service;
 
-import com.hcmute.reservation.dto.table.FloorMapTableResponse;
-import com.hcmute.reservation.dto.table.TableRequest;
-import com.hcmute.reservation.dto.table.TableResponse;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.ResourceNotFoundException;
-import com.hcmute.reservation.model.TableInfo;
+import com.hcmute.reservation.model.dto.table.FloorMapTableResponse;
+import com.hcmute.reservation.model.dto.table.TableRequest;
+import com.hcmute.reservation.model.dto.table.TableResponse;
+import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.model.enums.ReservationStatus;
 import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.TableInfoRepository;
@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 public class TableService {
 
     private final TableInfoRepository tableInfoRepository;
+    LocalDateTime resTime = null;
 
     private void rejectManualStatusChange(TableRequest req) {
         if (req.getStatus() != null) {
@@ -180,6 +181,7 @@ public class TableService {
                     var res = activeMapping.get().getReservation();
                     resId = res.getReservationId();
                     currentResStatus = res.getStatus();
+                    resTime = res.getStartTime();
 
                     if (res.getCustomer() != null) {
                         customerName = res.getCustomer().getName();
@@ -202,6 +204,7 @@ public class TableService {
                     .currentReservationId(resId)
                     .currentReservationStatus(currentResStatus)
                     .currentCustomerName(customerName)
+                    .currentReservationTime(resTime)
                     .build();
         }).collect(Collectors.toList());
     }

@@ -1,8 +1,8 @@
 package com.hcmute.reservation.service;
 
-import com.hcmute.reservation.model.Reservation;
-import com.hcmute.reservation.model.ReservationTableMapping;
-import com.hcmute.reservation.model.TableInfo;
+import com.hcmute.reservation.model.entity.Reservation;
+import com.hcmute.reservation.model.entity.ReservationTableMapping;
+import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.repository.ReservationTableMappingRepository;

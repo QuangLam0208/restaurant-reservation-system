@@ -1,7 +1,7 @@
 package com.hcmute.reservation.service;
 
-import com.hcmute.reservation.model.Reservation;
-import com.hcmute.reservation.model.TableInfo;
+import com.hcmute.reservation.model.entity.Reservation;
+import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.model.enums.ReservationStatus;
 import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.ReservationRepository;
@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;

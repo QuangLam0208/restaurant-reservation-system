@@ -1,9 +1,9 @@
 package com.hcmute.reservation.controller;
 
-import com.hcmute.reservation.dto.table.AvailableWindowResponse;
-import com.hcmute.reservation.dto.table.FloorMapTableResponse;
-import com.hcmute.reservation.dto.table.TableRequest;
-import com.hcmute.reservation.dto.table.TableResponse;
+import com.hcmute.reservation.model.dto.table.AvailableWindowResponse;
+import com.hcmute.reservation.model.dto.table.FloorMapTableResponse;
+import com.hcmute.reservation.model.dto.table.TableRequest;
+import com.hcmute.reservation.model.dto.table.TableResponse;
 import com.hcmute.reservation.service.AvailabilityService;
 import com.hcmute.reservation.service.TableService;
 import jakarta.validation.Valid;

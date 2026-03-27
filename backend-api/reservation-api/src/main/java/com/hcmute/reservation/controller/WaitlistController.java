@@ -1,7 +1,7 @@
 package com.hcmute.reservation.controller;
 
-import com.hcmute.reservation.dto.waitlist.WaitlistRequest;
-import com.hcmute.reservation.dto.waitlist.WaitlistResponse;
+import com.hcmute.reservation.model.dto.waitlist.WaitlistRequest;
+import com.hcmute.reservation.model.dto.waitlist.WaitlistResponse;
 import com.hcmute.reservation.service.WaitlistService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

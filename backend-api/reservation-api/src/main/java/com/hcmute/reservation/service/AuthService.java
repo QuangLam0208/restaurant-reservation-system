@@ -1,10 +1,10 @@
 package com.hcmute.reservation.service;
 
-import com.hcmute.reservation.dto.auth.*;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.UnauthorizedException;
-import com.hcmute.reservation.model.Customer;
+import com.hcmute.reservation.model.dto.auth.*;
+import com.hcmute.reservation.model.entity.Customer;
 import com.hcmute.reservation.repository.CustomerRepository;
 import com.hcmute.reservation.security.JwtUtil;
 import lombok.RequiredArgsConstructor;

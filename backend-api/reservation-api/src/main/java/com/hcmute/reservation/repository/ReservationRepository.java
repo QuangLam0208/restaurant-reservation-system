@@ -1,6 +1,6 @@
 package com.hcmute.reservation.repository;
 
-import com.hcmute.reservation.model.Reservation;
+import com.hcmute.reservation.model.entity.Reservation;
 import com.hcmute.reservation.model.enums.ReservationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
