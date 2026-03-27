@@ -1,4 +1,4 @@
-﻿namespace reservation_winforms.Forms
+namespace reservation_winforms.Forms
 {
     partial class UcReports
     {
@@ -63,9 +63,9 @@
             this.pnlHeader.Controls.Add(this.lblTitle);
             this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlHeader.Location = new System.Drawing.Point(0, 0);
-            this.pnlHeader.Margin = new System.Windows.Forms.Padding(4);
+            this.pnlHeader.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlHeader.Name = "pnlHeader";
-            this.pnlHeader.Size = new System.Drawing.Size(1360, 74);
+            this.pnlHeader.Size = new System.Drawing.Size(1530, 92);
             this.pnlHeader.TabIndex = 4;
             // 
             // lblTitle
@@ -73,10 +73,10 @@
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblTitle.Location = new System.Drawing.Point(27, 17);
+            this.lblTitle.Location = new System.Drawing.Point(30, 22);
             this.lblTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(397, 41);
+            this.lblTitle.Size = new System.Drawing.Size(473, 48);
             this.lblTitle.TabIndex = 0;
             this.lblTitle.Text = "BÁO CÁO & THỐNG KÊ (KPI)";
             // 
@@ -90,10 +90,10 @@
             this.pnlFilter.Controls.Add(this.dtpFrom);
             this.pnlFilter.Controls.Add(this.lblFrom);
             this.pnlFilter.Controls.Add(this.lblFilterTitle);
-            this.pnlFilter.Location = new System.Drawing.Point(27, 98);
-            this.pnlFilter.Margin = new System.Windows.Forms.Padding(4);
+            this.pnlFilter.Location = new System.Drawing.Point(30, 123);
+            this.pnlFilter.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlFilter.Name = "pnlFilter";
-            this.pnlFilter.Size = new System.Drawing.Size(1306, 98);
+            this.pnlFilter.Size = new System.Drawing.Size(1469, 122);
             this.pnlFilter.TabIndex = 5;
             // 
             // btnFilter
@@ -104,10 +104,10 @@
             this.btnFilter.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFilter.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnFilter.ForeColor = System.Drawing.Color.White;
-            this.btnFilter.Location = new System.Drawing.Point(1093, 25);
-            this.btnFilter.Margin = new System.Windows.Forms.Padding(4);
+            this.btnFilter.Location = new System.Drawing.Point(1230, 31);
+            this.btnFilter.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnFilter.Name = "btnFilter";
-            this.btnFilter.Size = new System.Drawing.Size(187, 49);
+            this.btnFilter.Size = new System.Drawing.Size(210, 62);
             this.btnFilter.TabIndex = 5;
             this.btnFilter.Text = "LỌC DỮ LIỆU";
             this.btnFilter.UseVisualStyleBackColor = false;
@@ -117,10 +117,10 @@
             this.dtpTo.CalendarFont = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtpTo.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtpTo.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpTo.Location = new System.Drawing.Point(720, 30);
-            this.dtpTo.Margin = new System.Windows.Forms.Padding(4);
+            this.dtpTo.Location = new System.Drawing.Point(810, 37);
+            this.dtpTo.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.dtpTo.Name = "dtpTo";
-            this.dtpTo.Size = new System.Drawing.Size(212, 39);
+            this.dtpTo.Size = new System.Drawing.Size(238, 45);
             this.dtpTo.TabIndex = 4;
             // 
             // lblTo
@@ -128,10 +128,10 @@
             this.lblTo.AutoSize = true;
             this.lblTo.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblTo.Location = new System.Drawing.Point(600, 37);
+            this.lblTo.Location = new System.Drawing.Point(675, 46);
             this.lblTo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTo.Name = "lblTo";
-            this.lblTo.Size = new System.Drawing.Size(99, 28);
+            this.lblTo.Size = new System.Drawing.Size(122, 32);
             this.lblTo.TabIndex = 3;
             this.lblTo.Text = "Đến ngày:";
             // 
@@ -140,10 +140,10 @@
             this.dtpFrom.CalendarFont = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtpFrom.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtpFrom.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpFrom.Location = new System.Drawing.Point(347, 30);
-            this.dtpFrom.Margin = new System.Windows.Forms.Padding(4);
+            this.dtpFrom.Location = new System.Drawing.Point(390, 37);
+            this.dtpFrom.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.dtpFrom.Name = "dtpFrom";
-            this.dtpFrom.Size = new System.Drawing.Size(212, 39);
+            this.dtpFrom.Size = new System.Drawing.Size(238, 45);
             this.dtpFrom.TabIndex = 2;
             // 
             // lblFrom
@@ -151,10 +151,10 @@
             this.lblFrom.AutoSize = true;
             this.lblFrom.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblFrom.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblFrom.Location = new System.Drawing.Point(240, 37);
+            this.lblFrom.Location = new System.Drawing.Point(270, 46);
             this.lblFrom.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblFrom.Name = "lblFrom";
-            this.lblFrom.Size = new System.Drawing.Size(86, 28);
+            this.lblFrom.Size = new System.Drawing.Size(105, 32);
             this.lblFrom.TabIndex = 1;
             this.lblFrom.Text = "Từ ngày:";
             // 
@@ -163,10 +163,10 @@
             this.lblFilterTitle.AutoSize = true;
             this.lblFilterTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblFilterTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
-            this.lblFilterTitle.Location = new System.Drawing.Point(27, 33);
+            this.lblFilterTitle.Location = new System.Drawing.Point(30, 42);
             this.lblFilterTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblFilterTitle.Name = "lblFilterTitle";
-            this.lblFilterTitle.Size = new System.Drawing.Size(169, 32);
+            this.lblFilterTitle.Size = new System.Drawing.Size(195, 38);
             this.lblFilterTitle.TabIndex = 0;
             this.lblFilterTitle.Text = "Thời gian lọc:";
             // 
@@ -175,10 +175,10 @@
             this.pnlCards.Controls.Add(this.pnlCard3);
             this.pnlCards.Controls.Add(this.pnlCard2);
             this.pnlCards.Controls.Add(this.pnlCard1);
-            this.pnlCards.Location = new System.Drawing.Point(27, 222);
-            this.pnlCards.Margin = new System.Windows.Forms.Padding(4);
+            this.pnlCards.Location = new System.Drawing.Point(30, 277);
+            this.pnlCards.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlCards.Name = "pnlCards";
-            this.pnlCards.Size = new System.Drawing.Size(1307, 172);
+            this.pnlCards.Size = new System.Drawing.Size(1470, 215);
             this.pnlCards.TabIndex = 6;
             // 
             // pnlCard3
@@ -187,10 +187,10 @@
             this.pnlCard3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlCard3.Controls.Add(this.lblValNoShow);
             this.pnlCard3.Controls.Add(this.lblTitleNoShow);
-            this.pnlCard3.Location = new System.Drawing.Point(893, 0);
-            this.pnlCard3.Margin = new System.Windows.Forms.Padding(4);
+            this.pnlCard3.Location = new System.Drawing.Point(1005, 0);
+            this.pnlCard3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlCard3.Name = "pnlCard3";
-            this.pnlCard3.Size = new System.Drawing.Size(413, 172);
+            this.pnlCard3.Size = new System.Drawing.Size(464, 214);
             this.pnlCard3.TabIndex = 2;
             // 
             // lblValNoShow
@@ -198,10 +198,10 @@
             this.lblValNoShow.AutoSize = true;
             this.lblValNoShow.Font = new System.Drawing.Font("Segoe UI", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblValNoShow.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
-            this.lblValNoShow.Location = new System.Drawing.Point(27, 62);
+            this.lblValNoShow.Location = new System.Drawing.Point(30, 77);
             this.lblValNoShow.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblValNoShow.Name = "lblValNoShow";
-            this.lblValNoShow.Size = new System.Drawing.Size(208, 81);
+            this.lblValNoShow.Size = new System.Drawing.Size(245, 96);
             this.lblValNoShow.TabIndex = 1;
             this.lblValNoShow.Text = "12.5%";
             // 
@@ -210,10 +210,10 @@
             this.lblTitleNoShow.AutoSize = true;
             this.lblTitleNoShow.Font = new System.Drawing.Font("Segoe UI Semibold", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitleNoShow.ForeColor = System.Drawing.Color.Gray;
-            this.lblTitleNoShow.Location = new System.Drawing.Point(27, 18);
+            this.lblTitleNoShow.Location = new System.Drawing.Point(30, 23);
             this.lblTitleNoShow.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTitleNoShow.Name = "lblTitleNoShow";
-            this.lblTitleNoShow.Size = new System.Drawing.Size(310, 32);
+            this.lblTitleNoShow.Size = new System.Drawing.Size(360, 38);
             this.lblTitleNoShow.TabIndex = 0;
             this.lblTitleNoShow.Text = "Tỉ lệ Không đến (No-Show)";
             // 
@@ -223,10 +223,10 @@
             this.pnlCard2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlCard2.Controls.Add(this.lblValSeated);
             this.pnlCard2.Controls.Add(this.lblTitleSeated);
-            this.pnlCard2.Location = new System.Drawing.Point(447, 0);
-            this.pnlCard2.Margin = new System.Windows.Forms.Padding(4);
+            this.pnlCard2.Location = new System.Drawing.Point(502, 0);
+            this.pnlCard2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlCard2.Name = "pnlCard2";
-            this.pnlCard2.Size = new System.Drawing.Size(413, 172);
+            this.pnlCard2.Size = new System.Drawing.Size(464, 214);
             this.pnlCard2.TabIndex = 1;
             // 
             // lblValSeated
@@ -234,10 +234,10 @@
             this.lblValSeated.AutoSize = true;
             this.lblValSeated.Font = new System.Drawing.Font("Segoe UI", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblValSeated.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(204)))), ((int)(((byte)(113)))));
-            this.lblValSeated.Location = new System.Drawing.Point(27, 62);
+            this.lblValSeated.Location = new System.Drawing.Point(30, 77);
             this.lblValSeated.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblValSeated.Name = "lblValSeated";
-            this.lblValSeated.Size = new System.Drawing.Size(140, 81);
+            this.lblValSeated.Size = new System.Drawing.Size(163, 96);
             this.lblValSeated.TabIndex = 1;
             this.lblValSeated.Text = "150";
             // 
@@ -246,10 +246,10 @@
             this.lblTitleSeated.AutoSize = true;
             this.lblTitleSeated.Font = new System.Drawing.Font("Segoe UI Semibold", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitleSeated.ForeColor = System.Drawing.Color.Gray;
-            this.lblTitleSeated.Location = new System.Drawing.Point(27, 18);
+            this.lblTitleSeated.Location = new System.Drawing.Point(30, 23);
             this.lblTitleSeated.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTitleSeated.Name = "lblTitleSeated";
-            this.lblTitleSeated.Size = new System.Drawing.Size(268, 32);
+            this.lblTitleSeated.Size = new System.Drawing.Size(312, 38);
             this.lblTitleSeated.TabIndex = 0;
             this.lblTitleSeated.Text = "Đã phục vụ thành công";
             // 
@@ -260,9 +260,9 @@
             this.pnlCard1.Controls.Add(this.lblValTotal);
             this.pnlCard1.Controls.Add(this.lblTitleTotal);
             this.pnlCard1.Location = new System.Drawing.Point(0, 0);
-            this.pnlCard1.Margin = new System.Windows.Forms.Padding(4);
+            this.pnlCard1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlCard1.Name = "pnlCard1";
-            this.pnlCard1.Size = new System.Drawing.Size(413, 172);
+            this.pnlCard1.Size = new System.Drawing.Size(464, 214);
             this.pnlCard1.TabIndex = 0;
             // 
             // lblValTotal
@@ -270,10 +270,10 @@
             this.lblValTotal.AutoSize = true;
             this.lblValTotal.Font = new System.Drawing.Font("Segoe UI", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblValTotal.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
-            this.lblValTotal.Location = new System.Drawing.Point(27, 62);
+            this.lblValTotal.Location = new System.Drawing.Point(30, 77);
             this.lblValTotal.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblValTotal.Name = "lblValTotal";
-            this.lblValTotal.Size = new System.Drawing.Size(140, 81);
+            this.lblValTotal.Size = new System.Drawing.Size(163, 96);
             this.lblValTotal.TabIndex = 1;
             this.lblValTotal.Text = "184";
             // 
@@ -282,10 +282,10 @@
             this.lblTitleTotal.AutoSize = true;
             this.lblTitleTotal.Font = new System.Drawing.Font("Segoe UI Semibold", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitleTotal.ForeColor = System.Drawing.Color.Gray;
-            this.lblTitleTotal.Location = new System.Drawing.Point(27, 18);
+            this.lblTitleTotal.Location = new System.Drawing.Point(30, 23);
             this.lblTitleTotal.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTitleTotal.Name = "lblTitleTotal";
-            this.lblTitleTotal.Size = new System.Drawing.Size(191, 32);
+            this.lblTitleTotal.Size = new System.Drawing.Size(224, 38);
             this.lblTitleTotal.TabIndex = 0;
             this.lblTitleTotal.Text = "Tổng số yêu cầu";
             // 
@@ -295,11 +295,11 @@
             this.pnlList.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlList.Controls.Add(this.dgvReports);
             this.pnlList.Controls.Add(this.lblListTitle);
-            this.pnlList.Location = new System.Drawing.Point(27, 418);
-            this.pnlList.Margin = new System.Windows.Forms.Padding(4);
+            this.pnlList.Location = new System.Drawing.Point(30, 523);
+            this.pnlList.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlList.Name = "pnlList";
-            this.pnlList.Padding = new System.Windows.Forms.Padding(27, 25, 27, 25);
-            this.pnlList.Size = new System.Drawing.Size(1306, 455);
+            this.pnlList.Padding = new System.Windows.Forms.Padding(30, 31, 30, 31);
+            this.pnlList.Size = new System.Drawing.Size(1469, 568);
             this.pnlList.TabIndex = 7;
             // 
             // dgvReports
@@ -335,15 +335,15 @@
             this.dgvReports.DefaultCellStyle = dataGridViewCellStyle2;
             this.dgvReports.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvReports.EnableHeadersVisualStyles = false;
-            this.dgvReports.Location = new System.Drawing.Point(27, 75);
-            this.dgvReports.Margin = new System.Windows.Forms.Padding(4);
+            this.dgvReports.Location = new System.Drawing.Point(30, 92);
+            this.dgvReports.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.dgvReports.Name = "dgvReports";
             this.dgvReports.ReadOnly = true;
             this.dgvReports.RowHeadersVisible = false;
             this.dgvReports.RowHeadersWidth = 62;
             this.dgvReports.RowTemplate.Height = 45;
             this.dgvReports.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvReports.Size = new System.Drawing.Size(1250, 353);
+            this.dgvReports.Size = new System.Drawing.Size(1407, 443);
             this.dgvReports.TabIndex = 2;
             // 
             // colDate
@@ -400,26 +400,26 @@
             this.lblListTitle.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblListTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblListTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblListTitle.Location = new System.Drawing.Point(27, 25);
+            this.lblListTitle.Location = new System.Drawing.Point(30, 31);
             this.lblListTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblListTitle.Name = "lblListTitle";
-            this.lblListTitle.Padding = new System.Windows.Forms.Padding(0, 0, 0, 18);
-            this.lblListTitle.Size = new System.Drawing.Size(347, 50);
+            this.lblListTitle.Padding = new System.Windows.Forms.Padding(0, 0, 0, 23);
+            this.lblListTitle.Size = new System.Drawing.Size(401, 61);
             this.lblListTitle.TabIndex = 1;
             this.lblListTitle.Text = "CHI TIẾT THEO NGÀY (DAILY)";
             // 
             // UcReports
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(246)))), ((int)(((byte)(250)))));
             this.Controls.Add(this.pnlList);
             this.Controls.Add(this.pnlCards);
             this.Controls.Add(this.pnlFilter);
             this.Controls.Add(this.pnlHeader);
-            this.Margin = new System.Windows.Forms.Padding(4);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "UcReports";
-            this.Size = new System.Drawing.Size(1360, 897);
+            this.Size = new System.Drawing.Size(1530, 1122);
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
             this.pnlFilter.ResumeLayout(false);
