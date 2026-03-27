@@ -5,6 +5,8 @@ import com.hcmute.reservation.model.enums.TableStatus;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 public class FloorMapTableResponse {
@@ -16,4 +18,5 @@ public class FloorMapTableResponse {
     private Long currentReservationId;
     private String currentCustomerName;
     private ReservationStatus currentReservationStatus;
+    private LocalDateTime currentReservationTime;
 }
