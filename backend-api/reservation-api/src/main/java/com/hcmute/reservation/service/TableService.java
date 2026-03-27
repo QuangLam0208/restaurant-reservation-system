@@ -1,12 +1,12 @@
 package com.hcmute.reservation.service;
 
-import com.hcmute.reservation.dto.table.FloorMapTableResponse;
-import com.hcmute.reservation.dto.table.TableRequest;
-import com.hcmute.reservation.dto.table.TableResponse;
+import com.hcmute.reservation.model.dto.table.FloorMapTableResponse;
+import com.hcmute.reservation.model.dto.table.TableRequest;
+import com.hcmute.reservation.model.dto.table.TableResponse;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.ResourceNotFoundException;
-import com.hcmute.reservation.model.TableInfo;
+import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.model.enums.ReservationStatus;
 import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.TableInfoRepository;

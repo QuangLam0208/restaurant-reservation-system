@@ -1,9 +1,9 @@
 package com.hcmute.reservation.controller;
 
-import com.hcmute.reservation.dto.reservation.ChangeTableRequest;
-import com.hcmute.reservation.dto.reservation.OnlineReservationRequest;
-import com.hcmute.reservation.dto.reservation.ReservationResponse;
-import com.hcmute.reservation.dto.reservation.WalkInRequest;
+import com.hcmute.reservation.model.dto.reservation.ChangeTableRequest;
+import com.hcmute.reservation.model.dto.reservation.OnlineReservationRequest;
+import com.hcmute.reservation.model.dto.reservation.ReservationResponse;
+import com.hcmute.reservation.model.dto.reservation.WalkInRequest;
 import com.hcmute.reservation.service.AvailabilityService;
 import com.hcmute.reservation.service.ReservationService;
 import jakarta.validation.Valid;

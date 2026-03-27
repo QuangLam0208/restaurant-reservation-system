@@ -1,11 +1,11 @@
 package com.hcmute.reservation.service;
 
-import com.hcmute.reservation.dto.auth.StaffLoginRequest;
-import com.hcmute.reservation.dto.auth.StaffLoginResponse;
-import com.hcmute.reservation.dto.auth.StaffRegisterRequest;
+import com.hcmute.reservation.model.dto.auth.StaffLoginRequest;
+import com.hcmute.reservation.model.dto.auth.StaffLoginResponse;
+import com.hcmute.reservation.model.dto.auth.StaffRegisterRequest;
 import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.UnauthorizedException;
-import com.hcmute.reservation.model.Account;
+import com.hcmute.reservation.model.entity.Account;
 import com.hcmute.reservation.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

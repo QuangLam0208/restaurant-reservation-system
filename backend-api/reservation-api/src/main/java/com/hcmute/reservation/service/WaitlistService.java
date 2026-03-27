@@ -1,14 +1,14 @@
 package com.hcmute.reservation.service;
 
-import com.hcmute.reservation.dto.reservation.WalkInRequest;
-import com.hcmute.reservation.dto.table.AvailableWindowResponse;
-import com.hcmute.reservation.dto.waitlist.WaitlistRequest;
-import com.hcmute.reservation.dto.waitlist.WaitlistResponse;
+import com.hcmute.reservation.model.dto.reservation.WalkInRequest;
+import com.hcmute.reservation.model.dto.table.AvailableWindowResponse;
+import com.hcmute.reservation.model.dto.waitlist.WaitlistRequest;
+import com.hcmute.reservation.model.dto.waitlist.WaitlistResponse;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.ResourceNotFoundException;
-import com.hcmute.reservation.model.Customer;
-import com.hcmute.reservation.model.Waitlist;
+import com.hcmute.reservation.model.entity.Customer;
+import com.hcmute.reservation.model.entity.Waitlist;
 import com.hcmute.reservation.model.enums.WaitlistStatus;
 import com.hcmute.reservation.repository.CustomerRepository;
 import com.hcmute.reservation.repository.WaitlistRepository;

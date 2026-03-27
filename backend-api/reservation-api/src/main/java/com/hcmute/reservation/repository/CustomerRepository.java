@@ -1,6 +1,6 @@
 package com.hcmute.reservation.repository;
 
-import com.hcmute.reservation.model.Customer;
+import com.hcmute.reservation.model.entity.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

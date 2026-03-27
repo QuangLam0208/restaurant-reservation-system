@@ -1,6 +1,6 @@
 package com.hcmute.reservation.security;
 
-import com.hcmute.reservation.model.Account;
+import com.hcmute.reservation.model.entity.Account;
 import com.hcmute.reservation.repository.AccountRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

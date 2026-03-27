@@ -1,7 +1,7 @@
 package com.hcmute.reservation.service;
 
-import com.hcmute.reservation.dto.report.DailyReservationReport;
-import com.hcmute.reservation.dto.report.NoShowRateResponse;
+import com.hcmute.reservation.model.dto.report.DailyReservationReport;
+import com.hcmute.reservation.model.dto.report.NoShowRateResponse;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;

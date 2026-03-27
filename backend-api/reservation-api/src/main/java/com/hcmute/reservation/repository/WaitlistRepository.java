@@ -1,8 +1,7 @@
 package com.hcmute.reservation.repository;
 
-import com.hcmute.reservation.model.Waitlist;
+import com.hcmute.reservation.model.entity.Waitlist;
 import com.hcmute.reservation.model.enums.WaitlistStatus;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
