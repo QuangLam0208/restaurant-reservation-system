@@ -1,4 +1,4 @@
-﻿namespace reservation_winforms.Forms
+namespace reservation_winforms.Forms
 {
     partial class UcReports
     {
