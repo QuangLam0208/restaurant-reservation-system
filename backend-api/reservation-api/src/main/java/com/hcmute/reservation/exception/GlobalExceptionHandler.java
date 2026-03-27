@@ -3,6 +3,7 @@ package com.hcmute.reservation.exception;
 import jakarta.persistence.OptimisticLockException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -36,7 +37,7 @@ public class GlobalExceptionHandler {
 
     // OptimisticLockException từ JPA → 409 agar client thử lại
     @ExceptionHandler({OptimisticLockException.class,
-                        org.springframework.orm.ObjectOptimisticLockingFailureException.class})
+                        ObjectOptimisticLockingFailureException.class})
     public ResponseEntity<Map<String, Object>> handleOptimisticLock(Exception ex) {
         return buildError(HttpStatus.CONFLICT, "Conflict: table was updated by another request. Please retry.");
     }
