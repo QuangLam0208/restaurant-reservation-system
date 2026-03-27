@@ -22,7 +22,8 @@ export function updateHeaderAuthUI(isLoggedIn) {
     const logoutBtn = document.getElementById("logout-btn");
 
     if (isLoggedIn) {
-        if (headerAuthBtn) headerAuthBtn.innerText = "Book a Table";
+        const userName = localStorage.getItem("userName");
+        if (headerAuthBtn) headerAuthBtn.innerText = userName ? `Hi, ${userName}` : "Book a Table";
         if (logoutBtn) logoutBtn.classList.remove("hidden");
     } else {
         if (headerAuthBtn) headerAuthBtn.innerText = "Login";
