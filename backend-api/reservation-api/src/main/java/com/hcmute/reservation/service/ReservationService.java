@@ -421,6 +421,18 @@ public class ReservationService {
                             "Trạng thái hiện tại: " + reservation.getStatus());
         }
 
+        // Tổng sức chứa của bàn cũ
+        int oldTotalCapacity = reservation.getTableMappings().stream()
+                .mapToInt(m -> m.getTableInfo().getCapacity())
+                .sum();
+
+        int newTotalCapacity = 0;
+
+        // Lấy ID bàn cũ của đơn này để loại trừ khi kiểm tra conflict
+        Set<Long> currentTableIds = reservation.getTableMappings().stream()
+                .map(m -> m.getTableInfo().getTableId())
+                .collect(Collectors.toSet());
+
         // Validate new list table
         List<TableInfo> newTables = new ArrayList<>();
         for (Long tableId : req.getTableIds()) {
@@ -431,10 +443,8 @@ public class ReservationService {
                 throw new BadRequestException("Bàn #" + tableId + " đang bị vô hiệu hóa.");
             }
 
-            // Lấy ID bàn cũ của đơn này để loại trừ khi kiểm tra conflict
-            Set<Long> currentTableIds = reservation.getTableMappings().stream()
-                    .map(m -> m.getTableInfo().getTableId())
-                    .collect(Collectors.toSet());
+            // Tính sức chứa của bàn mới
+            newTotalCapacity += table.getCapacity();
 
             // Nếu bàn mới không phải bàn cũ → kiểm tra trạng thái
             if (!currentTableIds.contains(tableId)) {
@@ -456,8 +466,11 @@ public class ReservationService {
                     throw new ConflictException("Bàn #" + tableId + " đã có lịch đặt trùng trong khung giờ này.");
                 }
             }
-
             newTables.add(table);
+        }
+
+        if (newTotalCapacity > reservation.getGuestCount() + 2) {
+            throw new BadRequestException("Không thể đổi bàn! Chỉ được phép chuyển sang bàn lớn hơn tối đa 2 chỗ so với sức chứa hiện tại. (Sức chứa cũ: " + oldTotalCapacity + " chỗ, yêu cầu mới: " + newTotalCapacity + " chỗ).");
         }
 
         // Giải phóng bàn cũ
