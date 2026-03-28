@@ -310,6 +310,23 @@ public class ReservationService {
                 selectedTables.add(t);
             }
 
+            // Xác định availabilityType
+            if (selectedTables.size() > 1) {
+                availabilityType = "MERGED_AVAILABLE";
+            } else {
+                // Lễ tân chọn 1 bàn -> Cần kiểm tra xem có vướng lịch đặt trước không
+                Set<Long> occupiedIds = new HashSet<>(
+                        reservationRepository.findOccupiedTableIds(now, blockUntil));
+
+                if (occupiedIds.contains(selectedTables.get(0).getTableId())) {
+                    // Nếu bàn này nằm trong danh sách sắp bị chiếm (có khách đặt tương lai)
+                    availabilityType = "PARTIAL_AVAILABLE";
+                } else {
+                    // Nếu hoàn toàn không vướng ai
+                    availabilityType = "FULL_AVAILABLE";
+                }
+            }
+
         } else if (req.isMergeTables()) {
             // Case B: Ghép bàn tự động
             Set<Long> occupiedIds = new HashSet<>(
@@ -322,7 +339,6 @@ public class ReservationService {
                     .filter(t -> t.getCapacity() < req.getGuestCount())
                     .collect(Collectors.toList());
 
-            // Thuật toán đã được chặn diff <= 2 ở trên
             selectedTables = findBestTableCombination(availableMerge, req.getGuestCount());
 
             if (selectedTables.isEmpty()) {
