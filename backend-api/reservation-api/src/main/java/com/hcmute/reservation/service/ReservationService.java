@@ -88,11 +88,13 @@ public class ReservationService {
                            List<TableInfo> bestCombo, int[] bestDiff, int[] minTables) {
         if (currentSum >= target) {
             int diff = currentSum - target;
-            if (diff < bestDiff[0] || (diff == bestDiff[0] && currentCombo.size() < minTables[0])) {
-                bestDiff[0] = diff;
-                minTables[0] = currentCombo.size();
-                bestCombo.clear();
-                bestCombo.addAll(currentCombo);
+            if (diff <= 2) {
+                if (diff < bestDiff[0] || (diff == bestDiff[0] && currentCombo.size() < minTables[0])) {
+                    bestDiff[0] = diff;
+                    minTables[0] = currentCombo.size();
+                    bestCombo.clear();
+                    bestCombo.addAll(currentCombo);
+                }
             }
             return;
         }
@@ -296,6 +298,8 @@ public class ReservationService {
 
         List<TableInfo> selectedTables = new ArrayList<>();
         String availabilityType = "FULL_AVAILABLE";
+        Set<Long> occupiedIds = new HashSet<>(
+                reservationRepository.findOccupiedTableIds(now, blockUntil));
 
         if (req.getTableId() != null && !req.getTableId().isEmpty()) {
             // Case A: Lễ tân chỉ định bàn cụ thể
@@ -308,58 +312,67 @@ public class ReservationService {
                 selectedTables.add(t);
             }
 
+            // Kiểm tra xem có CÓ BẤT KỲ bàn nào trong danh sách dính lịch tương lai không?
+            boolean hasPartialTable = selectedTables.stream()
+                    .anyMatch(t -> occupiedIds.contains(t.getTableId()));
+
+            // Xác định availabilityType
+            if (selectedTables.size() > 1) {
+                availabilityType = hasPartialTable ? "PARTIAL_MERGED_AVAILABLE" : "MERGED_AVAILABLE";;
+            } else {
+                availabilityType = hasPartialTable ? "PARTIAL_AVAILABLE" : "FULL_AVAILABLE";
+            }
+
         } else if (req.isMergeTables()) {
             // Case B: Ghép bàn tự động
-            Set<Long> occupiedIds = new HashSet<>(
-                    reservationRepository.findOccupiedTableIds(now, blockUntil));
+            // Lấy danh sách bàn trống, chỉ lấy các bàn nhỏ hơn guestCount để ghép
             List<TableInfo> availableMerge = tableInfoRepository
                     .findByStatusAndIsActiveTrue(TableStatus.AVAILABLE)
                     .stream()
                     .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
                     .filter(t -> t.getCapacity() < req.getGuestCount())
-                    .sorted((t1, t2) -> Integer.compare(t2.getCapacity(), t1.getCapacity()))
                     .collect(Collectors.toList());
 
-            int total = 0;
-            for (TableInfo t : availableMerge) {
-                selectedTables.add(t);
-                total += t.getCapacity();
-                if (total >= req.getGuestCount()) break;
-            }
-            if (total < req.getGuestCount()) {
-                throw new BadRequestException(
-                        "Khong du ban de ghep. Can " + req.getGuestCount() + " cho.");
-            }
+            selectedTables = findBestTableCombination(availableMerge, req.getGuestCount());
 
+            if (selectedTables.isEmpty()) {
+                throw new BadRequestException("Không có tổ hợp bàn ghép nào phù hợp (yêu cầu sức chứa từ " + req.getGuestCount() + " đến " + (req.getGuestCount() + 2) + " chỗ).");
+            }
+            availabilityType = "MERGED_AVAILABLE";
         } else {
             // Case C: Hệ thống tự chọn — FULL ưu tiên, fallback merge, sau đó PARTIAL
-            Set<Long> occupiedIds = new HashSet<>(
-                    reservationRepository.findOccupiedTableIds(now, blockUntil));
-
+            // 1. Tìm bàn đơn FULL_AVAILABLE (Giới hạn sức chứa +2)
             List<TableInfo> fullAvailable = tableInfoRepository
                     .findAvailableTablesForGuests(req.getGuestCount())
                     .stream()
                     .filter(t -> !occupiedIds.contains(t.getTableId()))
+                    .filter(t -> t.getCapacity() <= req.getGuestCount() + 2)
                     .collect(Collectors.toList());
 
             if (!fullAvailable.isEmpty()) {
                 selectedTables.add(fullAvailable.get(0));
                 availabilityType = "FULL_AVAILABLE";
             } else {
-                // Thử ghép bàn trước khi fallback PARTIAL
+                // 2. Thử ghép bàn (nếu không có bàn đơn thỏa mãn)
                 List<TableInfo> allFree = tableInfoRepository
                         .findByStatusAndIsActiveTrue(TableStatus.AVAILABLE)
                         .stream()
                         .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
+                        .filter(t -> t.getCapacity() < req.getGuestCount())
                         .collect(Collectors.toList());
+
                 List<TableInfo> merged = findBestTableCombination(allFree, req.getGuestCount());
+
                 if (!merged.isEmpty()) {
                     selectedTables.addAll(merged);
-                    availabilityType = "FULL_AVAILABLE";
+                    availabilityType = "MERGED_AVAILABLE";
                 } else {
-                    // Fallback: PARTIAL AVAILABLE
+                    // 3. Fallback: PARTIAL AVAILABLE (Bàn trống tạm thời, vướng lịch đặt sau)
                     List<TableInfo> partialAvailable = tableInfoRepository
-                            .findAvailableTablesForGuests(req.getGuestCount());
+                            .findAvailableTablesForGuests(req.getGuestCount())
+                            .stream()
+                            .filter(t -> t.getCapacity() <= req.getGuestCount() + 2)
+                            .collect(Collectors.toList());
                     if (partialAvailable.isEmpty()) {
                         throw new BadRequestException("Nha hang hien da het ban trong phu hop.");
                     }
@@ -399,7 +412,6 @@ public class ReservationService {
 
         // ── Tạo Reservation tạm (CREATED) + soft-lock các bàn ─────────
         //    Scheduler sẽ tự hủy nếu lễ tân không confirm trong softLockMinutes.
-
         Reservation reservation = Reservation.builder()
                 .customer(customer)
                 .type(ReservationType.WALK_IN)
@@ -495,7 +507,7 @@ public class ReservationService {
                         .tableInfo(t)
                         .build());
             }
-        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+        } catch (ObjectOptimisticLockingFailureException e) {
             throw new ConflictException(
                     "Ban vua bi thay doi boi giao dich khac. Vui long tai lai va thu lai.");
         }
@@ -524,130 +536,6 @@ public class ReservationService {
         }
         // CANCELLED / EXPIRED: idempotent - bỏ qua yên lặng
     }
-
-//    @Transactional
-//    public ReservationResponse createWalkIn(WalkInRequest req) {
-//        Customer customer = null;
-//        if (req.getCustomerPhone() != null && !req.getCustomerPhone().trim().isEmpty()) {
-//            customer = customerRepository.findByPhoneAndPasswordHashIsNull(req.getCustomerPhone())
-//                    .orElseGet(() -> customerRepository.save(Customer.builder()
-//                            .name(req.getCustomerName() != null && !req.getCustomerName().trim().isEmpty()
-//                                    ? req.getCustomerName() : "Khách Walk-in")
-//                            .phone(req.getCustomerPhone())
-//                            .isVerified(true) // walk-in không cần xác minh
-//                            .build()));
-//        }
-//
-//        LocalDateTime now = LocalDateTime.now();
-//        LocalDateTime defaultEnd = now.plusMinutes(durationMinutes);
-//        LocalDateTime checkEnd = req.getEndTime() != null ? req.getEndTime() : defaultEnd;
-//
-//        // Chọn bàn và xly short seating
-//        List<TableInfo> selectedTables = new ArrayList<>();
-//
-//        if (req.getTableId() != null && !req.getTableId().isEmpty()) {
-//            for (Long tableId : req.getTableId()) {
-//                TableInfo t = tableInfoRepository.findById(tableId)
-//                        .orElseThrow(() -> new ResourceNotFoundException("Bàn #" + tableId + " không tồn tại."));
-//                if (t.getStatus() != TableStatus.AVAILABLE || t.isSoftLocked()) {
-//                    throw new ConflictException("Bàn #" + tableId + " hiện không khả dụng.");
-//                }
-//                selectedTables.add(t);
-//            }
-//        } else if (req.isMergeTables()) {
-//            // Ghép bàn tự động
-//            List<TableInfo> available = tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE);
-//            LocalDateTime blockUntil = checkEnd.plusMinutes(bufferMinutes);
-//            Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(LocalDateTime.now(), blockUntil));
-//
-//            // Lọc bàn đủ điều kiện ghép (không bị soft lock, không overlap, và sức chứa < guestCount)
-//            List<TableInfo> availableMerge = available.stream()
-//                    .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
-//                    .filter(t -> t.getCapacity() < req.getGuestCount())
-//                    .sorted((t1, t2) -> Integer.compare(t2.getCapacity(), t1.getCapacity())) // Sort DESC
-//                    .collect(Collectors.toList());
-//
-//            int total = 0;
-//            for (TableInfo t : availableMerge) {
-//                selectedTables.add(t);
-//                total += t.getCapacity();
-//                if (total >= req.getGuestCount()) break;
-//            }
-//            if (total < req.getGuestCount()) {
-//                throw new BadRequestException("Không đủ bàn để ghép. Cần " + req.getGuestCount() + " chỗ.");
-//            }
-//        } else {
-//            LocalDateTime blockUntil = checkEnd.plusMinutes(bufferMinutes);
-//            Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(now, blockUntil));
-//            // Ưu tiên 1: Tìm bàn FULL AVAILABLE (Trống hoàn toàn trong khung giờ dự kiến)
-//            List<TableInfo> fullAvailable = tableInfoRepository.findAvailableTablesForGuests(req.getGuestCount())
-//                    .stream()
-//                    .filter(t -> !occupiedIds.contains(t.getTableId()))
-//                    .collect(Collectors.toList());
-//            if (!fullAvailable.isEmpty()) {
-//                selectedTables.add(fullAvailable.get(0));
-//            } else {
-//                // Ưu tiên 2: Tìm bàn PARTIAL AVAILABLE (Hiện tại trống nhưng sắp có khách online)
-//                List<TableInfo> partialAvailable = tableInfoRepository.findAvailableTablesForGuests(req.getGuestCount());
-//                if (partialAvailable.isEmpty()) {
-//                    throw new BadRequestException("Nhà hàng hiện đã hết bàn trống phù hợp.");
-//                }
-//                selectedTables.add(partialAvailable.get(0));
-//            }
-//        }
-//
-//        LocalDateTime calculatedEndTime = defaultEnd;
-//
-//        if (req.getEndTime() != null) {
-//            calculatedEndTime = req.getEndTime();
-//        } else {
-//            // Backend tự rà soát nếu Frontend không truyền
-//            LocalDateTime earliestNextBooking = null;
-//            for (TableInfo t : selectedTables) {
-//                List<Reservation> nextBookings = reservationRepository.findNextBookingForTable(t.getTableId(), now);
-//                if (!nextBookings.isEmpty()) {
-//                    LocalDateTime nextStart = nextBookings.get(0).getStartTime();
-//                    if (earliestNextBooking == null || nextStart.isBefore(earliestNextBooking)) {
-//                        earliestNextBooking = nextStart;
-//                    }
-//                }
-//            }
-//            // Nếu có booking kế tiếp cắt ngang (PARTIAL AVAILABLE), cập nhật endTime thành thời gian booking đó bắt đầu
-//            if (earliestNextBooking != null) {
-//                LocalDateTime maxAllowedEndTime = earliestNextBooking.minusMinutes(bufferMinutes);
-//                if (maxAllowedEndTime.isBefore(calculatedEndTime)) {
-//                    calculatedEndTime = maxAllowedEndTime;
-//                }
-//            }
-//        }
-//        Reservation reservation = Reservation.builder()
-//                .customer(customer)
-//                .type(ReservationType.WALK_IN)
-//                .guestCount(req.getGuestCount())
-//                .startTime(now)
-//                .endTime(calculatedEndTime)
-//                .status(ReservationStatus.SEATED)
-//                .note(req.getNote())
-//                .build();
-//        reservation = reservationRepository.save(reservation);
-//
-//        try {
-//            for (TableInfo t : selectedTables) {
-//                t.setStatus(TableStatus.OCCUPIED);
-//
-//                // Ép Hibernate update DB ngay để kiểm tra @Version
-//                tableInfoRepository.saveAndFlush(t);
-//
-//                mappingRepository.save(ReservationTableMapping.builder()
-//                        .reservation(reservation).tableInfo(t).build());
-//            }
-//        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
-//            // Bắt lỗi Race Condition: 2 Lễ tân cùng bấm xếp 1 bàn trên 2 máy POS khác nhau
-//            throw new ConflictException("Bàn bạn chọn vừa được Lễ tân khác xếp cho khách. Vui lòng chọn lại bàn hoặc tải lại sơ đồ phòng.");
-//        }
-//
-//        return toResponse(reservation);
-//    }
 
     // ────── Change Table ────────────────────────────────────────────────────
     @Transactional
@@ -881,6 +769,3 @@ public class ReservationService {
         }
     }
 }
-
-// Helper field to track locked table on PENDING_PAYMENT — add to Reservation entity via transient
-// (we use a workaround via soft lock on TableInfo tracking lockedByReservationId)
