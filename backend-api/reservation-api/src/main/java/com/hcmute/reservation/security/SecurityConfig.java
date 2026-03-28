@@ -71,6 +71,7 @@ public class SecurityConfig {
 
                 // ── STAFF or MANAGER ──────────────────────────────────────────────
                 .requestMatchers(HttpMethod.POST, "/api/reservations/walk-in").hasAnyRole("RECEPTIONIST", "MANAGER")
+                .requestMatchers(HttpMethod.GET, "/api/reservations/walk-in/options").hasAnyRole("RECEPTIONIST", "MANAGER")
                 .requestMatchers(HttpMethod.POST, "/api/reservations/*/change-table").hasAnyRole("RECEPTIONIST", "MANAGER")
                 .requestMatchers(HttpMethod.POST, "/api/reservations/*/check-in").hasAnyRole("RECEPTIONIST", "MANAGER")
                 .requestMatchers(HttpMethod.POST, "/api/reservations/*/check-out").hasAnyRole("RECEPTIONIST", "MANAGER")

@@ -85,6 +85,16 @@ public class ReservationController {
     }
 
     /**
+     * GET /api/reservations/walk-in/options?guestCount=
+     * Chi doc du lieu, khong tao reservation va khong soft-lock ban.
+     */
+    @GetMapping("/walk-in/options")
+    public ResponseEntity<WalkInOptionResponse> getWalkInOptions(
+            @RequestParam int guestCount) {
+        return ResponseEntity.ok(reservationService.getWalkInOptions(guestCount));
+    }
+
+    /**
      * POST /api/reservations/walk-in/suggest
      Tìm bàn gợi ý, soft-lock lại, trả về WalkInSuggestionResponse.
      */
