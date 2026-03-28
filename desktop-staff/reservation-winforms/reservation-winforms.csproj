@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -46,22 +49,118 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Forms\MainForm.cs">
+    <Compile Include="DTO\auth\StaffLoginRequest.cs" />
+    <Compile Include="DTO\auth\StaffLoginResponse.cs" />
+    <Compile Include="DTO\auth\StaffRegisterRequest.cs" />
+    <Compile Include="DTO\overrides\OverrideLogResponse.cs" />
+    <Compile Include="DTO\overrides\OverrideRequest.cs" />
+    <Compile Include="DTO\report\DailyReservationReport.cs" />
+    <Compile Include="DTO\report\NoShowRateResponse.cs" />
+    <Compile Include="DTO\reservation\ChangeTableRequest.cs" />
+    <Compile Include="DTO\reservation\ReservationResponse.cs" />
+    <Compile Include="DTO\reservation\WalkInRequest.cs" />
+    <Compile Include="DTO\table\AvailableWindowResponse.cs" />
+    <Compile Include="DTO\table\FloorMapTableResponse.cs" />
+    <Compile Include="DTO\table\TableRequest.cs" />
+    <Compile Include="DTO\table\TableResponse.cs" />
+    <Compile Include="DTO\waitList\WaitlistRequest.cs" />
+    <Compile Include="DTO\waitList\WaitlistResponse.cs" />
+    <Compile Include="Forms\ChangeTableDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\MainForm.Designer.cs">
-      <DependentUpon>MainForm.cs</DependentUpon>
+    <Compile Include="Forms\ChangeTableDialog.Designer.cs">
+      <DependentUpon>ChangeTableDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\WalkInForm.cs">
+    <Compile Include="Forms\LoginForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\WalkInForm.Designer.cs">
-      <DependentUpon>WalkInForm.cs</DependentUpon>
+    <Compile Include="Forms\LoginForm.Designer.cs">
+      <DependentUpon>LoginForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Models\ReservationDTO.cs" />
+    <Compile Include="Forms\MainDashboardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\MainDashboardForm.Designer.cs">
+      <DependentUpon>MainDashboardForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\OverrideDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\OverrideDialog.Designer.cs">
+      <DependentUpon>OverrideDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\UcRegister.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UcRegister.Designer.cs">
+      <DependentUpon>UcRegister.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\UcOnlineBooking.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UcOnlineBooking.Designer.cs">
+      <DependentUpon>UcOnlineBooking.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\UcReports.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UcReports.Designer.cs">
+      <DependentUpon>UcReports.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\UcSystemLogs.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UcSystemLogs.Designer.cs">
+      <DependentUpon>UcSystemLogs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\UcTableMap.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UcTableMap.Designer.cs">
+      <DependentUpon>UcTableMap.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\UcTableSetup.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UcTableSetup.Designer.cs">
+      <DependentUpon>UcTableSetup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\UcWaitlist.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UcWaitlist.Designer.cs">
+      <DependentUpon>UcWaitlist.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\UIConstants.cs" />
+    <Compile Include="GlobalState.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\ApiService.cs" />
+    <Compile Include="Services\ApiClient.cs" />
+    <Compile Include="Services\AuthService.cs" />
+    <EmbeddedResource Include="Forms\LoginForm.resx">
+      <DependentUpon>LoginForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\MainDashboardForm.resx">
+      <DependentUpon>MainDashboardForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UcRegister.resx">
+      <DependentUpon>UcRegister.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UcOnlineBooking.resx">
+      <DependentUpon>UcOnlineBooking.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UcReports.resx">
+      <DependentUpon>UcReports.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UcSystemLogs.resx">
+      <DependentUpon>UcSystemLogs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UcTableSetup.resx">
+      <DependentUpon>UcTableSetup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UcWaitlist.resx">
+      <DependentUpon>UcWaitlist.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -71,6 +170,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -84,5 +184,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
