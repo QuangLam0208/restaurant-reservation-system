@@ -117,13 +117,6 @@ public class ReservationController {
         return ResponseEntity.ok(Map.of("message", "Da huy goi y ban thanh cong."));
     }
 
-    /** POST /api/reservations/walk-in */
-//    @PostMapping("/walk-in")
-//    public ResponseEntity<ReservationResponse> createWalkIn(@Valid @RequestBody WalkInRequest req) {
-//        return ResponseEntity.status(HttpStatus.CREATED)
-//                .body(reservationService.createWalkIn(req));
-//    }
-
     /** POST /api/reservations/{id}/change-table */
     @PostMapping("/{id}/change-table")
     public ResponseEntity<ReservationResponse> changeTable(
