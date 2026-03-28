@@ -10,6 +10,7 @@
 @import url('components/buttons.css');
 @import url('components/forms.css');
 @import url('components/modals.css');
+@import url('components/notifications.css');
 
 /* --- PAGES --- */
 @import url('pages/home.css');

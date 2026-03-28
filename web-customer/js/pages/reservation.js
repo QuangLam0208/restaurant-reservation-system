@@ -268,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if(cardNum) cardNum.addEventListener('input',function(){ this.value=this.value.replace(/\D/g,'').replace(/(\d{4})(?=\d)/g,'$1 ').substring(0,19); });
 
     const logoutBtn = document.getElementById('logout-btn');
-    if(logoutBtn) logoutBtn.addEventListener('click',e=>{ e.preventDefault(); localStorage.removeItem('isLoggedIn'); window.location.href='index.html'; });
+    if(logoutBtn) logoutBtn.addEventListener('click',e=>{ e.preventDefault(); localStorage.removeItem('isLoggedIn'); localStorage.removeItem('authToken'); localStorage.removeItem('customerId'); localStorage.removeItem('userName'); localStorage.removeItem('userEmail'); window.location.href='index.html'; });
 
     // Cài đặt trạng thái ban đầu
     setParty(2);
