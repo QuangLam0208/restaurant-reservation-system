@@ -1,12 +1,14 @@
 package com.hcmute.reservation.repository;
 
 import com.hcmute.reservation.model.entity.TableInfo;
+import com.hcmute.reservation.model.enums.ReservationStatus;
 import com.hcmute.reservation.model.enums.TableStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -25,4 +27,12 @@ public interface TableInfoRepository extends JpaRepository<TableInfo, Long> {
     // Tìm bàn đang bị soft-lock bởi một reservation
     @Query("SELECT t FROM TableInfo t WHERE t.lockedByReservationId = :reservationId")
     List<TableInfo> findByLockedByReservationId(@Param("reservationId") Long reservationId);
+
+    @Query("SELECT DISTINCT m.tableInfo FROM Reservation r JOIN r.tableMappings m " +
+            "WHERE r.status = :status AND r.startTime >= :startOfDay AND r.startTime <= :endOfDay " +
+            "AND m.tableInfo.isActive = true")
+    List<TableInfo> findTablesByReservationStatusAndDate(
+            @Param("status") ReservationStatus status,
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay);
 }

@@ -1,9 +1,6 @@
 package com.hcmute.reservation.service;
 
-import com.hcmute.reservation.model.dto.reservation.ChangeTableRequest;
-import com.hcmute.reservation.model.dto.reservation.OnlineReservationRequest;
-import com.hcmute.reservation.model.dto.reservation.ReservationResponse;
-import com.hcmute.reservation.model.dto.reservation.WalkInRequest;
+import com.hcmute.reservation.model.dto.reservation.*;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.ResourceNotFoundException;
@@ -17,6 +14,7 @@ import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -285,46 +283,41 @@ public class ReservationService {
 
     // ────── Walk-in ────────────────────────────────────────────────────
 
-    @Transactional
-    public ReservationResponse createWalkIn(WalkInRequest req) {
-        Customer customer = null;
-        if (req.getCustomerPhone() != null && !req.getCustomerPhone().trim().isEmpty()) {
-            customer = customerRepository.findByPhoneAndPasswordHashIsNull(req.getCustomerPhone())
-                    .orElseGet(() -> customerRepository.save(Customer.builder()
-                            .name(req.getCustomerName() != null && !req.getCustomerName().trim().isEmpty()
-                                    ? req.getCustomerName() : "Khách Walk-in")
-                            .phone(req.getCustomerPhone())
-                            .isVerified(true) // walk-in không cần xác minh
-                            .build()));
-        }
+    // ────── Suggest — Gợi ý bàn + Soft Lock ──────────────────
 
+    @Transactional
+    public WalkInSuggestionResponse suggestWalkIn(WalkInRequest req) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime defaultEnd = now.plusMinutes(durationMinutes);
         LocalDateTime checkEnd = req.getEndTime() != null ? req.getEndTime() : defaultEnd;
+        LocalDateTime blockUntil = checkEnd.plusMinutes(bufferMinutes);
 
-        // Chọn bàn và xly short seating
+        // ── Chọn bàn theo 3 case ──────────────────────────────────────
+
         List<TableInfo> selectedTables = new ArrayList<>();
+        String availabilityType = "FULL_AVAILABLE";
 
         if (req.getTableId() != null && !req.getTableId().isEmpty()) {
+            // Case A: Lễ tân chỉ định bàn cụ thể
             for (Long tableId : req.getTableId()) {
                 TableInfo t = tableInfoRepository.findById(tableId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Bàn #" + tableId + " không tồn tại."));
+                        .orElseThrow(() -> new ResourceNotFoundException("Ban #" + tableId + " khong ton tai."));
                 if (t.getStatus() != TableStatus.AVAILABLE || t.isSoftLocked()) {
-                    throw new ConflictException("Bàn #" + tableId + " hiện không khả dụng.");
+                    throw new ConflictException("Ban #" + tableId + " hien khong kha dung.");
                 }
                 selectedTables.add(t);
             }
-        } else if (req.isMergeTables()) {
-            // Ghép bàn tự động
-            List<TableInfo> available = tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE);
-            LocalDateTime blockUntil = checkEnd.plusMinutes(bufferMinutes);
-            Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(LocalDateTime.now(), blockUntil));
 
-            // Lọc bàn đủ điều kiện ghép (không bị soft lock, không overlap, và sức chứa < guestCount)
-            List<TableInfo> availableMerge = available.stream()
+        } else if (req.isMergeTables()) {
+            // Case B: Ghép bàn tự động
+            Set<Long> occupiedIds = new HashSet<>(
+                    reservationRepository.findOccupiedTableIds(now, blockUntil));
+            List<TableInfo> availableMerge = tableInfoRepository
+                    .findByStatusAndIsActiveTrue(TableStatus.AVAILABLE)
+                    .stream()
                     .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
                     .filter(t -> t.getCapacity() < req.getGuestCount())
-                    .sorted((t1, t2) -> Integer.compare(t2.getCapacity(), t1.getCapacity())) // Sort DESC
+                    .sorted((t1, t2) -> Integer.compare(t2.getCapacity(), t1.getCapacity()))
                     .collect(Collectors.toList());
 
             int total = 0;
@@ -334,37 +327,58 @@ public class ReservationService {
                 if (total >= req.getGuestCount()) break;
             }
             if (total < req.getGuestCount()) {
-                throw new BadRequestException("Không đủ bàn để ghép. Cần " + req.getGuestCount() + " chỗ.");
+                throw new BadRequestException(
+                        "Khong du ban de ghep. Can " + req.getGuestCount() + " cho.");
             }
+
         } else {
-            LocalDateTime blockUntil = checkEnd.plusMinutes(bufferMinutes);
-            Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(now, blockUntil));
-            // Ưu tiên 1: Tìm bàn FULL AVAILABLE (Trống hoàn toàn trong khung giờ dự kiến)
-            List<TableInfo> fullAvailable = tableInfoRepository.findAvailableTablesForGuests(req.getGuestCount())
+            // Case C: Hệ thống tự chọn — FULL ưu tiên, fallback merge, sau đó PARTIAL
+            Set<Long> occupiedIds = new HashSet<>(
+                    reservationRepository.findOccupiedTableIds(now, blockUntil));
+
+            List<TableInfo> fullAvailable = tableInfoRepository
+                    .findAvailableTablesForGuests(req.getGuestCount())
                     .stream()
                     .filter(t -> !occupiedIds.contains(t.getTableId()))
                     .collect(Collectors.toList());
+
             if (!fullAvailable.isEmpty()) {
                 selectedTables.add(fullAvailable.get(0));
+                availabilityType = "FULL_AVAILABLE";
             } else {
-                // Ưu tiên 2: Tìm bàn PARTIAL AVAILABLE (Hiện tại trống nhưng sắp có khách online)
-                List<TableInfo> partialAvailable = tableInfoRepository.findAvailableTablesForGuests(req.getGuestCount());
-                if (partialAvailable.isEmpty()) {
-                    throw new BadRequestException("Nhà hàng hiện đã hết bàn trống phù hợp.");
+                // Thử ghép bàn trước khi fallback PARTIAL
+                List<TableInfo> allFree = tableInfoRepository
+                        .findByStatusAndIsActiveTrue(TableStatus.AVAILABLE)
+                        .stream()
+                        .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
+                        .collect(Collectors.toList());
+                List<TableInfo> merged = findBestTableCombination(allFree, req.getGuestCount());
+                if (!merged.isEmpty()) {
+                    selectedTables.addAll(merged);
+                    availabilityType = "FULL_AVAILABLE";
+                } else {
+                    // Fallback: PARTIAL AVAILABLE
+                    List<TableInfo> partialAvailable = tableInfoRepository
+                            .findAvailableTablesForGuests(req.getGuestCount());
+                    if (partialAvailable.isEmpty()) {
+                        throw new BadRequestException("Nha hang hien da het ban trong phu hop.");
+                    }
+                    selectedTables.add(partialAvailable.get(0));
+                    availabilityType = "PARTIAL_AVAILABLE";
                 }
-                selectedTables.add(partialAvailable.get(0));
             }
         }
 
-        LocalDateTime calculatedEndTime = defaultEnd;
+        // ── Tính endTime chính xác (kiểm tra booking kế tiếp) ─────────
 
+        LocalDateTime calculatedEndTime = defaultEnd;
         if (req.getEndTime() != null) {
             calculatedEndTime = req.getEndTime();
         } else {
-            // Backend tự rà soát nếu Frontend không truyền
             LocalDateTime earliestNextBooking = null;
             for (TableInfo t : selectedTables) {
-                List<Reservation> nextBookings = reservationRepository.findNextBookingForTable(t.getTableId(), now);
+                List<Reservation> nextBookings =
+                        reservationRepository.findNextBookingForTable(t.getTableId(), now);
                 if (!nextBookings.isEmpty()) {
                     LocalDateTime nextStart = nextBookings.get(0).getStartTime();
                     if (earliestNextBooking == null || nextStart.isBefore(earliestNextBooking)) {
@@ -372,42 +386,268 @@ public class ReservationService {
                     }
                 }
             }
-            // Nếu có booking kế tiếp cắt ngang (PARTIAL AVAILABLE), cập nhật endTime thành thời gian booking đó bắt đầu
             if (earliestNextBooking != null) {
-                LocalDateTime maxAllowedEndTime = earliestNextBooking.minusMinutes(bufferMinutes);
-                if (maxAllowedEndTime.isBefore(calculatedEndTime)) {
-                    calculatedEndTime = maxAllowedEndTime;
+                LocalDateTime maxAllowed = earliestNextBooking.minusMinutes(bufferMinutes);
+                if (maxAllowed.isBefore(calculatedEndTime)) {
+                    calculatedEndTime = maxAllowed;
                 }
             }
         }
+
+        // ── Resolve customer (tùy chọn với walk-in) ───────────────────
+        Customer customer = resolveWalkInCustomer(req);
+
+        // ── Tạo Reservation tạm (CREATED) + soft-lock các bàn ─────────
+        //    Scheduler sẽ tự hủy nếu lễ tân không confirm trong softLockMinutes.
+
         Reservation reservation = Reservation.builder()
                 .customer(customer)
                 .type(ReservationType.WALK_IN)
                 .guestCount(req.getGuestCount())
                 .startTime(now)
                 .endTime(calculatedEndTime)
-                .status(ReservationStatus.SEATED)
+                .status(ReservationStatus.CREATED)
                 .note(req.getNote())
                 .build();
         reservation = reservationRepository.save(reservation);
 
         try {
             for (TableInfo t : selectedTables) {
-                t.setStatus(TableStatus.OCCUPIED);
+                t.applySoftLock(reservation.getReservationId(), softLockMinutes);
+                tableInfoRepository.saveAndFlush(t);
+            }
+        } catch (ObjectOptimisticLockingFailureException e) {
+            // Bàn vừa bị lễ tân khác cướp trong tích tắc — hủy reservation tạm
+            reservation.setStatus(ReservationStatus.CANCELLED);
+            reservationRepository.save(reservation);
+            throw new ConflictException(
+                    "Mot trong cac ban goi y vua duoc xep cho khach khac. Vui long thu lai.");
+        }
 
-                // Ép Hibernate update DB ngay để kiểm tra @Version
+        // ── Build response ─────────────────────────────────────────────
+
+        final String finalAvailabilityType = availabilityType;
+        List<WalkInSuggestionResponse.SuggestedTable> suggestedTableDtos = selectedTables.stream()
+                .map(t -> WalkInSuggestionResponse.SuggestedTable.builder()
+                        .tableId(t.getTableId())
+                        .capacity(t.getCapacity())
+                        .availabilityType(finalAvailabilityType)
+                        .build())
+                .collect(Collectors.toList());
+
+        return WalkInSuggestionResponse.builder()
+                .suggestionId(reservation.getReservationId())
+                .suggestedTables(suggestedTableDtos)
+                .lockExpiresAt(LocalDateTime.now().plusMinutes(softLockMinutes))
+                .guestCount(req.getGuestCount())
+                .startTime(reservation.getStartTime())
+                .endTime(reservation.getEndTime())
+                .availabilityType(availabilityType)
+                .build();
+    }
+
+    // ────── Confirm — Xác nhận xếp bàn ─────────────────────
+    @Transactional
+    public ReservationResponse confirmWalkIn(Long suggestionId) {
+        Reservation reservation = reservationRepository.findById(suggestionId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Goi y #" + suggestionId + " khong ton tai hoac da het han."));
+
+        // Guard: chỉ cho confirm đúng loại và đúng trạng thái
+        if (reservation.getType() != ReservationType.WALK_IN) {
+            throw new BadRequestException("Chi co the xac nhan goi y Walk-in qua endpoint nay.");
+        }
+        if (reservation.getStatus() == ReservationStatus.EXPIRED ||
+                reservation.getStatus() == ReservationStatus.CANCELLED) {
+            throw new BadRequestException(
+                    "Goi y ban da het han hoac bi huy. Vui long tim ban lai.");
+        }
+        if (reservation.getStatus() != ReservationStatus.CREATED) {
+            throw new BadRequestException(
+                    "Trang thai khong hop le de xac nhan: " + reservation.getStatus());
+        }
+
+        // Lấy bàn đang soft-lock
+        List<TableInfo> lockedTables =
+                tableInfoRepository.findByLockedByReservationId(suggestionId);
+
+        if (lockedTables.isEmpty()) {
+            // Scheduler đã giải phóng soft-lock trước khi lễ tân bấm confirm
+            reservation.setStatus(ReservationStatus.EXPIRED);
+            reservationRepository.save(reservation);
+            throw new ConflictException(
+                    "Thoi gian giu ban da het (" + softLockMinutes + " phut). Vui long tim ban lai.");
+        }
+
+        // CREATED -> SEATED (walk-in không cần qua RESERVED)
+        reservation.setStatus(ReservationStatus.SEATED);
+        reservation = reservationRepository.save(reservation);
+
+        try {
+            for (TableInfo t : lockedTables) {
+                t.setSoftLockUntil(null);
+                t.setLockedByReservationId(null);
+                t.setStatus(TableStatus.OCCUPIED);
                 tableInfoRepository.saveAndFlush(t);
 
                 mappingRepository.save(ReservationTableMapping.builder()
-                        .reservation(reservation).tableInfo(t).build());
+                        .reservation(reservation)
+                        .tableInfo(t)
+                        .build());
             }
         } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
-            // Bắt lỗi Race Condition: 2 Lễ tân cùng bấm xếp 1 bàn trên 2 máy POS khác nhau
-            throw new ConflictException("Bàn bạn chọn vừa được Lễ tân khác xếp cho khách. Vui lòng chọn lại bàn hoặc tải lại sơ đồ phòng.");
+            throw new ConflictException(
+                    "Ban vua bi thay doi boi giao dich khac. Vui long tai lai va thu lai.");
         }
 
-        return toResponse(reservation);
+        // Reload để toResponse có đủ tableMappings
+        return toResponse(reservationRepository.findById(reservation.getReservationId())
+                .orElse(reservation));
     }
+
+    // ────── Cancel suggestion — Hủy gợi ý ──────────────────
+
+    @Transactional
+    public void cancelWalkInSuggestion(Long suggestionId) {
+        Reservation reservation = reservationRepository.findById(suggestionId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Goi y #" + suggestionId + " khong ton tai."));
+
+        if (reservation.getType() != ReservationType.WALK_IN) {
+            throw new BadRequestException("Chi co the huy goi y Walk-in qua endpoint nay.");
+        }
+
+        if (reservation.getStatus() == ReservationStatus.CREATED) {
+            reservation.setStatus(ReservationStatus.CANCELLED);
+            reservationRepository.save(reservation);
+            releaseLockedTable(suggestionId);
+        }
+        // CANCELLED / EXPIRED: idempotent - bỏ qua yên lặng
+    }
+
+//    @Transactional
+//    public ReservationResponse createWalkIn(WalkInRequest req) {
+//        Customer customer = null;
+//        if (req.getCustomerPhone() != null && !req.getCustomerPhone().trim().isEmpty()) {
+//            customer = customerRepository.findByPhoneAndPasswordHashIsNull(req.getCustomerPhone())
+//                    .orElseGet(() -> customerRepository.save(Customer.builder()
+//                            .name(req.getCustomerName() != null && !req.getCustomerName().trim().isEmpty()
+//                                    ? req.getCustomerName() : "Khách Walk-in")
+//                            .phone(req.getCustomerPhone())
+//                            .isVerified(true) // walk-in không cần xác minh
+//                            .build()));
+//        }
+//
+//        LocalDateTime now = LocalDateTime.now();
+//        LocalDateTime defaultEnd = now.plusMinutes(durationMinutes);
+//        LocalDateTime checkEnd = req.getEndTime() != null ? req.getEndTime() : defaultEnd;
+//
+//        // Chọn bàn và xly short seating
+//        List<TableInfo> selectedTables = new ArrayList<>();
+//
+//        if (req.getTableId() != null && !req.getTableId().isEmpty()) {
+//            for (Long tableId : req.getTableId()) {
+//                TableInfo t = tableInfoRepository.findById(tableId)
+//                        .orElseThrow(() -> new ResourceNotFoundException("Bàn #" + tableId + " không tồn tại."));
+//                if (t.getStatus() != TableStatus.AVAILABLE || t.isSoftLocked()) {
+//                    throw new ConflictException("Bàn #" + tableId + " hiện không khả dụng.");
+//                }
+//                selectedTables.add(t);
+//            }
+//        } else if (req.isMergeTables()) {
+//            // Ghép bàn tự động
+//            List<TableInfo> available = tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE);
+//            LocalDateTime blockUntil = checkEnd.plusMinutes(bufferMinutes);
+//            Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(LocalDateTime.now(), blockUntil));
+//
+//            // Lọc bàn đủ điều kiện ghép (không bị soft lock, không overlap, và sức chứa < guestCount)
+//            List<TableInfo> availableMerge = available.stream()
+//                    .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
+//                    .filter(t -> t.getCapacity() < req.getGuestCount())
+//                    .sorted((t1, t2) -> Integer.compare(t2.getCapacity(), t1.getCapacity())) // Sort DESC
+//                    .collect(Collectors.toList());
+//
+//            int total = 0;
+//            for (TableInfo t : availableMerge) {
+//                selectedTables.add(t);
+//                total += t.getCapacity();
+//                if (total >= req.getGuestCount()) break;
+//            }
+//            if (total < req.getGuestCount()) {
+//                throw new BadRequestException("Không đủ bàn để ghép. Cần " + req.getGuestCount() + " chỗ.");
+//            }
+//        } else {
+//            LocalDateTime blockUntil = checkEnd.plusMinutes(bufferMinutes);
+//            Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(now, blockUntil));
+//            // Ưu tiên 1: Tìm bàn FULL AVAILABLE (Trống hoàn toàn trong khung giờ dự kiến)
+//            List<TableInfo> fullAvailable = tableInfoRepository.findAvailableTablesForGuests(req.getGuestCount())
+//                    .stream()
+//                    .filter(t -> !occupiedIds.contains(t.getTableId()))
+//                    .collect(Collectors.toList());
+//            if (!fullAvailable.isEmpty()) {
+//                selectedTables.add(fullAvailable.get(0));
+//            } else {
+//                // Ưu tiên 2: Tìm bàn PARTIAL AVAILABLE (Hiện tại trống nhưng sắp có khách online)
+//                List<TableInfo> partialAvailable = tableInfoRepository.findAvailableTablesForGuests(req.getGuestCount());
+//                if (partialAvailable.isEmpty()) {
+//                    throw new BadRequestException("Nhà hàng hiện đã hết bàn trống phù hợp.");
+//                }
+//                selectedTables.add(partialAvailable.get(0));
+//            }
+//        }
+//
+//        LocalDateTime calculatedEndTime = defaultEnd;
+//
+//        if (req.getEndTime() != null) {
+//            calculatedEndTime = req.getEndTime();
+//        } else {
+//            // Backend tự rà soát nếu Frontend không truyền
+//            LocalDateTime earliestNextBooking = null;
+//            for (TableInfo t : selectedTables) {
+//                List<Reservation> nextBookings = reservationRepository.findNextBookingForTable(t.getTableId(), now);
+//                if (!nextBookings.isEmpty()) {
+//                    LocalDateTime nextStart = nextBookings.get(0).getStartTime();
+//                    if (earliestNextBooking == null || nextStart.isBefore(earliestNextBooking)) {
+//                        earliestNextBooking = nextStart;
+//                    }
+//                }
+//            }
+//            // Nếu có booking kế tiếp cắt ngang (PARTIAL AVAILABLE), cập nhật endTime thành thời gian booking đó bắt đầu
+//            if (earliestNextBooking != null) {
+//                LocalDateTime maxAllowedEndTime = earliestNextBooking.minusMinutes(bufferMinutes);
+//                if (maxAllowedEndTime.isBefore(calculatedEndTime)) {
+//                    calculatedEndTime = maxAllowedEndTime;
+//                }
+//            }
+//        }
+//        Reservation reservation = Reservation.builder()
+//                .customer(customer)
+//                .type(ReservationType.WALK_IN)
+//                .guestCount(req.getGuestCount())
+//                .startTime(now)
+//                .endTime(calculatedEndTime)
+//                .status(ReservationStatus.SEATED)
+//                .note(req.getNote())
+//                .build();
+//        reservation = reservationRepository.save(reservation);
+//
+//        try {
+//            for (TableInfo t : selectedTables) {
+//                t.setStatus(TableStatus.OCCUPIED);
+//
+//                // Ép Hibernate update DB ngay để kiểm tra @Version
+//                tableInfoRepository.saveAndFlush(t);
+//
+//                mappingRepository.save(ReservationTableMapping.builder()
+//                        .reservation(reservation).tableInfo(t).build());
+//            }
+//        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+//            // Bắt lỗi Race Condition: 2 Lễ tân cùng bấm xếp 1 bàn trên 2 máy POS khác nhau
+//            throw new ConflictException("Bàn bạn chọn vừa được Lễ tân khác xếp cho khách. Vui lòng chọn lại bàn hoặc tải lại sơ đồ phòng.");
+//        }
+//
+//        return toResponse(reservation);
+//    }
 
     // ────── Change Table ────────────────────────────────────────────────────
     @Transactional
@@ -610,6 +850,19 @@ public class ReservationService {
     }
 
     // ────── Private helpers ────────────────────────────────────────────
+
+    private Customer resolveWalkInCustomer(WalkInRequest req) {
+        if (req.getCustomerPhone() == null || req.getCustomerPhone().isBlank()) {
+            return null;
+        }
+        return customerRepository.findByPhoneAndPasswordHashIsNull(req.getCustomerPhone())
+                .orElseGet(() -> customerRepository.save(Customer.builder()
+                        .name(req.getCustomerName() != null && !req.getCustomerName().isBlank()
+                                ? req.getCustomerName() : "Khach Walk-in")
+                        .phone(req.getCustomerPhone())
+                        .isVerified(true)
+                        .build()));
+    }
 
     private void releaseLockedTable(Long reservationId) {
         tableInfoRepository.findByLockedByReservationId(reservationId).forEach(t -> {

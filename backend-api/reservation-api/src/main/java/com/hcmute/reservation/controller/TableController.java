@@ -63,4 +63,10 @@ public class TableController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time) {
         return ResponseEntity.ok(availabilityService.getAvailableWindows(guests, time));
     }
+
+    /** GET /api/tables/reserved-today */
+    @GetMapping("/reserved-today")
+    public ResponseEntity<List<TableResponse>> getReservedTablesToday() {
+        return ResponseEntity.ok(tableService.getReservedTablesToday());
+    }
 }
