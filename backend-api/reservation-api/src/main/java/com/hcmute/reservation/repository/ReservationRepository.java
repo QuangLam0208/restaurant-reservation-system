@@ -65,4 +65,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             "WHERE r.status = 'COMPLETED' AND r.endTime < :now " +
             "AND m.tableInfo.status IN ('OCCUPIED', 'OVERSTAY')")
     List<Reservation> findCompletedWithReleasableTables(@Param("now") LocalDateTime now);
+
+    @Query("SELECT m.tableInfo.tableId, MIN(r.startTime) " +
+            "FROM Reservation r JOIN r.tableMappings m " +
+            "WHERE m.tableInfo.tableId IN :tableIds " +
+            "AND r.status IN ('RESERVED','SEATED') " +
+            "AND r.startTime > :now " +
+            "GROUP BY m.tableInfo.tableId")
+    List<Object[]> findNextBookingForTables(@Param("tableIds") List<Long> tableIds, @Param("now") LocalDateTime now);
 }

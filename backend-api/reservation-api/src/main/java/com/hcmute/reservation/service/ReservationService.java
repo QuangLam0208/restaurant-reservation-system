@@ -44,6 +44,9 @@ public class ReservationService {
     @Value("${reservation.soft-lock-minutes:5}")
     private int softLockMinutes;
 
+    @Value("${reservation.max-capacity-overflow}")
+    private int maxCapacityOverflow;
+
     // ────── Helpers ──────────────────────────────────────────────────
 
     private ReservationResponse toResponse(Reservation r) {
@@ -88,7 +91,7 @@ public class ReservationService {
                            List<TableInfo> bestCombo, int[] bestDiff, int[] minTables) {
         if (currentSum >= target) {
             int diff = currentSum - target;
-            if (diff <= 2) {
+            if (diff <= maxCapacityOverflow) {
                 if (diff < bestDiff[0] || (diff == bestDiff[0] && currentCombo.size() < minTables[0])) {
                     bestDiff[0] = diff;
                     minTables[0] = currentCombo.size();
@@ -284,6 +287,122 @@ public class ReservationService {
     }
 
     // ────── Walk-in ────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public WalkInOptionResponse getWalkInOptions(int guestCount) {
+        if (guestCount <= 0) {
+            throw new BadRequestException("So luong khach phai lon hon 0.");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime blockUntil = now.plusMinutes(durationMinutes + bufferMinutes);
+
+        // Lấy bàn active và AVAILABLE
+        List<TableInfo> candidateTables = tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE);
+        // Lấy các bàn sẽ bị dùng trong khoảng [now → blockUntil]
+        Set<Long> occupiedTableIds = new HashSet<>(reservationRepository.findOccupiedTableIds(now, blockUntil));
+        List<TableInfo> cleanTables = candidateTables.stream()
+                .filter(table -> !occupiedTableIds.contains(table.getTableId()))
+                .collect(Collectors.toList());
+        List<TableInfo> partialTables = candidateTables.stream()
+                .filter(table -> occupiedTableIds.contains(table.getTableId()))
+                .collect(Collectors.toList());
+
+        List<WalkInOptionResponse.TableOption> preferredOptions = new ArrayList<>();
+
+        cleanTables.stream()
+                .filter(table -> table.getCapacity() >= guestCount)
+                .filter(table -> table.getCapacity() <= guestCount + maxCapacityOverflow)
+                .sorted(Comparator.comparingInt(TableInfo::getCapacity)
+                        .thenComparing(TableInfo::getTableId))
+                .forEach(table -> preferredOptions.add(WalkInOptionResponse.TableOption.builder()
+                        .tableIds(List.of(table.getTableId()))
+                        .totalCapacity(table.getCapacity())
+                        .type("FULL_AVAILABLE")
+                        .availableUntil(null)
+                        .build()));
+
+        List<List<TableInfo>> cleanCombinations = findWalkInOptionCombinations(cleanTables, guestCount);
+        cleanCombinations.stream()
+                .filter(combo -> combo.size() > 1)
+                .forEach(combo -> preferredOptions.add(buildWalkInOption(combo, "MERGE_AVAILABLE", null)));
+
+        if (!preferredOptions.isEmpty()) {
+            return WalkInOptionResponse.builder()
+                    .groups(List.of(WalkInOptionResponse.OptionGroup.builder()
+                            .groupName("Ưu tiên (Trống hoàn toàn)")
+                            .options(preferredOptions)
+                            .build()))
+                    .build();
+        }
+
+        Map<Long, LocalDateTime> partialAvailableUntilByTableId = new HashMap<>();
+        // Lấy ra danh sách ID của các bàn partial
+        List<Long> partialTableIds = partialTables.stream()
+                .map(TableInfo::getTableId)
+                .collect(Collectors.toList());
+
+        if (!partialTableIds.isEmpty()) {
+            List<Object[]> nextBookings = reservationRepository.findNextBookingForTables(partialTableIds, now);
+            // Đưa kết quả vào Map
+            for (Object[] row : nextBookings) {
+                Long tableId = (Long) row[0];
+                LocalDateTime nextStart = (LocalDateTime) row[1];
+                partialAvailableUntilByTableId.put(tableId, nextStart);
+            }
+        }
+
+        List<WalkInOptionResponse.TableOption> fallbackOptions = new ArrayList<>();
+        partialTables.stream()
+                .filter(table -> table.getCapacity() >= guestCount)
+                .filter(table -> table.getCapacity() <= guestCount + maxCapacityOverflow)
+                .sorted(Comparator.comparingInt(TableInfo::getCapacity)
+                        .thenComparing(TableInfo::getTableId))
+                .forEach(table -> {
+                    LocalDateTime availableUntil = partialAvailableUntilByTableId.get(table.getTableId());
+                    if (availableUntil != null) {
+                        fallbackOptions.add(WalkInOptionResponse.TableOption.builder()
+                                .tableIds(List.of(table.getTableId()))
+                                .totalCapacity(table.getCapacity())
+                                .type("PARTIAL_AVAILABLE")
+                                .availableUntil(availableUntil)
+                                .build());
+                    }
+                });
+
+        Set<Long> partialTableIdSet = partialTables.stream()
+                .map(TableInfo::getTableId)
+                .collect(Collectors.toSet());
+
+        List<TableInfo> cleanAndPartial = new ArrayList<>(cleanTables);
+        cleanAndPartial.addAll(partialTables);
+
+        List<List<TableInfo>> mixedCombinations = findWalkInOptionCombinations(cleanAndPartial, guestCount);
+        mixedCombinations.stream()
+                .filter(combo -> combo.size() > 1)
+                .filter(combo -> combo.stream()
+                        .map(TableInfo::getTableId)
+                        .anyMatch(partialTableIdSet::contains))
+                .forEach(combo -> {
+                    LocalDateTime availableUntil = combo.stream()
+                            .map(TableInfo::getTableId)
+                            .filter(partialTableIdSet::contains)
+                            .map(partialAvailableUntilByTableId::get)
+                            .filter(Objects::nonNull)
+                            .min(LocalDateTime::compareTo)
+                            .orElse(null);
+                    if (availableUntil != null) {
+                        fallbackOptions.add(buildWalkInOption(combo, "PARTIAL_MERGED_AVAILABLE", availableUntil));
+                    }
+                });
+
+        return WalkInOptionResponse.builder()
+                .groups(List.of(WalkInOptionResponse.OptionGroup.builder()
+                        .groupName("Dự phòng (Vướng lịch sau)")
+                        .options(fallbackOptions)
+                        .build()))
+                .build();
+    }
 
     // ────── Suggest — Gợi ý bàn + Soft Lock ──────────────────
 
@@ -738,6 +857,66 @@ public class ReservationService {
     }
 
     // ────── Private helpers ────────────────────────────────────────────
+
+    private List<List<TableInfo>> findWalkInOptionCombinations(List<TableInfo> availableTables, int targetGuests) {
+        List<TableInfo> sortedTables = availableTables.stream()
+                .sorted(Comparator.comparingInt(TableInfo::getCapacity).reversed()
+                        .thenComparing(TableInfo::getTableId))
+                .collect(Collectors.toList());
+
+        List<List<TableInfo>> combinations = new ArrayList<>();
+        backtrackWalkInOptionCombinations(sortedTables, targetGuests, 0, new ArrayList<>(), 0, combinations);
+        return combinations;
+    }
+
+    private void backtrackWalkInOptionCombinations(List<TableInfo> tables, int target, int start,
+                                                   List<TableInfo> currentCombo, int currentSum,
+                                                   List<List<TableInfo>> combinations) {
+        if (currentSum >= target) {
+            int diff = currentSum - target;
+            if (diff <= maxCapacityOverflow) {
+                combinations.add(new ArrayList<>(currentCombo));
+            }
+            return;
+        }
+
+        // Giữ nguyên ngưỡng ghép tối đa theo thuật toán cũ.
+        if (currentCombo.size() > 4) {
+            return;
+        }
+
+        for (int i = start; i < tables.size(); i++) {
+            currentCombo.add(tables.get(i));
+            backtrackWalkInOptionCombinations(
+                    tables,
+                    target,
+                    i + 1,
+                    currentCombo,
+                    currentSum + tables.get(i).getCapacity(),
+                    combinations
+            );
+            currentCombo.remove(currentCombo.size() - 1);
+        }
+    }
+
+    private WalkInOptionResponse.TableOption buildWalkInOption(List<TableInfo> tables,
+                                                                String type,
+                                                                LocalDateTime availableUntil) {
+        List<Long> tableIds = tables.stream()
+                .map(TableInfo::getTableId)
+                .sorted()
+                .collect(Collectors.toList());
+        int totalCapacity = tables.stream()
+                .mapToInt(TableInfo::getCapacity)
+                .sum();
+
+        return WalkInOptionResponse.TableOption.builder()
+                .tableIds(tableIds)
+                .totalCapacity(totalCapacity)
+                .type(type)
+                .availableUntil(availableUntil)
+                .build();
+    }
 
     private Customer resolveWalkInCustomer(WalkInRequest req) {
         if (req.getCustomerPhone() == null || req.getCustomerPhone().isBlank()) {
