@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -150,11 +152,13 @@ public class TableService {
         tableInfoRepository.save(table);
     }
 
-    //Thêm @Transactional(readOnly = true) để tránh LazyInitializationException
+    // Lấy trạng thái bàn hiện tại của tất cả bàn đang hoạt động trong nhà hàng
     @Transactional(readOnly = true)
     public List<FloorMapTableResponse> getFloorMap() {
         LocalDateTime now = LocalDateTime.now();
+        LocalDateTime endOfDay = now.toLocalDate().atTime(LocalTime.MAX);
 
+        // chỉ lấy các bàn active
         return tableInfoRepository.findByIsActiveTrue().stream().map(t -> {
             String customerName = null;
             Long resId = null;
@@ -170,9 +174,11 @@ public class TableService {
                         .filter(m -> m.getReservation().getStatus() == ReservationStatus.SEATED)
                         .findFirst();
 
-                // Sắp xếp theo startTime tăng dần để luôn lấy đơn sớm nhất
+                // Sắp xếp theo startTime tăng dần để luôn lấy đơn reserved sớm nhất trong ngày
                 var reservedMapping = safeMappings.stream()
                         .filter(m -> m.getReservation().getStatus() == ReservationStatus.RESERVED)
+                        .filter(m -> m.getReservation().getStartTime().isAfter(now)
+                                && m.getReservation().getStartTime().isBefore(endOfDay))
                         .min(Comparator.comparing(m -> m.getReservation().getStartTime()));
 
                 var activeMapping = seatedMapping.isPresent() ? seatedMapping : reservedMapping;
@@ -207,5 +213,22 @@ public class TableService {
                     .currentReservationTime(resTime)
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TableResponse> getReservedTablesToday() {
+        // Lấy thời điểm bắt đầu và kết thúc của ngày hôm nay
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
+
+        // Lấy danh sách Entity
+        List<TableInfo> reservedTables = tableInfoRepository.findTablesByReservationStatusAndDate(
+                ReservationStatus.RESERVED, startOfDay, endOfDay
+        );
+
+        // Chuyển đổi sang DTO để trả về controller
+        return reservedTables.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 }
