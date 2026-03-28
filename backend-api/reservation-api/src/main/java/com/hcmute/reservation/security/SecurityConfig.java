@@ -38,13 +38,18 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // ── Public: customer auth ─────────────────────────────────────────
                 .requestMatchers(
-                        "/api/auth/register",
-                        "/api/auth/verify-email",
-                        "/api/auth/login",
-                        "/api/auth/forgot-password",
-                        "/api/auth/reset-password",
-                        "/api/auth/reset-password-page"
+                    "/api/auth/register",
+                    "/api/auth/verify-email",
+                    "/api/auth/login",
+                    "/api/auth/forgot-password",
+                    "/api/auth/reset-password",
+                    "/api/auth/reset-password-page",
+                    "/api/auth/check-reset-status",
+                    "/api/auth/check-verify-status",
+                    "/api/auth/resend-verification"
                 ).permitAll()
+                // ── Public: static content ────────────────────────────────────────
+                .requestMatchers("/", "/index.html", "/web-customer/**", "/assets/**", "/js/**").permitAll()
                 // ── Public: staff auth (POS login) ────────────────────────────────
                 .requestMatchers("/api/staff/auth/login").permitAll()
                 // ── Public: availability check ────────────────────────────────────

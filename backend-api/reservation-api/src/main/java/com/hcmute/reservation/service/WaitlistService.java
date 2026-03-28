@@ -107,7 +107,7 @@ public class WaitlistService {
         applySuggestionToWalkInRequest(walkInReq, suggestion);
 
         try {
-            reservationService.createWalkIn(walkInReq);
+//            reservationService.createWalkIn(walkInReq);
         } catch (BadRequestException | ConflictException e) {
             throw new BadRequestException(
                     "Khong the xep ban cho khach trong hang doi #" + id + ": " + e.getMessage());

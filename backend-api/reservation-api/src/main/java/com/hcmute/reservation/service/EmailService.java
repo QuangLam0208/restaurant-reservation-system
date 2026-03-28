@@ -18,20 +18,23 @@ public class EmailService {
     @Value("${app.base-url}")
     private String baseUrl;
 
+    @Value("${server.port:8081}")
+    private String serverPort;
+
     public void sendVerificationEmail(String toEmail, String token) {
-        String link = baseUrl + "/verify-email?token=" + token;
+        String link = "http://localhost:" + serverPort + "/api/auth/verify-email?token=" + token;
         send(toEmail,
-             "Xác minh email - Nhà Hàng Đặt Bàn",
-             "Chào bạn,\n\nVui lòng click vào link sau để xác minh tài khoản:\n" + link +
-             "\n\nLink có hiệu lực trong 24 giờ.\n\nTrân trọng.");
+                "Xác minh email - Nhà Hàng Đặt Bàn",
+                "Chào bạn,\n\nVui lòng click vào link sau để xác minh tài khoản:\n" + link +
+                        "\n\nLink có hiệu lực trong 30 phút.\n\nTrân trọng.");
     }
 
     public void sendResetPasswordEmail(String toEmail, String token) {
-        String link = baseUrl + "/reset-password?token=" + token;
+        String link = "http://localhost:" + serverPort + "/api/auth/reset-password-page?token=" + token;
         send(toEmail,
-             "Đặt lại mật khẩu - Nhà Hàng Đặt Bàn",
-             "Chào bạn,\n\nVui lòng click vào link sau để đặt lại mật khẩu:\n" + link +
-             "\n\nLink có hiệu lực trong 15 phút. Nếu bạn không yêu cầu, hãy bỏ qua email này.\n\nTrân trọng.");
+                "Đặt lại mật khẩu - Nhà Hàng Đặt Bàn",
+                "Chào bạn,\n\nVui lòng click vào link sau để đặt lại mật khẩu:\n" + link +
+                        "\n\nLink có hiệu lực trong 10 phút. Nếu bạn không yêu cầu, hãy bỏ qua email này.\n\nTrân trọng.");
     }
 
     private void send(String to, String subject, String body) {
