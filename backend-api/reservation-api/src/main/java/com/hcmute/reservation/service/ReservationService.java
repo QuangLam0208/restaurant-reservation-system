@@ -298,6 +298,8 @@ public class ReservationService {
 
         List<TableInfo> selectedTables = new ArrayList<>();
         String availabilityType = "FULL_AVAILABLE";
+        Set<Long> occupiedIds = new HashSet<>(
+                reservationRepository.findOccupiedTableIds(now, blockUntil));
 
         if (req.getTableId() != null && !req.getTableId().isEmpty()) {
             // Case A: Lễ tân chỉ định bàn cụ thể
@@ -310,27 +312,19 @@ public class ReservationService {
                 selectedTables.add(t);
             }
 
+            // Kiểm tra xem có CÓ BẤT KỲ bàn nào trong danh sách dính lịch tương lai không?
+            boolean hasPartialTable = selectedTables.stream()
+                    .anyMatch(t -> occupiedIds.contains(t.getTableId()));
+
             // Xác định availabilityType
             if (selectedTables.size() > 1) {
-                availabilityType = "MERGED_AVAILABLE";
+                availabilityType = hasPartialTable ? "PARTIAL_MERGED_AVAILABLE" : "MERGED_AVAILABLE";;
             } else {
-                // Lễ tân chọn 1 bàn -> Cần kiểm tra xem có vướng lịch đặt trước không
-                Set<Long> occupiedIds = new HashSet<>(
-                        reservationRepository.findOccupiedTableIds(now, blockUntil));
-
-                if (occupiedIds.contains(selectedTables.get(0).getTableId())) {
-                    // Nếu bàn này nằm trong danh sách sắp bị chiếm (có khách đặt tương lai)
-                    availabilityType = "PARTIAL_AVAILABLE";
-                } else {
-                    // Nếu hoàn toàn không vướng ai
-                    availabilityType = "FULL_AVAILABLE";
-                }
+                availabilityType = hasPartialTable ? "PARTIAL_AVAILABLE" : "FULL_AVAILABLE";
             }
 
         } else if (req.isMergeTables()) {
             // Case B: Ghép bàn tự động
-            Set<Long> occupiedIds = new HashSet<>(
-                    reservationRepository.findOccupiedTableIds(now, blockUntil));
             // Lấy danh sách bàn trống, chỉ lấy các bàn nhỏ hơn guestCount để ghép
             List<TableInfo> availableMerge = tableInfoRepository
                     .findByStatusAndIsActiveTrue(TableStatus.AVAILABLE)
@@ -347,9 +341,6 @@ public class ReservationService {
             availabilityType = "MERGED_AVAILABLE";
         } else {
             // Case C: Hệ thống tự chọn — FULL ưu tiên, fallback merge, sau đó PARTIAL
-            Set<Long> occupiedIds = new HashSet<>(
-                    reservationRepository.findOccupiedTableIds(now, blockUntil));
-
             // 1. Tìm bàn đơn FULL_AVAILABLE (Giới hạn sức chứa +2)
             List<TableInfo> fullAvailable = tableInfoRepository
                     .findAvailableTablesForGuests(req.getGuestCount())
