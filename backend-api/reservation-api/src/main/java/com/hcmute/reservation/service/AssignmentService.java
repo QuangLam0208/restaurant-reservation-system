@@ -1,94 +1,49 @@
 package com.hcmute.reservation.service;
 
 import com.hcmute.reservation.model.entity.Reservation;
-import com.hcmute.reservation.model.entity.ReservationTableMapping;
 import com.hcmute.reservation.model.entity.TableInfo;
-import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.ReservationRepository;
-import com.hcmute.reservation.repository.ReservationTableMappingRepository;
-import com.hcmute.reservation.repository.TableInfoRepository;
+import com.hcmute.reservation.strategy.TableAllocationStrategy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AssignmentService {
 
-    private final TableInfoRepository tableInfoRepository;
-    private final ReservationTableMappingRepository mappingRepository;
-    private final ReservationRepository reservationRepository;
-
-    @Value("${reservation.buffer-minutes:10}")
-    private int bufferMinutes;
+    private final TableAvailabilityService availabilityService;
+    private final ReservationMappingService mappingService;
+    // Spring sẽ tự động inject danh sách này và sắp xếp theo @Order (1 -> 2)
+    private final List<TableAllocationStrategy> allocationStrategies;
 
     @Transactional
     public boolean findAlternativeTables(Reservation reservation) {
-        LocalDateTime now = LocalDateTime.now();
-        // Thời điểm bắt đầu cần kiểm tra là thời gian khách thực tế muốn vào ngồi (NOW)
-        // Nếu khách đến sớm, phải đảm bảo bàn trống từ NOW đến lúc kết thúc.
-        LocalDateTime actualStart = now.isBefore(reservation.getStartTime()) ? now : reservation.getStartTime();
-        LocalDateTime end = reservation.getEndTime();
-        Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(actualStart, end.plusMinutes(bufferMinutes)));
+        // Lấy pool bàn trống
+        List<TableInfo> freeTables = availabilityService.getFreeTables(reservation);
 
-        // ĐẦU TIÊN PHẢI TÌM XEM CÓ BÀN THAY KHÔNG
-        List<TableInfo> selectedTables = new ArrayList<>();
-        // Ưu tiên bàn đơn
-        List<TableInfo> availableSingle = tableInfoRepository.findAvailableTablesForGuests(reservation.getGuestCount())
-                .stream()
-                // Thêm !t.isSoftLocked() để không cướp bàn của khách online đang thanh toán
-                .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
-                .collect(Collectors.toList());
+        if (freeTables.isEmpty()) {
+            return false;
+        }
 
-        if (!availableSingle.isEmpty()) {
-            selectedTables.add(availableSingle.get(0));
-        } else {
-            // Thử ghép bàn
-            List<TableInfo> availableMerge = tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE)
-                    .stream()
-                    .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
-                    .sorted((t1, t2) -> Integer.compare(t2.getCapacity(), t1.getCapacity()))
-                    .collect(Collectors.toList());
+        List<TableInfo> selectedTables = null;
 
-
-            int total = 0;
-            for (TableInfo t : availableMerge) {
-                selectedTables.add(t);
-                total += t.getCapacity();
-                if (total >= reservation.getGuestCount()) break;
-            }
-            // Nếu không đủ bàn ghép, THẤT BẠI VÀ RETURN NGAY, bảo toàn 100% Mapping cũ
-            if (total < reservation.getGuestCount()) {
-                return false;
+        // Thử lần lượt các chiến lược xếp bàn (Tìm bàn đơn -> Ghép bàn)
+        for (TableAllocationStrategy strategy : allocationStrategies) {
+            selectedTables = strategy.allocate(reservation.getGuestCount(), freeTables);
+            if (selectedTables != null && !selectedTables.isEmpty()) {
+                break; // Tìm thấy phương án tối ưu thì dừng lại
             }
         }
 
-        // TÌM THẤY BÀN -> XÓA MAPPING CŨ & LƯU MAPPING MỚI
-        if (reservation.getTableMappings() != null && !reservation.getTableMappings().isEmpty()) {
-            mappingRepository.deleteAll(reservation.getTableMappings());
-            reservation.getTableMappings().clear();
-        } else {
-            reservation.setTableMappings(new ArrayList<>());
+        // Nếu thất bại ở mọi chiến lược -> Trả về false
+        if (selectedTables == null || selectedTables.isEmpty()) {
+            return false;
         }
 
-        // Tạo mapping mới
-        for (TableInfo t : selectedTables) {
-            ReservationTableMapping mapping = ReservationTableMapping.builder()
-                    .reservation(reservation)
-                    .tableInfo(t)
-                    .build();
-            mappingRepository.save(mapping);
-            reservation.getTableMappings().add(mapping);
-        }
-
+        // Nếu thành công -> Cập nhật Database
+        mappingService.updateTableMappings(reservation, selectedTables);
         return true;
     }
 }
