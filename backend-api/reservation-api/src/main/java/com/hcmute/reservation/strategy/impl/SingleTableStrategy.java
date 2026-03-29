@@ -1,6 +1,7 @@
-package com.hcmute.reservation.strategy;
+package com.hcmute.reservation.strategy.impl;
 
 import com.hcmute.reservation.model.entity.TableInfo;
+import com.hcmute.reservation.strategy.TableAllocationStrategy;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
