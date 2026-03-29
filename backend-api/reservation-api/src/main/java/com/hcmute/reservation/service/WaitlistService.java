@@ -29,7 +29,7 @@ public class WaitlistService {
     private final WaitlistRepository waitlistRepository;
     private final CustomerRepository customerRepository;
     private final ReservationService reservationService;
-    private final AvailabilityService availabilityService;
+    private final AvailabilityApiService availabilityApiService;
 
     private WaitlistResponse toResponse(Waitlist waitlist, AvailableWindowResponse suggestion) {
         WaitlistResponse.WaitlistResponseBuilder builder = WaitlistResponse.builder()
@@ -151,14 +151,14 @@ public class WaitlistService {
     }
 
     private boolean hasImmediateSeatingOption(int guestCount, boolean allowShortSeating, LocalDateTime assessmentTime) {
-        return availabilityService.getAvailableWindows(guestCount, assessmentTime).stream()
+        return availabilityApiService.getAvailableWindows(guestCount, assessmentTime).stream()
                 .anyMatch(window -> isWindowAllowed(window, allowShortSeating));
     }
 
     private AvailableWindowResponse findBestWindow(Waitlist waitlist,
                                                    LocalDateTime assessmentTime,
                                                    Set<Long> consumedTableIds) {
-        return availabilityService.getAvailableWindows(waitlist.getGuestCount(), assessmentTime).stream()
+        return availabilityApiService.getAvailableWindows(waitlist.getGuestCount(), assessmentTime).stream()
                 .filter(window -> isWindowAllowed(window, waitlist.isAllowShortSeating()))
                 .filter(window -> consumedTableIds.stream().noneMatch(extractSuggestedTableIds(window)::contains))
                 .findFirst()

@@ -4,7 +4,7 @@ import com.hcmute.reservation.model.dto.table.AvailableWindowResponse;
 import com.hcmute.reservation.model.dto.table.FloorMapTableResponse;
 import com.hcmute.reservation.model.dto.table.TableRequest;
 import com.hcmute.reservation.model.dto.table.TableResponse;
-import com.hcmute.reservation.service.AvailabilityService;
+import com.hcmute.reservation.service.AvailabilityApiService;
 import com.hcmute.reservation.service.TableService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import java.util.List;
 public class TableController {
 
     private final TableService tableService;
-    private final AvailabilityService availabilityService;
+    private final AvailabilityApiService availabilityApiService;
 
     /** GET /api/tables */
     @GetMapping
@@ -61,7 +61,7 @@ public class TableController {
     public ResponseEntity<List<AvailableWindowResponse>> getAvailableWindows(
             @RequestParam int guests,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time) {
-        return ResponseEntity.ok(availabilityService.getAvailableWindows(guests, time));
+        return ResponseEntity.ok(availabilityApiService.getAvailableWindows(guests, time));
     }
 
     /** GET /api/tables/reserved-today */
