@@ -38,7 +38,7 @@ public class ReservationController {
     public ResponseEntity<ReservationResponse> createOnline(
             @Valid @RequestBody OnlineReservationRequest req,
             Authentication auth) {
-        Long customerId = (Long) auth.getDetails();
+        Long customerId = (auth.getDetails() instanceof Number n) ? n.longValue() : null;
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(reservationService.createOnlineReservation(req, customerId));
     }

@@ -37,7 +37,7 @@ public class EmailService {
                         "\n\nLink có hiệu lực trong 10 phút. Nếu bạn không yêu cầu, hãy bỏ qua email này.\n\nTrân trọng.");
     }
 
-    private void send(String to, String subject, String body) {
+    public void send(String to, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
         message.setTo(to);

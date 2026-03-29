@@ -55,6 +55,10 @@ public class JwtUtil {
     }
 
     public Long getCustomerId(String token) {
-        return parseToken(token).get("customerId", Long.class);
+        Object val = parseToken(token).get("customerId");
+        if (val instanceof Number n) {
+            return n.longValue();
+        }
+        return null;
     }
 }

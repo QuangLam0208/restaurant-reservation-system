@@ -17,6 +17,7 @@ public class ReservationResponse {
     private int guestCount;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private Double depositAmount;
     private String note;
     private LocalDateTime createdAt;
     private Long customerId;
