@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 
 namespace reservation_winforms.DTO.table
 {
@@ -13,7 +14,7 @@ namespace reservation_winforms.DTO.table
         [JsonProperty("status")]
         public string Status { get; set; } // Enum TableStatus
 
-        [JsonProperty("isActive")]
+        [JsonProperty("active")]
         public bool IsActive { get; set; }
 
         [JsonProperty("currentReservationId")]
@@ -24,5 +25,8 @@ namespace reservation_winforms.DTO.table
 
         [JsonProperty("currentReservationStatus")]
         public string CurrentReservationStatus { get; set; } // Enum ReservationStatus
+
+        [JsonProperty("currentReservationTime")]
+        public DateTime? CurrentReservationTime { get; set; }
     }
 }

@@ -25,21 +25,18 @@
             this.lblGuestCount = new System.Windows.Forms.Label();
             this.lblSelectedTable = new System.Windows.Forms.Label();
             this.pnlFilter = new System.Windows.Forms.Panel();
+            this.btnFilterOverstay = new System.Windows.Forms.Button(); // Thêm nút Quá giờ
             this.btnFilterReserved = new System.Windows.Forms.Button();
             this.btnFilterOccupied = new System.Windows.Forms.Button();
             this.btnFilterAvailable = new System.Windows.Forms.Button();
             this.btnFilterAll = new System.Windows.Forms.Button();
             this.lblFilterText = new System.Windows.Forms.Label();
-            this.flpTableMap = new System.Windows.Forms.FlowLayoutPanel();
-            this.btnTable1 = new System.Windows.Forms.Button();
-            this.btnTable2 = new System.Windows.Forms.Button();
-            this.btnTable3 = new System.Windows.Forms.Button();
+            this.flpTableMap = new System.Windows.Forms.FlowLayoutPanel(); // Xóa 3 nút bàn ảo đi
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.lblTitle = new System.Windows.Forms.Label();
             this.pnlSidebar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudGuestCount)).BeginInit();
             this.pnlFilter.SuspendLayout();
-            this.flpTableMap.SuspendLayout();
             this.pnlHeader.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -140,6 +137,7 @@
             // 
             this.pnlFilter.BackColor = System.Drawing.Color.White;
             this.pnlFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlFilter.Controls.Add(this.btnFilterOverstay);
             this.pnlFilter.Controls.Add(this.btnFilterReserved);
             this.pnlFilter.Controls.Add(this.btnFilterOccupied);
             this.pnlFilter.Controls.Add(this.btnFilterAvailable);
@@ -151,16 +149,32 @@
             this.pnlFilter.Size = new System.Drawing.Size(720, 60);
             this.pnlFilter.TabIndex = 4;
             // 
+            // btnFilterOverstay
+            // 
+            this.btnFilterOverstay.BackColor = System.Drawing.Color.White;
+            this.btnFilterOverstay.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnFilterOverstay.FlatAppearance.BorderColor = System.Drawing.Color.IndianRed;
+            this.btnFilterOverstay.FlatAppearance.BorderSize = 2;
+            this.btnFilterOverstay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnFilterOverstay.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnFilterOverstay.ForeColor = System.Drawing.Color.IndianRed;
+            this.btnFilterOverstay.Location = new System.Drawing.Point(495, 12);
+            this.btnFilterOverstay.Name = "btnFilterOverstay";
+            this.btnFilterOverstay.Size = new System.Drawing.Size(95, 34);
+            this.btnFilterOverstay.TabIndex = 5;
+            this.btnFilterOverstay.Text = "Quá giờ";
+            this.btnFilterOverstay.UseVisualStyleBackColor = false;
+            // 
             // btnFilterReserved
             // 
             this.btnFilterReserved.BackColor = System.Drawing.Color.White;
             this.btnFilterReserved.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnFilterReserved.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(241)))), ((int)(((byte)(196)))), ((int)(((byte)(15)))));
+            this.btnFilterReserved.FlatAppearance.BorderColor = System.Drawing.Color.Orange;
             this.btnFilterReserved.FlatAppearance.BorderSize = 2;
             this.btnFilterReserved.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFilterReserved.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnFilterReserved.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(241)))), ((int)(((byte)(196)))), ((int)(((byte)(15)))));
-            this.btnFilterReserved.Location = new System.Drawing.Point(400, 12);
+            this.btnFilterReserved.ForeColor = System.Drawing.Color.Orange;
+            this.btnFilterReserved.Location = new System.Drawing.Point(395, 12);
             this.btnFilterReserved.Name = "btnFilterReserved";
             this.btnFilterReserved.Size = new System.Drawing.Size(90, 34);
             this.btnFilterReserved.TabIndex = 4;
@@ -171,12 +185,12 @@
             // 
             this.btnFilterOccupied.BackColor = System.Drawing.Color.White;
             this.btnFilterOccupied.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnFilterOccupied.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(149)))), ((int)(((byte)(165)))), ((int)(((byte)(166)))));
+            this.btnFilterOccupied.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
             this.btnFilterOccupied.FlatAppearance.BorderSize = 2;
             this.btnFilterOccupied.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFilterOccupied.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnFilterOccupied.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(149)))), ((int)(((byte)(165)))), ((int)(((byte)(166)))));
-            this.btnFilterOccupied.Location = new System.Drawing.Point(300, 12);
+            this.btnFilterOccupied.ForeColor = System.Drawing.Color.Gray;
+            this.btnFilterOccupied.Location = new System.Drawing.Point(295, 12);
             this.btnFilterOccupied.Name = "btnFilterOccupied";
             this.btnFilterOccupied.Size = new System.Drawing.Size(90, 34);
             this.btnFilterOccupied.TabIndex = 3;
@@ -187,12 +201,12 @@
             // 
             this.btnFilterAvailable.BackColor = System.Drawing.Color.White;
             this.btnFilterAvailable.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnFilterAvailable.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(204)))), ((int)(((byte)(113)))));
+            this.btnFilterAvailable.FlatAppearance.BorderColor = System.Drawing.Color.MediumSeaGreen;
             this.btnFilterAvailable.FlatAppearance.BorderSize = 2;
             this.btnFilterAvailable.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFilterAvailable.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnFilterAvailable.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(204)))), ((int)(((byte)(113)))));
-            this.btnFilterAvailable.Location = new System.Drawing.Point(200, 12);
+            this.btnFilterAvailable.ForeColor = System.Drawing.Color.MediumSeaGreen;
+            this.btnFilterAvailable.Location = new System.Drawing.Point(195, 12);
             this.btnFilterAvailable.Name = "btnFilterAvailable";
             this.btnFilterAvailable.Size = new System.Drawing.Size(90, 34);
             this.btnFilterAvailable.TabIndex = 2;
@@ -207,7 +221,7 @@
             this.btnFilterAll.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFilterAll.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnFilterAll.ForeColor = System.Drawing.Color.White;
-            this.btnFilterAll.Location = new System.Drawing.Point(100, 12);
+            this.btnFilterAll.Location = new System.Drawing.Point(95, 12);
             this.btnFilterAll.Name = "btnFilterAll";
             this.btnFilterAll.Size = new System.Drawing.Size(90, 34);
             this.btnFilterAll.TabIndex = 1;
@@ -219,7 +233,7 @@
             this.lblFilterText.AutoSize = true;
             this.lblFilterText.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblFilterText.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblFilterText.Location = new System.Drawing.Point(20, 18);
+            this.lblFilterText.Location = new System.Drawing.Point(15, 18);
             this.lblFilterText.Name = "lblFilterText";
             this.lblFilterText.Size = new System.Drawing.Size(73, 21);
             this.lblFilterText.TabIndex = 0;
@@ -228,63 +242,12 @@
             // flpTableMap
             // 
             this.flpTableMap.AutoScroll = true;
-            this.flpTableMap.Controls.Add(this.btnTable1);
-            this.flpTableMap.Controls.Add(this.btnTable2);
-            this.flpTableMap.Controls.Add(this.btnTable3);
             this.flpTableMap.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flpTableMap.Location = new System.Drawing.Point(0, 120);
             this.flpTableMap.Name = "flpTableMap";
             this.flpTableMap.Padding = new System.Windows.Forms.Padding(20);
             this.flpTableMap.Size = new System.Drawing.Size(720, 609);
             this.flpTableMap.TabIndex = 5;
-            // 
-            // btnTable1
-            // 
-            this.btnTable1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(204)))), ((int)(((byte)(113)))));
-            this.btnTable1.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnTable1.FlatAppearance.BorderSize = 0;
-            this.btnTable1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTable1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnTable1.ForeColor = System.Drawing.Color.White;
-            this.btnTable1.Location = new System.Drawing.Point(35, 35);
-            this.btnTable1.Margin = new System.Windows.Forms.Padding(15);
-            this.btnTable1.Name = "btnTable1";
-            this.btnTable1.Size = new System.Drawing.Size(130, 130);
-            this.btnTable1.TabIndex = 0;
-            this.btnTable1.Text = "Bàn 1\r\n\r\n(Trống)";
-            this.btnTable1.UseVisualStyleBackColor = false;
-            // 
-            // btnTable2
-            // 
-            this.btnTable2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(149)))), ((int)(((byte)(165)))), ((int)(((byte)(166)))));
-            this.btnTable2.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnTable2.FlatAppearance.BorderSize = 0;
-            this.btnTable2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTable2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnTable2.ForeColor = System.Drawing.Color.White;
-            this.btnTable2.Location = new System.Drawing.Point(195, 35);
-            this.btnTable2.Margin = new System.Windows.Forms.Padding(15);
-            this.btnTable2.Name = "btnTable2";
-            this.btnTable2.Size = new System.Drawing.Size(130, 130);
-            this.btnTable2.TabIndex = 1;
-            this.btnTable2.Text = "Bàn 2\r\n\r\n(Đang ăn)";
-            this.btnTable2.UseVisualStyleBackColor = false;
-            // 
-            // btnTable3
-            // 
-            this.btnTable3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(241)))), ((int)(((byte)(196)))), ((int)(((byte)(15)))));
-            this.btnTable3.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnTable3.FlatAppearance.BorderSize = 0;
-            this.btnTable3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTable3.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnTable3.ForeColor = System.Drawing.Color.White;
-            this.btnTable3.Location = new System.Drawing.Point(355, 35);
-            this.btnTable3.Margin = new System.Windows.Forms.Padding(15);
-            this.btnTable3.Name = "btnTable3";
-            this.btnTable3.Size = new System.Drawing.Size(130, 130);
-            this.btnTable3.TabIndex = 2;
-            this.btnTable3.Text = "Bàn 3\r\n\r\n(Đã đặt)";
-            this.btnTable3.UseVisualStyleBackColor = false;
             // 
             // pnlHeader
             // 
@@ -323,7 +286,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudGuestCount)).EndInit();
             this.pnlFilter.ResumeLayout(false);
             this.pnlFilter.PerformLayout();
-            this.flpTableMap.ResumeLayout(false);
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
             this.ResumeLayout(false);
@@ -340,15 +302,13 @@
         private System.Windows.Forms.Label lblGuestCount;
         private System.Windows.Forms.Label lblSelectedTable;
         private System.Windows.Forms.Panel pnlFilter;
+        private System.Windows.Forms.Button btnFilterOverstay; // Nút mới
         private System.Windows.Forms.Button btnFilterReserved;
         private System.Windows.Forms.Button btnFilterOccupied;
         private System.Windows.Forms.Button btnFilterAvailable;
         private System.Windows.Forms.Button btnFilterAll;
         private System.Windows.Forms.Label lblFilterText;
-        private System.Windows.Forms.FlowLayoutPanel flpTableMap;
-        private System.Windows.Forms.Button btnTable1;
-        private System.Windows.Forms.Button btnTable2;
-        private System.Windows.Forms.Button btnTable3;
+        private System.Windows.Forms.FlowLayoutPanel flpTableMap; // Đã xóa các nút bàn con
         private System.Windows.Forms.Panel pnlHeader;
         private System.Windows.Forms.Label lblTitle;
     }

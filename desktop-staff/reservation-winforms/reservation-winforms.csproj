@@ -59,6 +59,7 @@
     <Compile Include="DTO\reservation\ChangeTableRequest.cs" />
     <Compile Include="DTO\reservation\ReservationResponse.cs" />
     <Compile Include="DTO\reservation\WalkInRequest.cs" />
+    <Compile Include="DTO\reservation\WalkInSuggestionResponse.cs" />
     <Compile Include="DTO\table\AvailableWindowResponse.cs" />
     <Compile Include="DTO\table\FloorMapTableResponse.cs" />
     <Compile Include="DTO\table\TableRequest.cs" />
@@ -137,6 +138,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ApiClient.cs" />
     <Compile Include="Services\AuthService.cs" />
+    <Compile Include="Services\ReservationService.cs" />
+    <Compile Include="Services\TableService.cs" />
     <EmbeddedResource Include="Forms\LoginForm.resx">
       <DependentUpon>LoginForm.cs</DependentUpon>
     </EmbeddedResource>
