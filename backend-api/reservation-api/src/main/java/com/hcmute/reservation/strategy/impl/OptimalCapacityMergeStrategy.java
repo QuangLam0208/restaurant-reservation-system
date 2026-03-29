@@ -1,7 +1,8 @@
 package com.hcmute.reservation.strategy.impl;
 
 import com.hcmute.reservation.model.entity.TableInfo;
-import com.hcmute.reservation.strategy.TableMergeStrategy;
+import com.hcmute.reservation.strategy.TableAllocationStrategy;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -11,23 +12,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@Order(2) // Chạy TỐI ƯU GHÉP BÀN nếu SingleTableStrategy (Order 1) thất bại
 public class OptimalCapacityMergeStrategy implements TableAllocationStrategy {
 
     @Override
-    public List<TableInfo> findBestMerge(List<TableInfo> candidates, int guests) {
-        if (candidates.size() < 2) {
-            return List.of();
-        }
+    public List<TableInfo> allocate(int guestCount, List<TableInfo> freeTables) {
+        if (freeTables.size() < 2) return Collections.emptyList();
 
-        List<TableInfo> sortedCandidates = candidates.stream()
+
+        List<TableInfo> sortedCandidates = freeTables.stream()
                 .sorted(Comparator.comparingInt(TableInfo::getCapacity)
                         .thenComparing(TableInfo::getTableId))
                 .collect(Collectors.toList());
 
         int maxCapacity = sortedCandidates.stream().mapToInt(TableInfo::getCapacity).sum();
-        if (maxCapacity < guests) {
-            return List.of();
-        }
+        if (maxCapacity < guestCount) return Collections.emptyList();
 
         List<List<TableInfo>> bestByCapacity = new ArrayList<>(Collections.nCopies(maxCapacity + 1, null));
         bestByCapacity.set(0, List.of());
@@ -49,34 +48,30 @@ public class OptimalCapacityMergeStrategy implements TableAllocationStrategy {
         }
 
         List<TableInfo> best = null;
-        for (int capacity = guests; capacity <= maxCapacity; capacity++) {
+        for (int capacity = guestCount; capacity <= maxCapacity; capacity++) {
             List<TableInfo> combo = bestByCapacity.get(capacity);
             if (combo == null || combo.size() < 2) continue;
 
-            if (best == null || isBetterMergeResult(combo, best)) {
+            if (best == null || isBetterMergeResult(combo, best))
                 best = combo;
-            }
         }
 
-        return best == null ? List.of() : best;
+        return best == null ? Collections.emptyList() : best;
     }
 
+    @Override
+    public int getOrder() { return 2; }
+
     private boolean isPreferredForSameCapacity(List<TableInfo> candidate, List<TableInfo> existing) {
-        if (candidate.size() != existing.size()) {
-            return candidate.size() < existing.size();
-        }
+        if (candidate.size() != existing.size()) return candidate.size() < existing.size();
         return compareIdSequences(candidate, existing) < 0;
     }
 
     private boolean isBetterMergeResult(List<TableInfo> candidate, List<TableInfo> currentBest) {
         int candidateCapacity = candidate.stream().mapToInt(TableInfo::getCapacity).sum();
         int bestCapacity = currentBest.stream().mapToInt(TableInfo::getCapacity).sum();
-        if (candidateCapacity != bestCapacity) {
-            return candidateCapacity < bestCapacity;
-        }
-        if (candidate.size() != currentBest.size()) {
-            return candidate.size() < currentBest.size();
-        }
+        if (candidateCapacity != bestCapacity) return candidateCapacity < bestCapacity;
+        if (candidate.size() != currentBest.size()) return candidate.size() < currentBest.size();
         return compareIdSequences(candidate, currentBest) < 0;
     }
 
