@@ -7,7 +7,7 @@ import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.repository.TableInfoRepository;
-import com.hcmute.reservation.strategy.TableMergeStrategy;
+import com.hcmute.reservation.strategy.TableAllocationStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -28,12 +27,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class AvailabilityService {
+public class AvailabilityApiService {
 
     private final TableInfoRepository tableInfoRepository;
     private final ReservationRepository reservationRepository;
 
-    private final TableMergeStrategy tableMergeStrategy;
+    private final TableAllocationStrategy optimalCapacityMergeStrategy;
 
     @Value("${reservation.duration-minutes:120}")
     private int durationMinutes;
@@ -115,7 +114,7 @@ public class AvailabilityService {
                 .filter(table -> isFullyAvailableForWindow(table.getTableId(), time, maxEndTime))
                 .collect(Collectors.toList());
 
-        List<TableInfo> bestMerge = tableMergeStrategy.findBestMerge(mergeCandidates, guests);
+        List<TableInfo> bestMerge = optimalCapacityMergeStrategy.allocate(guests, mergeCandidates);
 
         // 3. Tổng hợp kết quả
         List<AvailableWindowResponse> result = new ArrayList<>(fullyAvailable);
