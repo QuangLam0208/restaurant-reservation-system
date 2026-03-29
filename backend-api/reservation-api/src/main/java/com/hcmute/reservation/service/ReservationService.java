@@ -297,9 +297,7 @@ public class ReservationService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime blockUntil = now.plusMinutes(durationMinutes + bufferMinutes);
 
-        // Lấy bàn active và AVAILABLE
         List<TableInfo> candidateTables = tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE);
-        // Lấy các bàn sẽ bị dùng trong khoảng [now → blockUntil]
         Set<Long> occupiedTableIds = new HashSet<>(reservationRepository.findOccupiedTableIds(now, blockUntil));
         List<TableInfo> cleanTables = candidateTables.stream()
                 .filter(table -> !occupiedTableIds.contains(table.getTableId()))
@@ -313,8 +311,8 @@ public class ReservationService {
         cleanTables.stream()
                 .filter(table -> table.getCapacity() >= guestCount)
                 .filter(table -> table.getCapacity() <= guestCount + maxCapacityOverflow)
-                .sorted(Comparator.comparingInt(TableInfo::getCapacity)
-                        .thenComparing(TableInfo::getTableId))
+                .sorted(Comparator.comparingInt(TableInfo::getCapacity).thenComparing(TableInfo::getTableId))
+                .limit(5)
                 .forEach(table -> preferredOptions.add(WalkInOptionResponse.TableOption.builder()
                         .tableIds(List.of(table.getTableId()))
                         .totalCapacity(table.getCapacity())
@@ -325,6 +323,9 @@ public class ReservationService {
         List<List<TableInfo>> cleanCombinations = findWalkInOptionCombinations(cleanTables, guestCount);
         cleanCombinations.stream()
                 .filter(combo -> combo.size() > 1)
+                .sorted(Comparator.<List<TableInfo>>comparingInt(List::size)
+                        .thenComparingInt(combo -> combo.stream().mapToInt(TableInfo::getCapacity).sum()))
+                .limit(5)
                 .forEach(combo -> preferredOptions.add(buildWalkInOption(combo, "MERGE_AVAILABLE", null)));
 
         if (!preferredOptions.isEmpty()) {
@@ -337,14 +338,9 @@ public class ReservationService {
         }
 
         Map<Long, LocalDateTime> partialAvailableUntilByTableId = new HashMap<>();
-        // Lấy ra danh sách ID của các bàn partial
-        List<Long> partialTableIds = partialTables.stream()
-                .map(TableInfo::getTableId)
-                .collect(Collectors.toList());
-
+        List<Long> partialTableIds = partialTables.stream().map(TableInfo::getTableId).collect(Collectors.toList());
         if (!partialTableIds.isEmpty()) {
             List<Object[]> nextBookings = reservationRepository.findNextBookingForTables(partialTableIds, now);
-            // Đưa kết quả vào Map
             for (Object[] row : nextBookings) {
                 Long tableId = (Long) row[0];
                 LocalDateTime nextStart = (LocalDateTime) row[1];
@@ -356,8 +352,8 @@ public class ReservationService {
         partialTables.stream()
                 .filter(table -> table.getCapacity() >= guestCount)
                 .filter(table -> table.getCapacity() <= guestCount + maxCapacityOverflow)
-                .sorted(Comparator.comparingInt(TableInfo::getCapacity)
-                        .thenComparing(TableInfo::getTableId))
+                .sorted(Comparator.comparingInt(TableInfo::getCapacity).thenComparing(TableInfo::getTableId))
+                .limit(5)
                 .forEach(table -> {
                     LocalDateTime availableUntil = partialAvailableUntilByTableId.get(table.getTableId());
                     if (availableUntil != null) {
@@ -369,20 +365,17 @@ public class ReservationService {
                                 .build());
                     }
                 });
-
-        Set<Long> partialTableIdSet = partialTables.stream()
-                .map(TableInfo::getTableId)
-                .collect(Collectors.toSet());
-
+        Set<Long> partialTableIdSet = partialTables.stream().map(TableInfo::getTableId).collect(Collectors.toSet());
         List<TableInfo> cleanAndPartial = new ArrayList<>(cleanTables);
         cleanAndPartial.addAll(partialTables);
 
         List<List<TableInfo>> mixedCombinations = findWalkInOptionCombinations(cleanAndPartial, guestCount);
         mixedCombinations.stream()
                 .filter(combo -> combo.size() > 1)
-                .filter(combo -> combo.stream()
-                        .map(TableInfo::getTableId)
-                        .anyMatch(partialTableIdSet::contains))
+                .filter(combo -> combo.stream().map(TableInfo::getTableId).anyMatch(partialTableIdSet::contains))
+                .sorted(Comparator.<List<TableInfo>>comparingInt(List::size)
+                        .thenComparingInt(combo -> combo.stream().mapToInt(TableInfo::getCapacity).sum()))
+                .limit(5)
                 .forEach(combo -> {
                     LocalDateTime availableUntil = combo.stream()
                             .map(TableInfo::getTableId)
@@ -865,13 +858,16 @@ public class ReservationService {
                 .collect(Collectors.toList());
 
         List<List<TableInfo>> combinations = new ArrayList<>();
-        backtrackWalkInOptionCombinations(sortedTables, targetGuests, 0, new ArrayList<>(), 0, combinations);
+            backtrackWalkInOptionCombinations(sortedTables, targetGuests, 0, new ArrayList<>(), 0, combinations);
         return combinations;
     }
 
     private void backtrackWalkInOptionCombinations(List<TableInfo> tables, int target, int start,
                                                    List<TableInfo> currentCombo, int currentSum,
                                                    List<List<TableInfo>> combinations) {
+        if (combinations.size() >= 20) {
+            return;
+        }
         if (currentSum >= target) {
             int diff = currentSum - target;
             if (diff <= maxCapacityOverflow) {
@@ -880,21 +876,13 @@ public class ReservationService {
             return;
         }
 
-        // Giữ nguyên ngưỡng ghép tối đa theo thuật toán cũ.
-        if (currentCombo.size() > 4) {
+        if (currentCombo.size() >= 4) {
             return;
         }
 
         for (int i = start; i < tables.size(); i++) {
             currentCombo.add(tables.get(i));
-            backtrackWalkInOptionCombinations(
-                    tables,
-                    target,
-                    i + 1,
-                    currentCombo,
-                    currentSum + tables.get(i).getCapacity(),
-                    combinations
-            );
+            backtrackWalkInOptionCombinations(tables, target, i + 1, currentCombo, currentSum + tables.get(i).getCapacity(), combinations);
             currentCombo.remove(currentCombo.size() - 1);
         }
     }
