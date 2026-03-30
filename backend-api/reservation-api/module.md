@@ -1,13 +1,13 @@
 
 ---
 
-# Tài liệu Thiết kế: Module Quản lý Bàn & Điều phối Đặt chỗ
+# Tài liệu Thiết kế Kiến trúc: Hệ thống Quản lý & Đặt bàn Nhà hàng (Reservation System)
 
-Hệ thống được thiết kế dựa trên các nguyên lý **OOSE** hiện đại, đảm bảo tính dễ mở rộng (Extensibility) thông qua Strategy Pattern, tính nhất quán dữ liệu thông qua Core Services, và đặc biệt tuân thủ chặt chẽ **DIP (Dependency Inversion Principle)** bằng cách tách biệt hoàn toàn Interface và Implementation.
+Hệ thống được thiết kế dựa trên các nguyên lý **OOSE** hiện đại và tuân thủ chặt chẽ 5 nguyên lý **SOLID**. Điểm nhấn của kiến trúc là sự phân chia rõ ràng giữa các tầng (Layered Architecture), áp dụng **Strategy Pattern** để dễ mở rộng, và tuân thủ tuyệt đối **DIP (Dependency Inversion Principle)** thông qua cấu trúc `Interface -> Implementation`.
 
 ## I. KIẾN TRÚC TỔNG THỂ (UML)
 
-Hệ thống chia làm 2 tầng chính: **Core Domain** (Chứa logic nghiệp vụ lõi dùng chung) và **Application Services** (Chứa các Use Case cụ thể). Tất cả giao tiếp giữa các module đều thông qua **Interface (Bản hợp đồng)**.
+Hệ thống chia làm 3 nhóm chính: **Core Domain** (Logic nghiệp vụ lõi), **Application Services** (Luồng Use Case ứng dụng) và **Infrastructure / Notification** (Hạ tầng và Giao tiếp ngoài). Tất cả tương tác giữa các module đều thông qua **Interface (Bản hợp đồng)**.
 
 ```plantuml
 @startuml
@@ -15,50 +15,38 @@ skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
 
 package "Core Domain Services (Dịch vụ lõi)" {
-  interface TableAvailabilityService <<Interface>> {
-    + getFreeTables(Reservation)
-    + getFreeTables(start, end)
-    + getCurrentlyAvailableTables()
-    + getNextBookingTime(tableId, time)
-  }
+  interface TableAvailabilityService <<Interface>>
+  class TableAvailabilityServiceImpl
   
-  class TableAvailabilityServiceImpl {
-    - tableInfoRepository
-    - reservationRepository
-  }
-  
-  interface TableAllocationStrategy <<Strategy>> {
-    + allocate(guestCount, freeTables)
-  }
-  
-  class SingleTableStrategy {
-    {Order 1}
-  }
-  
-  class OptimalCapacityMergeStrategy {
-    {Order 2 - DP Algorithm}
-  }
+  interface TableAllocationStrategy <<Strategy>>
+  class SingleTableStrategy {Order 1}
+  class OptimalCapacityMergeStrategy {Order 2}
 }
 
 package "Application Services (Dịch vụ ứng dụng)" {
+  interface TableService <<Interface>>
+  class TableServiceImpl {
+    - tableInfoRepository
+    + getFloorMap()
+    + updateTable(...)
+  }
+
   interface AssignmentService <<Interface>>
-  class AssignmentServiceImpl {
-    - availabilityService: TableAvailabilityService
-    - allocationStrategies: List<TableAllocationStrategy>
-    + findAlternativeTables(Reservation)
-  }
-  
+  class AssignmentServiceImpl
+
   interface AvailabilityApiService <<Interface>>
-  class AvailabilityApiServiceImpl {
-    - availabilityService: TableAvailabilityService
-    - mergeStrategy: TableAllocationStrategy
-    + checkAvailability(...)
-    + getAvailableWindows(...)
-  }
-  
+  class AvailabilityApiServiceImpl
+}
+
+package "Infrastructure & Notification (Hạ tầng)" {
   interface ReservationMappingService <<Interface>>
-  class ReservationMappingServiceImpl {
-    + updateTableMappings(...)
+  class ReservationMappingServiceImpl
+  
+  interface EmailService <<Interface>>
+  class EmailServiceImpl {
+    - mailSender: JavaMailSender
+    + sendCustomEmail(...)
+    + sendReservationConfirmationEmail(...)
   }
 }
 
@@ -67,17 +55,20 @@ TableAvailabilityService <|.. TableAvailabilityServiceImpl
 TableAllocationStrategy <|.. SingleTableStrategy
 TableAllocationStrategy <|.. OptimalCapacityMergeStrategy
 
+TableService <|.. TableServiceImpl
 AssignmentService <|.. AssignmentServiceImpl
 AvailabilityApiService <|.. AvailabilityApiServiceImpl
 ReservationMappingService <|.. ReservationMappingServiceImpl
+EmailService <|.. EmailServiceImpl
 
-' Phụ thuộc (Dependency) - Chỉ phụ thuộc vào Interface
+' Phụ thuộc (Dependency)
 AssignmentServiceImpl --> TableAvailabilityService
 AssignmentServiceImpl --> TableAllocationStrategy
 AssignmentServiceImpl --> ReservationMappingService
 
 AvailabilityApiServiceImpl --> TableAvailabilityService
 AvailabilityApiServiceImpl --> TableAllocationStrategy
+
 @enduml
 ```
 
@@ -88,49 +79,57 @@ AvailabilityApiServiceImpl --> TableAllocationStrategy
 ### 1. Nhóm Core Domain (Nền tảng logic)
 
 #### **`TableAvailabilityService` (Interface & Impl)**
-* **Mục đích:** Là nguồn sự thật duy nhất (Single Source of Truth) về trạng thái trống/bận của bàn. Nơi duy nhất được quyền gọi Repository để kiểm tra bàn.
-* **Các hàm chính:**
-    * `getFreeTables(...)`: Lấy bàn trống hoàn toàn theo khung giờ (Hỗ trợ cả object `Reservation` và `thời gian tự do` - Tuân thủ **DRY**).
-    * `getCurrentlyAvailableTables()` & `getNextBookingTime(...)`: Hỗ trợ phân tích bàn trống một phần (Partial) cho luồng Real-time POS, giúp **ngăn chặn lỗi N+1 Query Problem**.
-* **SOLID:** Tuân thủ **SRP**, tập trung duy nhất vào việc truy vấn dữ liệu thô và xử lý buffer time.
+* **Mục đích:** Là nguồn sự thật duy nhất (Single Source of Truth) về trạng thái trống/bận thực tế của bàn.
+* **Đặc điểm SOLID:** Tuân thủ **SRP**. Ngăn chặn lỗi N+1 Query bằng cách cung cấp các API lấy dữ liệu thô tối ưu (`getCurrentlyAvailableTables`, `getNextBookingTime`), hỗ trợ xử lý cả `bufferMinutes` (thời gian dọn dẹp).
 
-#### **`TableAllocationStrategy` (Interface)**
-* **Mục đích:** Định nghĩa "hợp đồng" cho việc tính toán phân bổ bàn.
-* **SOLID:** Tuân thủ **OCP**, giúp dễ dàng thay đổi thuật toán xếp bàn mà không chạm vào code của Service gọi nó.
-
-#### **Các Strategy (Impl):**
-* **`SingleTableStrategy` (`@Order(1)`):** Thuật toán ưu tiên tìm 1 bàn đơn duy nhất đủ sức chứa. Luôn chạy trước để tối ưu hóa tài nguyên.
-* **`OptimalCapacityMergeStrategy` (`@Order(2)`):** Sử dụng thuật toán **Quy hoạch động (Dynamic Programming)** để tìm tổ hợp ghép bàn tối ưu nhất (ít dư thừa chỗ nhất). Được dùng chung cho cả việc Gán bàn và Tra cứu hiển thị (Tuân thủ **DRY**).
+#### **`TableAllocationStrategy` (Interface & Impls)**
+* **Mục đích:** Hệ thống thuật toán lõi giúp tìm bàn phù hợp cho khách.
+* **Cài đặt:**
+  * **`SingleTableStrategy` (`@Order(1)`):** Quét nhanh bàn đơn.
+  * **`OptimalCapacityMergeStrategy` (`@Order(2)`):** Áp dụng **Quy hoạch động (Dynamic Programming)** để tìm tổ hợp ghép bàn ít dư thừa chỗ nhất. Tuân thủ **OCP**, dễ dàng thay đổi thuật toán.
 
 ---
 
 ### 2. Nhóm Application Services (Luồng nghiệp vụ)
-*Toàn bộ các service này đều được tách thành Interface (Hợp đồng API) và Impl (Chi tiết cài đặt) để tuân thủ **Dependency Inversion Principle (DIP)**. Controller ở tầng trên chỉ giao tiếp với Interface.*
+*Toàn bộ tầng này giao tiếp với Controller thông qua Interface, giấu kín chi tiết cài đặt ở class Impl.*
 
-#### **`AssignmentService` (Command Side)**
-* **Mục đích:** Thực hiện hành động thay đổi/gán bàn khi khách đến hoặc cần đổi bàn.
-* **Luồng xử lý:** Điều phối việc lấy pool bàn trống (từ Core), thử lần lượt các Strategy đa hình (Đơn -> Ghép) cho đến khi thành công, và gọi DB lưu lại.
+#### **`TableService` (Quản lý Bàn vật lý)**
+* **Mục đích:** Cung cấp các API CRUD cho bàn (tạo, sửa, xóa, lấy sơ đồ Floor Map).
+* **Điểm sáng Kiến trúc:**
+  * **Thread-Safety (An toàn Đa luồng):** Đã khắc phục triệt để lỗi ghi đè dữ liệu cục bộ bằng cách đưa các biến trạng thái (như `resTime`) vào phạm vi Local Variable, đảm bảo an toàn khi nhiều nhân viên cùng truy cập Sơ đồ bàn (Floor Map) cùng lúc.
+  * **Optimistic Locking:** Sử dụng cơ chế kiểm tra `version` để chống ghi đè dữ liệu đồng thời (Concurrency Control).
+  * **Clean Code:** Tách các logic kiểm tra (Validation) phức tạp thành các hàm `private` phụ trợ để tuân thủ DRY và SRP.
 
-#### **`AvailabilityApiService` (Query Side)**
-* **Mục đích:** Cung cấp dữ liệu tra cứu cho khách hàng (Web Booking) và nhân viên (Màn hình POS).
-* **Luồng xử lý:** * Hoàn toàn **không tương tác trực tiếp với Database**.
-    * Chỉ gọi `TableAvailabilityService` để lấy dữ liệu thô, sau đó "xào nấu", phân tích (Trống hoàn toàn / Trống một phần) và truyền qua Strategy để lấy gợi ý ghép bàn.
-* **Thiết kế:** Sử dụng `@Cacheable` để tối ưu hiệu năng tra cứu tần suất cao.
+#### **`AssignmentService` (Command Side - Gán bàn)**
+* **Mục đích:** Điều phối việc lấy pool bàn trống, thử lần lượt các Strategy đa hình (Đơn -> Ghép) cho đến khi thành công và gọi DB lưu lại.
 
-#### **`ReservationMappingService` (Infrastructure)**
-* **Mục đích:** Quản lý việc ghi xuống Database các mối quan hệ N-N giữa Reservation và Table.
-* **Đặc điểm:** Sử dụng `@Transactional(propagation = Propagation.MANDATORY)` để đảm bảo tính toàn vẹn dữ liệu (Atomic). Tách biệt logic ORM/JPA khỏi logic tính toán nghiệp vụ.
+#### **`AvailabilityApiService` (Query Side - Tra cứu)**
+* **Mục đích:** Phục vụ luồng Booking Online và màn hình POS.
+* **Đặc điểm:** Áp dụng mẫu kiến trúc **CQRS**, hoàn toàn không gọi trực tiếp Repository mà chỉ lấy dữ liệu thông qua `TableAvailabilityService` để tính toán và cache lại kết quả.
+
+---
+
+### 3. Nhóm Infrastructure & Notification (Hạ tầng)
+
+#### **`EmailService` (Dịch vụ Thông báo)**
+* **Mục đích:** Quản lý toàn bộ việc định dạng template và gửi Email qua giao thức SMTP.
+* **Điểm sáng Kiến trúc:**
+  * **SRP Tuyệt đối:** Chuyển toàn bộ trách nhiệm "nặn" nội dung email (lời chào, format ngày giờ) từ `EmailNotificationListener` về cho `EmailServiceImpl`. Listener lúc này chỉ làm đúng 1 nhiệm vụ là "Nghe Event và Điều hướng", giúp hệ thống dễ bảo trì và mở rộng template.
+  * **DIP:** Các module khác (Auth, Event) chỉ phụ thuộc vào `EmailService` (Interface). Việc thay đổi từ JavaMailSender sang API bên thứ 3 (VD: SendGrid, Amazon SES) sẽ không làm ảnh hưởng đến luồng nghiệp vụ.
+
+#### **`ReservationMappingService` (Lưu trữ quan hệ DB)**
+* **Mục đích:** Quản lý việc ghi xuống Database các mối quan hệ N-N. Sử dụng `@Transactional(propagation = Propagation.MANDATORY)` để đảm bảo tính toàn vẹn (Atomic).
 
 ---
 
-## III. TỔNG KẾT TƯ DUY KIẾN TRÚC
+## III. TỔNG KẾT TƯ DUY KIẾN TRÚC (DESIGN MINDSET)
 
-Kiến trúc hiện tại đạt được các tiêu chuẩn Enterprise khắt khe nhất:
-1.  **Highly Cohesive (Độ gắn kết cao):** Mọi logic liên quan đến thời gian dọn dẹp (`bufferMinutes`) hay thao tác tính bàn đều được gom về một mối duy nhất (Core Service).
-2.  **Loosely Coupled (Độ ghép nối lỏng):** Các module cấp cao (Application Services) không hề biết Database bên dưới dùng MySQL hay MongoDB, cũng không biết thuật toán ghép bàn code bằng for-loop hay Quy hoạch động. Chúng chỉ quan tâm đến các Interface.
-3.  **CQRS Pattern:** Tách biệt rõ ràng luồng Đọc/Tra cứu tần suất cao (`AvailabilityApiService`) và luồng Ghi/Gán bàn (`AssignmentService`).
+Kiến trúc hiện tại đã giải quyết được các bài toán khó nhất của một hệ thống Enterprise:
+1.  **Dependency Inversion (DIP):** Không có Service nào giao tiếp trực tiếp với Concrete Class của Service khác. Mọi thứ đều là Hợp đồng (Interface).
+2.  **Đa luồng & Concurrency:** Từ việc xử lý biến cục bộ trong `TableService` đến áp dụng Optimistic Locking (`version`) đảm bảo dữ liệu không bao giờ bị corrupt khi tải cao.
+3.  **Clean Architecture:** Tách bạch rõ ràng logic kết nối Database, thuật toán toán học, và logic tạo Template UI (Email).
 
 ---
-*Tài liệu được cập nhật dựa trên quy trình Tái cấu trúc (Refactoring) OOSE & SOLID mới nhất.*
+*Tài liệu được cập nhật dựa trên quy trình Tái cấu trúc (Refactoring) theo tiêu chuẩn OOSE & SOLID mới nhất.*
 
 ---
