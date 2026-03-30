@@ -1,6 +1,7 @@
 ﻿using reservation_winforms.DTO.reservation;
 using reservation_winforms.Services;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -55,22 +56,38 @@ namespace reservation_winforms.Forms
                 return;
             }
 
-            // Tìm đơn khớp (Chỉ lấy đơn ONLINE, vì Walk-in không cần check-in lại)
-            _currentReservation = res.Data.FirstOrDefault(r =>
+            // Lấy TẤT CẢ các đơn khớp số điện thoại hoặc mã đơn, sắp xếp theo giờ đến tăng dần
+            var matchedReservations = res.Data.Where(r =>
                 r.Type == "ONLINE" &&
-                (r.CustomerPhone == keyword || r.ReservationId.ToString() == keyword));
+                (r.CustomerPhone == keyword || r.ReservationId.ToString() == keyword))
+                .OrderBy(r => r.StartTime)
+                .ToList();
 
-            if (_currentReservation == null)
+            if (matchedReservations.Count == 0)
             {
                 MessageBox.Show("Không tìm thấy đơn đặt trước (Online) chờ Check-in với thông tin này.\nKhách có thể đã bị hủy đơn (No-show) hoặc nhập sai số.",
                                 "Không tìm thấy", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                pnlDetails.Visible = false;
-                btnCheckIn.Visible = false;
-                btnCancelBooking.Visible = false;
+                ResetUI();
                 return;
             }
 
+            // XỬ LÝ LỰA CHỌN
+            if (matchedReservations.Count == 1)
+            {
+                // Chỉ có 1 đơn -> Gán luôn
+                _currentReservation = matchedReservations[0];
+            }
+            else
+            {
+                // Có nhiều đơn -> Bật Popup cho Lễ tân chọn
+                _currentReservation = ShowReservationSelectionDialog(matchedReservations);
+
+                // Nếu Lễ tân bấm [X] tắt Popup mà không chọn gì
+                if (_currentReservation == null) return;
+            }
+
+            // Hiển thị thông tin đơn đã được chọn ra màn hình chính
             await ShowReservationInfo(_currentReservation);
         }
 
@@ -120,6 +137,77 @@ namespace reservation_winforms.Forms
                     lblValTableStatus.ForeColor = Color.MediumSeaGreen;
                 }
             }
+        }
+
+        // ==========================================================
+        // 5. HIỂN THỊ POPUP NẾU KHÁCH CÓ NHIỀU ĐƠN
+        // ==========================================================
+        private ReservationResponse ShowReservationSelectionDialog(List<ReservationResponse> list)
+        {
+            ReservationResponse selectedRes = null;
+
+            Form popup = new Form
+            {
+                Text = $"Tìm thấy {list.Count} đơn đặt bàn",
+                Size = new Size(500, 350),
+                StartPosition = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                BackColor = Color.White
+            };
+
+            FlowLayoutPanel flp = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                Padding = new Padding(15),
+                AutoScroll = true
+            };
+            popup.Controls.Add(flp);
+
+            Label lblHint = new Label
+            {
+                Text = $"Khách hàng {list[0].CustomerName} có nhiều đơn đặt bàn.\nVui lòng chọn đơn cần Check-in:",
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                ForeColor = Color.FromArgb(44, 62, 80),
+                AutoSize = true,
+                Margin = new Padding(0, 0, 0, 15)
+            };
+            flp.Controls.Add(lblHint);
+
+            foreach (var r in list)
+            {
+                string timeStr = r.StartTime.ToString("HH:mm");
+                string tableStr = (r.TableIds != null && r.TableIds.Count > 0) ? string.Join(", ", r.TableIds) : "Chưa xếp";
+
+                Button btnRes = new Button
+                {
+                    Text = $"Giờ đến: {timeStr}  |  Khách: {r.GuestCount} người\nBàn: {tableStr}  |  Đã cọc: {r.DepositAmount:N0}đ",
+                    Width = 450,
+                    Height = 60,
+                    Margin = new Padding(0, 0, 0, 10),
+                    FlatStyle = FlatStyle.Flat,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    Font = new Font("Segoe UI", 10),
+                    Cursor = Cursors.Hand
+                };
+
+                btnRes.FlatAppearance.BorderColor = Color.FromArgb(41, 128, 185);
+
+                // Bấm vào nút nào thì lấy thông tin đơn đó
+                btnRes.Click += (s, e) =>
+                {
+                    selectedRes = r;
+                    popup.DialogResult = DialogResult.OK;
+                    popup.Close();
+                };
+
+                flp.Controls.Add(btnRes);
+            }
+
+            popup.ShowDialog();
+            return selectedRes;
         }
 
         // 3. CHECK-IN (NHẬN BÀN)
