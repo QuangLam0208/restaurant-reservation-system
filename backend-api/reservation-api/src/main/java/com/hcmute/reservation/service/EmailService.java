@@ -1,48 +1,31 @@
 package com.hcmute.reservation.service;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Service;
+public interface EmailService {
 
-@Service
-@RequiredArgsConstructor
-public class EmailService {
+    /**
+     * Gửi email chứa link xác minh tài khoản khi đăng ký mới.
+     * @param toEmail Email người nhận
+     * @param token Token xác minh
+     */
+    void sendVerificationEmail(String toEmail, String token);
 
-    private final JavaMailSender mailSender;
+    /**
+     * Gửi email chứa link đặt lại mật khẩu khi quên mật khẩu.
+     * @param toEmail Email người nhận
+     * @param token Token khôi phục
+     */
+    void sendResetPasswordEmail(String toEmail, String token);
 
-    @Value("${spring.mail.username}")
-    private String from;
+    /**
+     * Gửi một email tùy chỉnh bất kỳ (Phục vụ cho các module khác nếu cần).
+     * @param to Email người nhận
+     * @param subject Tiêu đề email
+     * @param body Nội dung email
+     */
+    void sendCustomEmail(String to, String subject, String body);
 
-    @Value("${app.base-url}")
-    private String baseUrl;
-
-    @Value("${server.port:8081}")
-    private String serverPort;
-
-    public void sendVerificationEmail(String toEmail, String token) {
-        String link = "http://localhost:" + serverPort + "/api/auth/verify-email?token=" + token;
-        send(toEmail,
-                "Xác minh email - Nhà Hàng Đặt Bàn",
-                "Chào bạn,\n\nVui lòng click vào link sau để xác minh tài khoản:\n" + link +
-                        "\n\nLink có hiệu lực trong 30 phút.\n\nTrân trọng.");
-    }
-
-    public void sendResetPasswordEmail(String toEmail, String token) {
-        String link = "http://localhost:" + serverPort + "/api/auth/reset-password-page?token=" + token;
-        send(toEmail,
-                "Đặt lại mật khẩu - Nhà Hàng Đặt Bàn",
-                "Chào bạn,\n\nVui lòng click vào link sau để đặt lại mật khẩu:\n" + link +
-                        "\n\nLink có hiệu lực trong 10 phút. Nếu bạn không yêu cầu, hãy bỏ qua email này.\n\nTrân trọng.");
-    }
-
-    public void send(String to, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(from);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
-        mailSender.send(message);
-    }
+    /**
+     * Gửi email thông báo xác nhận đặt bàn thành công.
+     */
+    void sendReservationConfirmationEmail(String toEmail, String customerName, Long reservationId, java.time.LocalDateTime startTime);
 }
