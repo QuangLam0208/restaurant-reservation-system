@@ -52,7 +52,15 @@ public class ReservationController {
                 .body(reservationService.createOnlineReservation(req, customerId));
     }
 
+    /** GET /api/reservations/my */
+    @GetMapping("/my")
+    public ResponseEntity<List<ReservationResponse>> getMyReservations(Authentication auth) {
+        Long customerId = (auth.getDetails() instanceof Number n) ? n.longValue() : null;
+        return ResponseEntity.ok(reservationService.getReservationsByCustomer(customerId));
+    }
+
     /** GET /api/reservations/active */
+
     @GetMapping("/active")
     public ResponseEntity<List<ReservationResponse>> getActive() {
         return ResponseEntity.ok(reservationService.getActiveReservations());

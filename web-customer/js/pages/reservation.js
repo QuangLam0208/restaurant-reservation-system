@@ -22,6 +22,7 @@ window.backToBooking = backToBooking;
 window.confirmReservation = confirmReservation;
 window.openBookingsModal = openBookingsModal;
 window.closeBookingsModal = closeBookingsModal;
+window.cancelMyBooking = cancelMyBooking;
 
 // ─── LÔ-GIC TIMER ───
 function startTimer() {
@@ -68,28 +69,73 @@ function updateTimerDisplay() {
 }
 
 // ─── LÔ-GIC MY BOOKINGS ───
-function openBookingsModal() {
+async function openBookingsModal() {
     const listHtml = document.getElementById('bookings-list');
-    listHtml.innerHTML = '';
+    listHtml.innerHTML = '<div class="loading-bookings">Loading your reservations...</div>';
+    document.getElementById('bookings-modal').classList.add('open');
 
-    if (myBookingsList.length === 0) {
-        listHtml.innerHTML = '<p class="empty-state">You have no upcoming reservations.</p>';
-    } else {
-        myBookingsList.forEach(b => {
-            listHtml.innerHTML += `
+    const { ok, status, data: reservations } = await callApi('/reservations/my');
+
+    if (!ok) {
+        listHtml.innerHTML = `<p class="error-state">Failed to load reservations. (Error: ${status})</p>`;
+        return;
+    }
+
+    if (!reservations || reservations.length === 0) {
+        listHtml.innerHTML = '<p class="empty-state">You have no reservations yet.</p>';
+        return;
+    }
+
+    listHtml.innerHTML = '';
+    const now = new Date();
+    
+    reservations.forEach(r => {
+        const start = new Date(r.startTime);
+        const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+        const timeStr = r.startTime.split('T')[1].substring(0, 5);
+        
+        // Điều kiện hủy: Phải là RESERVED và cách hiện tại ít nhất 3 tiếng
+        const canCancel = r.status === 'RESERVED' && (start.getTime() - now.getTime() > 3 * 60 * 60 * 1000);
+
+        let statusClass = 'st-default';
+        if (r.status === 'RESERVED') statusClass = 'st-reserved';
+        if (r.status === 'CANCELLED' || r.status === 'NO_SHOW') statusClass = 'st-cancelled';
+        if (r.status === 'COMPLETED' || r.status === 'SEATED') statusClass = 'st-completed';
+
+        listHtml.innerHTML += `
         <div class="booking-item">
-          <p class="b-ref">${b.ref}</p>
-          <p class="b-detail"><strong>Date:</strong> ${b.date} at ${b.time}</p>
-          <p class="b-detail"><strong>Guests:</strong> ${b.party} people</p>
+          <div class="b-header">
+            <p class="b-ref">#${r.reservationId}</p>
+            <span class="status-badge ${statusClass}">${r.status}</span>
+          </div>
+          <div class="b-body">
+            <p class="b-detail"><strong>Date:</strong> ${dateStr} at ${timeStr}</p>
+            <p class="b-detail"><strong>Guests:</strong> ${r.guestCount} people</p>
+            ${r.note ? `<p class="b-note">"${r.note}"</p>` : ''}
+          </div>
+          <div class="b-footer">
+            ${canCancel ? `<button class="btn-cancel-small" onclick="cancelMyBooking(${r.reservationId})">Cancel Reservation</button>` : ''}
+            ${r.status === 'RESERVED' && !canCancel ? '<span class="cancel-deadline">Cancellation closed (within 3h)</span>' : ''}
+          </div>
         </div>
       `;
-        });
-    }
-    document.getElementById('bookings-modal').classList.add('open');
+    });
 }
 
 function closeBookingsModal() {
     document.getElementById('bookings-modal').classList.remove('open');
+}
+
+async function cancelMyBooking(id) {
+    if (!confirm(`Are you sure you want to cancel reservation #${id}?`)) return;
+
+    const { ok, data } = await callApi(`/reservations/${id}`, 'DELETE');
+    if (ok) {
+        alert("Reservation cancelled successfully.");
+        openBookingsModal(); // Refresh list
+    } else {
+        alert(data?.message || "Failed to cancel reservation.");
+    }
 }
 
 // ─── CÁC BƯỚC ĐẶT BÀN ───
