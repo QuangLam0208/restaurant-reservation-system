@@ -11,7 +11,7 @@ namespace reservation_winforms.Services
 {
     public class ReservationService
     {
-        // 1. Gửi yêu cầu gợi ý (Soft-lock bàn)
+        // 1. Gửi yêu cầu gợi ý (Soft-lock bàn) cho khách Walk-in
         public async Task<(bool IsSuccess, WalkInSuggestionResponse Data, string Message)> SuggestWalkInAsync(WalkInRequest request)
         {
             try
@@ -28,12 +28,12 @@ namespace reservation_winforms.Services
                     return (true, data, "Gợi ý thành công");
                 }
 
-                return (false, null, contentString); // Trả về thông báo lỗi từ server nếu có
+                return (false, null, contentString);
             }
             catch (Exception ex) { return (false, null, $"Lỗi kết nối: {ex.Message}"); }
         }
 
-        // 2. Lễ tân bấm XÁC NHẬN (Confirm)
+        // 2. Lễ tân bấm XÁC NHẬN (Confirm) cho khách Walk-in
         public async Task<(bool IsSuccess, string Message)> ConfirmWalkInAsync(long suggestionId)
         {
             try
@@ -47,7 +47,7 @@ namespace reservation_winforms.Services
             catch (Exception ex) { return (false, $"Lỗi kết nối: {ex.Message}"); }
         }
 
-        // 3. Lễ tân bấm HỦY (Cancel)
+        // 3. Lễ tân bấm HỦY (Cancel) bảng gợi ý Walk-in
         public async Task<bool> CancelWalkInSuggestionAsync(long suggestionId)
         {
             try
@@ -59,6 +59,7 @@ namespace reservation_winforms.Services
             catch { return false; }
         }
 
+        // 4. Lấy danh sách các Options ghép bàn
         public async Task<(bool IsSuccess, WalkInOptionResponse Data, string Message)> GetWalkInOptionsAsync(int guestCount)
         {
             try
@@ -77,7 +78,7 @@ namespace reservation_winforms.Services
             catch (Exception ex) { return (false, null, $"Lỗi kết nối: {ex.Message}"); }
         }
 
-        // Lấy danh sách đơn đặt trước (Truyền 1440 phút để tìm trong vòng 24h)
+        // 5. Lấy danh sách đơn đặt trước Online (Truyền 1440 phút để tìm trong vòng 24h)
         public async Task<(bool IsSuccess, List<ReservationResponse> Data, string Message)> GetUpcomingReservationsAsync(int minutes = 1440)
         {
             try
@@ -94,7 +95,7 @@ namespace reservation_winforms.Services
             catch (Exception ex) { return (false, null, $"Lỗi: {ex.Message}"); }
         }
 
-        // Gọi API Check-in
+        // 6. Gọi API Check-in cho đơn Online
         public async Task<(bool IsSuccess, string Message)> CheckInAsync(long reservationId)
         {
             try
@@ -106,16 +107,24 @@ namespace reservation_winforms.Services
             catch (Exception ex) { return (false, $"Lỗi: {ex.Message}"); }
         }
 
-        // Gọi API Hủy đơn (Lễ tân hủy)
-        public async Task<(bool IsSuccess, string Message)> CancelReservationAsync(long reservationId)
+        // 7. Gọi API Đổi Bàn
+        public async Task<(bool IsSuccess, ReservationResponse Data, string Message)> ChangeTableAsync(long reservationId, ChangeTableRequest request)
         {
             try
             {
                 ApiClient.AttachToken();
-                var response = await ApiClient.Client.DeleteAsync($"{ApiClient.BaseUrl}/reservations/{reservationId}");
-                return (response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+                string json = JsonConvert.SerializeObject(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await ApiClient.Client.PostAsync($"{ApiClient.BaseUrl}/reservations/{reservationId}/change-table", content);
+                var resContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                    return (true, JsonConvert.DeserializeObject<ReservationResponse>(resContent), "Thành công");
+
+                return (false, null, resContent);
             }
-            catch (Exception ex) { return (false, $"Lỗi: {ex.Message}"); }
+            catch (Exception ex) { return (false, null, $"Lỗi kết nối: {ex.Message}"); }
         }
     }
 }

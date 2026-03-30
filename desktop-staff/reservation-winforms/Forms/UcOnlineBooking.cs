@@ -1,4 +1,5 @@
 ﻿using reservation_winforms.DTO.reservation;
+using reservation_winforms.DTO.table;
 using reservation_winforms.Services;
 using System;
 using System.Collections.Generic;
@@ -24,12 +25,19 @@ namespace reservation_winforms.Forms
             // Gắn sự kiện cho các nút
             btnSearch.Click += BtnSearch_Click;
             btnCheckIn.Click += BtnCheckIn_Click;
-            btnCancelBooking.Click += BtnCancelBooking_Click;
+
+            // LƯU Ý: Ở FILE DESIGNER BẠN HÃY ĐỔI TÊN NÚT NÀY TỪ btnCancelBooking THÀNH btnChangeTable VÀ SỬA CHỮ THÀNH "ĐỔI BÀN"
+            btnChangeTable.Click += BtnChangeTable_Click;
+
+            // Đổi màu nút để hợp với nút Đổi bàn (Xanh dương)
+            btnChangeTable.Text = "ĐỔI BÀN";
+            btnChangeTable.ForeColor = Color.FromArgb(41, 128, 185);
+            btnChangeTable.FlatAppearance.BorderColor = Color.FromArgb(41, 128, 185);
 
             // Ẩn panel chi tiết lúc mới vào màn hình
             pnlDetails.Visible = false;
             btnCheckIn.Visible = false;
-            btnCancelBooking.Visible = false;
+            btnChangeTable.Visible = false;
         }
 
         // 1. TÌM KIẾM ĐƠN ĐẶT BÀN
@@ -96,7 +104,7 @@ namespace reservation_winforms.Forms
         {
             pnlDetails.Visible = true;
             btnCheckIn.Visible = true;
-            btnCancelBooking.Visible = true;
+            btnChangeTable.Visible = true;
 
             lblValName.Text = r.CustomerName ?? "Khách hàng";
             lblValPhone.Text = r.CustomerPhone ?? "N/A";
@@ -105,6 +113,7 @@ namespace reservation_winforms.Forms
             lblValTable.Text = (r.TableIds != null && r.TableIds.Count > 0)
                 ? string.Join(", ", r.TableIds)
                 : "Chưa xếp bàn";
+
             // Đánh giá: Khách đến sớm hay trễ?
             TimeSpan diff = DateTime.Now - r.StartTime;
             if (diff.TotalMinutes < 0)
@@ -172,7 +181,7 @@ namespace reservation_winforms.Forms
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 ForeColor = Color.FromArgb(44, 62, 80),
                 AutoSize = true,
-                Margin = new Padding(0, 0, 0, 15)
+                Margin = new Padding(0, 0, 15, 15)
             };
             flp.Controls.Add(lblHint);
 
@@ -228,7 +237,6 @@ namespace reservation_winforms.Forms
             }
             else
             {
-                // Bắt gọn lỗi ném ra từ Backend (VD: Khách No-show do đến trễ quá 15p, hoặc Hết bàn thay thế)
                 MessageBox.Show(result.Message, "Không thể Check-in", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 btnSearch.PerformClick(); // Tải lại data mới nhất
             }
@@ -237,34 +245,154 @@ namespace reservation_winforms.Forms
             btnCheckIn.Text = "CHECK-IN";
         }
 
-        // 4. HỦY ĐƠN (LỄ TÂN THAO TÁC)
-        private async void BtnCancelBooking_Click(object sender, EventArgs e)
+        // ==========================================================
+        // 4. ĐỔI BÀN (Popup Thông minh - THAY THẾ NÚT HỦY CŨ)
+        // ==========================================================
+        private async void BtnChangeTable_Click(object sender, EventArgs e)
         {
             if (_currentReservation == null) return;
 
-            var confirm = MessageBox.Show($"Bạn có chắc chắn muốn hủy đơn của khách '{_currentReservation.CustomerName}' không?\nTiền cọc ({_currentReservation.DepositAmount:N0}đ) có thể không được hoàn lại tùy theo chính sách.",
-                                          "Xác nhận Hủy", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            btnChangeTable.Enabled = false;
+            btnChangeTable.Text = "ĐANG TẢI...";
 
-            if (confirm == DialogResult.Yes)
+            // Lấy danh sách bàn để Lễ tân chọn
+            var mapRes = await _tableService.GetFloorMapAsync();
+
+            btnChangeTable.Enabled = true;
+            btnChangeTable.Text = "ĐỔI BÀN";
+
+            if (!mapRes.IsSuccess || mapRes.Data == null)
             {
-                var result = await _reservationService.CancelReservationAsync(_currentReservation.ReservationId);
-                if (result.IsSuccess)
-                {
-                    MessageBox.Show("Đã hủy đơn thành công. Bàn đã được giải phóng.", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    ResetUI();
-                }
-                else
-                {
-                    MessageBox.Show(result.Message, "Lỗi Hủy", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                MessageBox.Show("Không thể tải sơ đồ bàn.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
+
+            // Lọc ra các bàn trống (Không có người ngồi, không bị Reserved)
+            var availableTables = mapRes.Data.Where(t => t.IsActive && t.Status == "AVAILABLE" && t.CurrentReservationStatus != "RESERVED").ToList();
+
+            if (availableTables.Count == 0)
+            {
+                MessageBox.Show("Nhà hàng hiện tại không còn bàn trống nào để đổi!", "Hết bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Mở Popup để Lễ tân chọn bàn (Không cần nhập lý do)
+            var changeReq = ShowChangeTableDialog(availableTables, _currentReservation.GuestCount);
+            if (changeReq == null) return; // Lễ tân bấm Hủy / Tắt popup
+
+            // GỌI API ĐỔI BÀN
+            btnChangeTable.Enabled = false;
+            btnChangeTable.Text = "ĐANG CHUYỂN...";
+
+            var res = await _reservationService.ChangeTableAsync(_currentReservation.ReservationId, changeReq);
+
+            if (res.IsSuccess)
+            {
+                MessageBox.Show("Đã chuyển bàn thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                _currentReservation = res.Data;
+                await ShowReservationInfo(_currentReservation); // Cập nhật lại giao diện (Số bàn thay đổi)
+            }
+            else
+            {
+                MessageBox.Show(res.Message, "Không thể chuyển bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            btnChangeTable.Enabled = true;
+            btnChangeTable.Text = "ĐỔI BÀN";
+        }
+
+        private ChangeTableRequest ShowChangeTableDialog(List<FloorMapTableResponse> availableTables, int guestCount)
+        {
+            ChangeTableRequest result = null;
+            List<long> selectedIds = new List<long>();
+            int totalCapacity = 0;
+
+            Form popup = new Form
+            {
+                Text = $"Đổi bàn cho {guestCount} khách",
+                Size = new Size(650, 480), // Nhỏ gọn hơn do bỏ textbox lý do
+                StartPosition = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                BackColor = Color.White
+            };
+
+            Label lblTop = new Label { Text = $"Chọn bàn mới (Cần chứa đủ {guestCount} khách):", AutoSize = true, Location = new Point(20, 20), Font = new Font("Segoe UI", 12, FontStyle.Bold) };
+            popup.Controls.Add(lblTop);
+
+            FlowLayoutPanel flp = new FlowLayoutPanel
+            {
+                Location = new Point(20, 60),
+                Size = new Size(590, 300),
+                AutoScroll = true,
+                BorderStyle = BorderStyle.FixedSingle,
+                Padding = new Padding(10)
+            };
+            popup.Controls.Add(flp);
+
+            Label lblStatus = new Label { Text = "Đã chọn: 0 bàn (0 chỗ)", AutoSize = true, Location = new Point(20, 380), Font = new Font("Segoe UI", 11, FontStyle.Bold), ForeColor = Color.MediumSeaGreen };
+            popup.Controls.Add(lblStatus);
+
+            Button btnOk = new Button { Text = "XÁC NHẬN ĐỔI BÀN", Location = new Point(410, 375), Size = new Size(200, 45), BackColor = Color.FromArgb(41, 128, 185), ForeColor = Color.White, Font = new Font("Segoe UI", 11, FontStyle.Bold), FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand };
+            btnOk.FlatAppearance.BorderSize = 0;
+            popup.Controls.Add(btnOk);
+
+            foreach (var t in availableTables)
+            {
+                Button btnT = new Button
+                {
+                    Text = $"Bàn {t.TableId}\n({t.Capacity} chỗ)",
+                    Size = new Size(100, 80),
+                    Margin = new Padding(10),
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.WhiteSmoke,
+                    Cursor = Cursors.Hand,
+                    Tag = t
+                };
+                btnT.Click += (s, e) =>
+                {
+                    if (selectedIds.Contains(t.TableId))
+                    {
+                        selectedIds.Remove(t.TableId); totalCapacity -= t.Capacity;
+                        btnT.BackColor = Color.WhiteSmoke; btnT.ForeColor = Color.Black;
+                    }
+                    else
+                    {
+                        selectedIds.Add(t.TableId); totalCapacity += t.Capacity;
+                        btnT.BackColor = Color.FromArgb(46, 204, 113); btnT.ForeColor = Color.White;
+                    }
+                    lblStatus.Text = $"Đã chọn: {selectedIds.Count} bàn ({totalCapacity} chỗ)";
+                    lblStatus.ForeColor = totalCapacity >= guestCount ? Color.MediumSeaGreen : Color.IndianRed;
+                };
+                flp.Controls.Add(btnT);
+            }
+
+            btnOk.Click += (s, e) =>
+            {
+                if (selectedIds.Count == 0) { MessageBox.Show("Vui lòng chọn ít nhất 1 bàn!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                if (totalCapacity < guestCount) { MessageBox.Show($"Sức chứa ({totalCapacity} chỗ) không đủ cho {guestCount} khách!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+
+                if (totalCapacity > guestCount + 2)
+                {
+                    MessageBox.Show($"Bạn đang chọn bàn quá rộng! (Dư tối đa 2 chỗ). Vui lòng chọn tổ hợp bàn nhỏ hơn.", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                result = new ChangeTableRequest { TableIds = selectedIds };
+                popup.DialogResult = DialogResult.OK;
+                popup.Close();
+            };
+
+            popup.ShowDialog();
+            return result;
         }
 
         private void ResetUI()
         {
             pnlDetails.Visible = false;
             btnCheckIn.Visible = false;
-            btnCancelBooking.Visible = false;
+            btnChangeTable.Visible = false;
             txtSearch.Text = "";
             _currentReservation = null;
         }
