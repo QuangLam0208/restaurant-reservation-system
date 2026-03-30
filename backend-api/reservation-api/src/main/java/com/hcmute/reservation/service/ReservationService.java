@@ -265,11 +265,6 @@ public class ReservationService {
             t.setLockedByReservationId(null);
             t.setStatus(TableStatus.AVAILABLE);
             tableInfoRepository.save(t);
-
-//            mappingRepository.save(ReservationTableMapping.builder()
-//                    .reservation(reservation)
-//                    .tableInfo(t)
-//                    .build());
         }
 
         // Chuẩn bị dữ liệu gửi Email (Tránh lazy loading trong Async thread sau này)
@@ -687,11 +682,6 @@ public class ReservationService {
                 t.setLockedByReservationId(null);
                 t.setStatus(TableStatus.OCCUPIED);
                 tableInfoRepository.saveAndFlush(t);
-
-//                mappingRepository.save(ReservationTableMapping.builder()
-//                        .reservation(reservation)
-//                        .tableInfo(t)
-//                        .build());
             }
         } catch (ObjectOptimisticLockingFailureException e) {
             throw new ConflictException(
