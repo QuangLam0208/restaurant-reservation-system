@@ -158,6 +158,15 @@ public class ReservationService {
 
         LocalDateTime defaultEnd = start.plusMinutes(durationMinutes);
         LocalDateTime end = defaultEnd.isAfter(closingDateTime) ? closingDateTime : defaultEnd;
+
+        List<Reservation> overlappingReservations = reservationRepository
+                .findOverlappingByCustomerId(customerId, start, end);
+
+        if (overlappingReservations.size() >= 2) {
+            throw new BadRequestException("Bạn chỉ được phép đặt tối đa 2 đơn trong cùng một khung giờ. " +
+                    "Vui lòng chọn khung giờ khác hoặc hoàn tất/hủy các đơn hiện tại.");
+        }
+
         LocalDateTime blockUntil = end.plusMinutes(bufferMinutes);
 
         // Lọc bàn theo overlap

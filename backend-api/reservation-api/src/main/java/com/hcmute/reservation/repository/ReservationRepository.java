@@ -33,6 +33,14 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             "WHERE r.status = :status ORDER BY r.startTime ASC")
     List<Reservation> findByStatusWithTables(@Param("status") ReservationStatus status);
 
+    // Lấy các đơn của 1 khách hàng đang giao nhau với khoảng thời gian [startTime, endTime]
+    @Query("SELECT r FROM Reservation r WHERE r.customer.customerId = :customerId " +
+            "AND r.status IN ('CREATED', 'PENDING_PAYMENT', 'RESERVED', 'SEATED') " +
+            "AND r.startTime < :endTime AND r.endTime > :startTime")
+    List<Reservation> findOverlappingByCustomerId(@Param("customerId") Long customerId,
+                                                  @Param("startTime") LocalDateTime startTime,
+                                                  @Param("endTime") LocalDateTime endTime);
+
     @Query("SELECT r FROM Reservation r WHERE r.status = 'PENDING_PAYMENT' AND r.createdAt < :expiredBefore")
     List<Reservation> findExpiredPendingPayments(@Param("expiredBefore") LocalDateTime expiredBefore);
 
