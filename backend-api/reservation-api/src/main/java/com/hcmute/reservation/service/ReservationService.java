@@ -212,14 +212,24 @@ public class ReservationService {
                 .build();
         reservation = reservationRepository.save(reservation);
 
+        List<ReservationTableMapping> mappings = new ArrayList<>();
         try {
             for (TableInfo t : selectedTables) {
                 t.applySoftLock(reservation.getReservationId(), softLockMinutes);
                 tableInfoRepository.saveAndFlush(t);
+
+                ReservationTableMapping mapping = ReservationTableMapping.builder()
+                        .reservation(reservation)
+                        .tableInfo(t)
+                        .build();
+                mappings.add(mappingRepository.save(mapping));
             }
         } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
             throw new ConflictException("Rất tiếc, bàn bạn chọn vừa được khách hàng khác đặt thành công. Vui lòng chọn lại khung giờ hoặc bàn khác!");
         }
+
+        // Gắn mapping vào reservation
+        reservation.setTableMappings(mappings);
 
         // Chuyển sang status = PENDING_PAYMENT
         reservation.setStatus(ReservationStatus.PENDING_PAYMENT);
@@ -255,11 +265,6 @@ public class ReservationService {
             t.setLockedByReservationId(null);
             t.setStatus(TableStatus.AVAILABLE);
             tableInfoRepository.save(t);
-
-            mappingRepository.save(ReservationTableMapping.builder()
-                    .reservation(reservation)
-                    .tableInfo(t)
-                    .build());
         }
 
         // Chuẩn bị dữ liệu gửi Email (Tránh lazy loading trong Async thread sau này)
@@ -590,10 +595,17 @@ public class ReservationService {
                 .build();
         reservation = reservationRepository.save(reservation);
 
+        List<ReservationTableMapping> mappings = new ArrayList<>();
         try {
             for (TableInfo t : selectedTables) {
                 t.applySoftLock(reservation.getReservationId(), softLockMinutes);
                 tableInfoRepository.saveAndFlush(t);
+
+                ReservationTableMapping mapping = ReservationTableMapping.builder()
+                        .reservation(reservation)
+                        .tableInfo(t)
+                        .build();
+                mappings.add(mappingRepository.save(mapping));
             }
         } catch (ObjectOptimisticLockingFailureException e) {
             // Bàn vừa bị lễ tân khác cướp trong tích tắc — hủy reservation tạm
@@ -602,6 +614,8 @@ public class ReservationService {
             throw new ConflictException(
                     "Mot trong cac ban goi y vua duoc xep cho khach khac. Vui long thu lai.");
         }
+
+        reservation.setTableMappings(mappings);
 
         // ── Build response ─────────────────────────────────────────────
 
@@ -668,11 +682,6 @@ public class ReservationService {
                 t.setLockedByReservationId(null);
                 t.setStatus(TableStatus.OCCUPIED);
                 tableInfoRepository.saveAndFlush(t);
-
-                mappingRepository.save(ReservationTableMapping.builder()
-                        .reservation(reservation)
-                        .tableInfo(t)
-                        .build());
             }
         } catch (ObjectOptimisticLockingFailureException e) {
             throw new ConflictException(
