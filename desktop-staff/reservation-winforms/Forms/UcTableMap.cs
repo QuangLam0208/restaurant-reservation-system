@@ -253,96 +253,96 @@ namespace reservation_winforms.Forms
 
         private async void BtnSeatWalkIn_Click(object sender, EventArgs e)
         {
-            int guests = (int)nudGuestCount.Value;
-            List<long> finalTableIdsToSuggest = null;
-
-            // KỊCH BẢN 1: LỄ TÂN ĐÃ TỰ CLICK CHỌN BÀN TRÊN SƠ ĐỒ (Bypass Option, đi thẳng vào Suggest)
-            if (_selectedTables.Count > 0)
+            try
             {
-                finalTableIdsToSuggest = _selectedTables.Select(t => t.TableId).ToList();
-            }
-            // KỊCH BẢN 2: LỄ TÂN CHƯA CHỌN BÀN -> GỌI API OPTIONS ĐỂ LẤY GỢI Ý
-            else
-            {
+                // KHÓA NÚT KHI VỪA BẤM
                 btnSeatWalkIn.Enabled = false;
-                btnSeatWalkIn.Text = "ĐANG TÌM PHƯƠNG ÁN...";
+                btnSeatWalkIn.Text = "ĐANG XỬ LÝ...";
 
-                var optionsRes = await _reservationService.GetWalkInOptionsAsync(guests);
+                int guests = (int)nudGuestCount.Value;
+                List<long> finalTableIdsToSuggest = null;
 
-                btnSeatWalkIn.Enabled = true;
-                btnSeatWalkIn.Text = "XẾP BÀN (WALK-IN)";
-
-                if (!optionsRes.IsSuccess || optionsRes.Data.Groups == null || optionsRes.Data.Groups.Count == 0)
+                // KỊCH BẢN 1: LỄ TÂN ĐÃ TỰ CLICK CHỌN BÀN TRÊN SƠ ĐỒ
+                if (_selectedTables.Count > 0)
                 {
-                    MessageBox.Show("Nhà hàng hiện đã hết bàn trống hoặc không có tổ hợp bàn ghép nào phù hợp cho số lượng khách này.", "Hết bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    finalTableIdsToSuggest = _selectedTables.Select(t => t.TableId).ToList();
+                }
+                // KỊCH BẢN 2: LỄ TÂN CHƯA CHỌN BÀN -> GỌI API LẤY GỢI Ý
+                else
+                {
+                    var optionsRes = await _reservationService.GetWalkInOptionsAsync(guests);
+
+                    if (!optionsRes.IsSuccess || optionsRes.Data.Groups == null || optionsRes.Data.Groups.Count == 0)
+                    {
+                        MessageBox.Show("Nhà hàng hiện đã hết bàn trống hoặc không có tổ hợp bàn ghép nào phù hợp cho số lượng khách này.", "Hết bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return; // Thoát hàm -> Sẽ nhảy thẳng xuống khối finally để mở khóa nút
+                    }
+
+                    // Hiển thị Popup danh sách phương án cho Lễ tân chọn
+                    finalTableIdsToSuggest = ShowOptionsDialog(optionsRes.Data, guests);
+
+                    // Lễ tân tắt Popup hoặc bấm Cancel
+                    if (finalTableIdsToSuggest == null) return;
+                }
+
+                // --- BƯỚC TIẾP THEO: GỌI API SUGGEST ĐỂ SOFT-LOCK BÀN LẠI ---
+                var request = new WalkInRequest
+                {
+                    GuestCount = guests,
+                    TableId = finalTableIdsToSuggest,
+                    MergeTables = false
+                };
+
+                var suggestRes = await _reservationService.SuggestWalkInAsync(request);
+
+                if (!suggestRes.IsSuccess)
+                {
+                    MessageBox.Show(suggestRes.Message, "Không thể giữ bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    await LoadTableData();
                     return;
                 }
 
-                // Hiển thị Popup danh sách phương án cho Lễ tân chọn
-                finalTableIdsToSuggest = ShowOptionsDialog(optionsRes.Data, guests);
+                // --- BƯỚC CUỐI: XÁC NHẬN CHÍNH THỨC (CONFIRM) VỚI KHÁCH ---
+                var suggestion = suggestRes.Data;
+                string tableList = string.Join(", ", suggestion.SuggestedTables.Select(t => t.TableId));
+                string typeText = suggestion.AvailabilityType.Contains("PARTIAL") ? "⚠️ TRỐNG TẠM THỜI (Vướng lịch đặt sau)" : "✅ TRỐNG HOÀN TOÀN";
 
-                // Lễ tân tắt Popup hoặc bấm Cancel
-                if (finalTableIdsToSuggest == null) return;
-            }
+                string confirmMsg = $"[THÔNG TIN CHỐT XẾP BÀN]\n\n" +
+                                    $"Bàn: {tableList} (Sức chứa {suggestion.SuggestedTables.Sum(t => t.Capacity)} chỗ)\n" +
+                                    $"Loại bàn: {typeText}\n" +
+                                    $"Thời gian khách ngồi: Từ {suggestion.StartTime:HH:mm} đến {suggestion.EndTime:HH:mm}\n\n" +
+                                    $"*Hệ thống đang khóa tạm bàn này đến {suggestion.LockExpiresAt:HH:mm:ss}.\n" +
+                                    $"Khách hàng có đồng ý không?";
 
-            // --- BƯỚC TIẾP THEO: GỌI API SUGGEST ĐỂ SOFT-LOCK BÀN LẠI ---
-            btnSeatWalkIn.Enabled = false;
-            btnSeatWalkIn.Text = "ĐANG GIỮ BÀN...";
+                DialogResult result = MessageBox.Show(confirmMsg, "Xác nhận chốt đơn", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
 
-            var request = new WalkInRequest
-            {
-                GuestCount = guests,
-                TableId = finalTableIdsToSuggest, // Chắc chắn đã có ID bàn (do Lễ tân tự chọn trên Map hoặc chọn từ Popup Options)
-                MergeTables = false // Backend tự hiểu merge dựa trên List ID gửi đi
-            };
-
-            var suggestRes = await _reservationService.SuggestWalkInAsync(request);
-
-            if (!suggestRes.IsSuccess)
-            {
-                MessageBox.Show(suggestRes.Message, "Không thể giữ bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                await LoadTableData();
-                return;
-            }
-
-            // --- BƯỚC CUỐI: XÁC NHẬN CHÍNH THỨC (CONFIRM) VỚI KHÁCH ---
-            var suggestion = suggestRes.Data;
-            string tableList = string.Join(", ", suggestion.SuggestedTables.Select(t => t.TableId));
-
-            // Xử lý chuỗi thông báo
-            string typeText = suggestion.AvailabilityType.Contains("PARTIAL") ? "⚠️ TRỐNG TẠM THỜI (Vướng lịch đặt sau)" : "✅ TRỐNG HOÀN TOÀN";
-
-            string confirmMsg = $"[THÔNG TIN CHỐT XẾP BÀN]\n\n" +
-                                $"Bàn: {tableList} (Sức chứa {suggestion.SuggestedTables.Sum(t => t.Capacity)} chỗ)\n" +
-                                $"Loại bàn: {typeText}\n" +
-                                $"Thời gian khách ngồi: Từ {suggestion.StartTime:HH:mm} đến {suggestion.EndTime:HH:mm}\n\n" +
-                                $"*Hệ thống đang khóa tạm bàn này đến {suggestion.LockExpiresAt:HH:mm:ss}.\n" +
-                                $"Khách hàng có đồng ý không?";
-
-            DialogResult result = MessageBox.Show(confirmMsg, "Xác nhận chốt đơn", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
-
-            if (result == DialogResult.OK)
-            {
-                btnSeatWalkIn.Text = "ĐANG CHỐT ĐƠN...";
-                var confirmRes = await _reservationService.ConfirmWalkInAsync(suggestion.SuggestionId);
-
-                if (confirmRes.IsSuccess)
+                if (result == DialogResult.OK)
                 {
-                    MessageBox.Show("Xếp bàn thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    var confirmRes = await _reservationService.ConfirmWalkInAsync(suggestion.SuggestionId);
+
+                    if (confirmRes.IsSuccess)
+                    {
+                        MessageBox.Show("Xếp bàn thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show(confirmRes.Message, "Lỗi chốt đơn", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
                 else
                 {
-                    MessageBox.Show(confirmRes.Message, "Lỗi chốt đơn", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    await _reservationService.CancelWalkInSuggestionAsync(suggestion.SuggestionId);
+                    MessageBox.Show("Đã hủy gợi ý xếp bàn.", "Đã hủy", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-            }
-            else
-            {
-                btnSeatWalkIn.Text = "ĐANG HỦY GIỮ BÀN...";
-                await _reservationService.CancelWalkInSuggestionAsync(suggestion.SuggestionId);
-                MessageBox.Show("Đã hủy gợi ý xếp bàn.", "Đã hủy", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
 
-            await LoadTableData(); // Làm sạch toàn bộ giao diện và tải lại trạng thái
+                await LoadTableData();
+            }
+            finally
+            {
+                // BÙA HỘ MỆNH: LUÔN TRẢ LẠI TRẠNG THÁI NÚT VỀ BAN ĐẦU
+                btnSeatWalkIn.Enabled = true;
+                btnSeatWalkIn.Text = "XẾP BÀN (WALK-IN)";
+            }
         }
 
         // =========================================================================

@@ -158,22 +158,29 @@ namespace reservation_winforms.Forms
             var confirm = MessageBox.Show(confirmMsg, "Xác nhận Trả Bàn", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm != DialogResult.Yes) return;
 
-            btnCheckOut.Enabled = false;
-            btnCheckOut.Text = "ĐANG XỬ LÝ...";
-
-            var result = await _reservationService.CheckOutAsync(_currentSelectedRes.ReservationId);
-
-            if (result.IsSuccess)
+            try
             {
-                MessageBox.Show("Trả bàn thành công! Hệ thống đã giải phóng các bàn này để đón khách tiếp theo.", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                await LoadActiveTablesAsync(); // Tải lại danh sách
+                btnCheckOut.Enabled = false;
+                btnCheckOut.Text = "ĐANG XỬ LÝ...";
+
+                var result = await _reservationService.CheckOutAsync(_currentSelectedRes.ReservationId);
+
+                if (result.IsSuccess)
+                {
+                    MessageBox.Show("Trả bàn thành công! Hệ thống đã giải phóng các bàn này để đón khách tiếp theo.", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    await LoadActiveTablesAsync(); // Tải lại danh sách
+                }
+                else
+                {
+                    MessageBox.Show(result.Message, "Lỗi Trả bàn", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            else
+            finally
             {
-                MessageBox.Show(result.Message, "Lỗi Trả bàn", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 btnCheckOut.Enabled = true;
                 btnCheckOut.Text = "XÁC NHẬN TRẢ BÀN";
             }
+
         }
 
         private void ResetDetailsPanel()

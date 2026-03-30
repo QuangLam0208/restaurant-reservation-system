@@ -20,7 +20,7 @@ namespace reservation_winforms.Forms
             btnTableMap.Click += BtnTableMap_Click;
             btnOnlineBooking.Click += BtnOnlineBooking_Click;
             btnWaitlist.Click += BtnWaitlist_Click;
-            btnCheckOut.Click += BtnCheckOut_Click; // Thêm nút Check-out vào
+            btnCheckOut.Click += BtnCheckOut_Click; 
 
             btnTableSetup.Click += BtnTableSetup_Click;
             btnReports.Click += BtnReports_Click;
@@ -83,7 +83,6 @@ namespace reservation_winforms.Forms
             LoadUserControl(new UcWaitlist());
         }
 
-        // HÀM MỚI: Mở giao diện Thanh Toán & Trả bàn
         private void BtnCheckOut_Click(object sender, EventArgs e)
         {
             LoadUserControl(new UcCheckOut());
@@ -124,7 +123,7 @@ namespace reservation_winforms.Forms
             // 4. Thêm nó vào giao diện
             pnlMainContent.Controls.Add(registerCtrl);
         }
-
+            
         // =========================================================
         // XỬ LÝ ĐĂNG XUẤT
         // =========================================================
