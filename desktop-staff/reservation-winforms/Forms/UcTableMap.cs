@@ -301,7 +301,6 @@ namespace reservation_winforms.Forms
             if (!suggestRes.IsSuccess)
             {
                 MessageBox.Show(suggestRes.Message, "Không thể giữ bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                ResetButtonState();
                 await LoadTableData();
                 return;
             }
@@ -343,7 +342,6 @@ namespace reservation_winforms.Forms
                 MessageBox.Show("Đã hủy gợi ý xếp bàn.", "Đã hủy", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
-            ResetButtonState();
             await LoadTableData(); // Làm sạch toàn bộ giao diện và tải lại trạng thái
         }
 
@@ -428,11 +426,5 @@ namespace reservation_winforms.Forms
             return selectedIds; // Trả về List ID bàn Lễ tân vừa bấm chọn
         }
 
-        // Hàm phụ để reset trạng thái nút
-        private void ResetButtonState()
-        {
-            btnSeatWalkIn.Enabled = true;
-            btnSeatWalkIn.Text = "XẾP BÀN (WALK-IN)";
-        }
     }
 }

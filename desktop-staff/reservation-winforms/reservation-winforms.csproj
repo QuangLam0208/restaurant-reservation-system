@@ -67,12 +67,6 @@
     <Compile Include="DTO\table\TableResponse.cs" />
     <Compile Include="DTO\waitList\WaitlistRequest.cs" />
     <Compile Include="DTO\waitList\WaitlistResponse.cs" />
-    <Compile Include="Forms\ChangeTableDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\ChangeTableDialog.Designer.cs">
-      <DependentUpon>ChangeTableDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Forms\LoginForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -90,6 +84,12 @@
     </Compile>
     <Compile Include="Forms\OverrideDialog.Designer.cs">
       <DependentUpon>OverrideDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\UcCheckOut.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UcCheckOut.Designer.cs">
+      <DependentUpon>UcCheckOut.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\UcRegister.cs">
       <SubType>UserControl</SubType>
