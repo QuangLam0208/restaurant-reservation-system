@@ -23,8 +23,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             "AND r.status IN ('RESERVED','SEATED') AND r.startTime > :now ORDER BY r.startTime ASC")
     List<Reservation> findNextBookingForTable(@Param("tableId") Long tableId, @Param("now") LocalDateTime now);
 
-//    @Query("SELECT r FROM Reservation r WHERE r.status = 'RESERVED' AND r.startTime BETWEEN :now AND :until")
-//    List<Reservation> findUpcoming(@Param("now") LocalDateTime now, @Param("until") LocalDateTime until);
     @Query("SELECT DISTINCT r FROM Reservation r LEFT JOIN FETCH r.tableMappings m " +
               "WHERE r.status = 'RESERVED' AND r.startTime BETWEEN :now AND :until " +
               "ORDER BY r.startTime ASC")
