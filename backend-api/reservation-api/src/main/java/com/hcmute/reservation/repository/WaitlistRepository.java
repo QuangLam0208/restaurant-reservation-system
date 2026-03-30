@@ -11,9 +11,12 @@ import java.util.List;
 
 @Repository
 public interface WaitlistRepository extends JpaRepository<Waitlist, Long> {
+
     List<Waitlist> findByStatusOrderByJoinedAtAsc(WaitlistStatus status);
+
     // Kiểm tra khách đã được đưa vào waitlist chưa (tránh đưa vào 2 lần)
     @Query("SELECT COUNT(w) > 0 FROM Waitlist w WHERE w.customer.phone = :phone AND w.status = :status")
-    boolean existsByCustomerPhoneAndStatus(@Param("phone") String phone,
-                                           @Param("status") WaitlistStatus status);
+    boolean existsByCustomerPhoneAndStatus(@Param("phone") String phone, @Param("status") WaitlistStatus status);
+
+    List<Waitlist> findByStatusInOrderByJoinedAtAsc(List<WaitlistStatus> statuses);
 }

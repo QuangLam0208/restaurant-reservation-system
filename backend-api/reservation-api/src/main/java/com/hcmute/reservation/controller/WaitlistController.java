@@ -30,9 +30,22 @@ public class WaitlistController {
         return ResponseEntity.ok(waitlistService.getWaitlist());
     }
 
+    /** PATCH /api/waitlist/{id}/seat */
+    @PatchMapping("/{id}/seat")
+    public ResponseEntity<WaitlistResponse> markAsSeated(@PathVariable Long id) {
+        return ResponseEntity.ok(waitlistService.markAsSeated(id));
+    }
+
+    /** PATCH /api/waitlist/{id}/missing */
+    @PatchMapping("/{id}/missing")
+    public ResponseEntity<WaitlistResponse> markAsMissing(@PathVariable Long id) {
+        return ResponseEntity.ok(waitlistService.markAsMissing(id));
+    }
+
     /** PATCH /api/waitlist/{id}/skip */
     @PatchMapping("/{id}/skip")
     public ResponseEntity<WaitlistResponse> skipEntry(@PathVariable Long id) {
         return ResponseEntity.ok(waitlistService.skipWaitlistEntry(id));
     }
+
 }
