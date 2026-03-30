@@ -1,7 +1,7 @@
 package com.hcmute.reservation.controller;
 
 import com.hcmute.reservation.model.dto.reservation.*;
-import com.hcmute.reservation.service.AvailabilityService;
+import com.hcmute.reservation.service.AvailabilityApiService;
 import com.hcmute.reservation.service.ReservationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import java.util.Map;
 public class ReservationController {
 
     private final ReservationService reservationService;
-    private final AvailabilityService availabilityService;
+    private final AvailabilityApiService availabilityApiService;
 
     /** GET /api/reservations/availability?date=&time=&guests= */
     @GetMapping("/availability")
@@ -30,7 +30,7 @@ public class ReservationController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime time,
             @RequestParam int guests) {
-        return ResponseEntity.ok(availabilityService.checkAvailability(date, time, guests));
+        return ResponseEntity.ok(availabilityApiService.checkAvailability(date, time, guests));
     }
 
     /** POST /api/reservations/online */
