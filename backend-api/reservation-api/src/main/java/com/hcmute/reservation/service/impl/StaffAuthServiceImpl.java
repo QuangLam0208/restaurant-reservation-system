@@ -7,9 +7,9 @@ import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.UnauthorizedException;
 import com.hcmute.reservation.model.entity.Account;
 import com.hcmute.reservation.repository.AccountRepository;
+import com.hcmute.reservation.security.IPasswordHasher;
 import com.hcmute.reservation.service.StaffAuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +21,7 @@ import java.util.UUID;
 public class StaffAuthServiceImpl implements StaffAuthService {
 
     private final AccountRepository accountRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final IPasswordHasher passwordHasher;
 
     @Override
     @Transactional
@@ -29,7 +29,7 @@ public class StaffAuthServiceImpl implements StaffAuthService {
         Account account = accountRepository.findByUsername(req.getUsername())
                 .orElseThrow(() -> new UnauthorizedException("Tên đăng nhập hoặc mật khẩu không đúng."));
 
-        if (!passwordEncoder.matches(req.getPassword(), account.getPasswordHash())) {
+        if (!passwordHasher.matches(req.getPassword(), account.getPasswordHash())) {
             throw new UnauthorizedException("Tên đăng nhập hoặc mật khẩu không đúng.");
         }
 
@@ -65,7 +65,7 @@ public class StaffAuthServiceImpl implements StaffAuthService {
         // Tạo tài khoản mới, mã hóa mật khẩu trước khi lưu
         Account newAccount = Account.builder()
                 .username(req.getUsername())
-                .passwordHash(passwordEncoder.encode(req.getPassword()))
+                .passwordHash(passwordHasher.hash(req.getPassword()))
                 .role(req.getRole())
                 .build();
 
