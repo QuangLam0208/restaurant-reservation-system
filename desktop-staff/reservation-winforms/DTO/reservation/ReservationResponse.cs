@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace reservation_winforms.DTO.reservation
 {
@@ -10,10 +10,10 @@ namespace reservation_winforms.DTO.reservation
         public long ReservationId { get; set; }
 
         [JsonProperty("status")]
-        public string Status { get; set; } // Nhận Enum ReservationStatus (CREATED, RESERVED, SEATED...)
+        public string Status { get; set; }
 
         [JsonProperty("type")]
-        public string Type { get; set; } // Nhận Enum ReservationType (ONLINE, WALK_IN)
+        public string Type { get; set; }
 
         [JsonProperty("guestCount")]
         public int GuestCount { get; set; }
@@ -23,8 +23,9 @@ namespace reservation_winforms.DTO.reservation
 
         [JsonProperty("endTime")]
         public DateTime EndTime { get; set; }
+
         [JsonProperty("depositAmount")]
-        public double? DepositAmount { get; set; } // Dùng double? (nullable) để tương thích với Walk-in
+        public double? DepositAmount { get; set; }
 
         [JsonProperty("note")]
         public string Note { get; set; }
@@ -33,7 +34,7 @@ namespace reservation_winforms.DTO.reservation
         public DateTime CreatedAt { get; set; }
 
         [JsonProperty("customerId")]
-        public long? CustomerId { get; set; } // Dùng long? vì có thể null (khách vãng lai không lưu DB)
+        public long? CustomerId { get; set; }
 
         [JsonProperty("customerName")]
         public string CustomerName { get; set; }

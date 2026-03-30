@@ -85,8 +85,9 @@ namespace reservation_winforms.Forms
             lblValPhone.Text = r.CustomerPhone ?? "N/A";
             lblValGuests.Text = $"{r.GuestCount} người";
             lblValTime.Text = r.StartTime.ToString("HH:mm");
-            lblValTable.Text = r.TableIds != null && r.TableIds.Count > 0 ? string.Join(", ", r.TableIds) : "Chưa xếp bàn";
-
+            lblValTable.Text = (r.TableIds != null && r.TableIds.Count > 0)
+                ? string.Join(", ", r.TableIds)
+                : "Chưa xếp bàn";
             // Đánh giá: Khách đến sớm hay trễ?
             TimeSpan diff = DateTime.Now - r.StartTime;
             if (diff.TotalMinutes < 0)
