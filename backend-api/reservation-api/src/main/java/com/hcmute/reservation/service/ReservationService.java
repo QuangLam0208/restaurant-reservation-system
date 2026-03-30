@@ -911,7 +911,9 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public List<ReservationResponse> getUpcomingReservations(int minutes) {
         LocalDateTime now = LocalDateTime.now();
-        return reservationRepository.findUpcoming(now, now.plusMinutes(minutes))
+        LocalDateTime startWindow = now.minusMinutes(15);
+        LocalDateTime endWindow = now.plusMinutes(minutes);
+        return reservationRepository.findUpcoming(startWindow, endWindow)
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
