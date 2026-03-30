@@ -796,6 +796,7 @@ public class ReservationService {
         }
 
         // Gán bàn mới và tạo mapping
+        List<ReservationTableMapping> newMappings = new ArrayList<>(); // Tạo 1 list hứng mapping mới
         try {
             for (TableInfo table : newTables) {
                 // Chỉ set OCCUPIED nếu khách đang ngồi thực tế
@@ -805,14 +806,18 @@ public class ReservationService {
                 // Nếu RESERVED thì giữ nguyên AVAILABLE — bàn chỉ bị "chiếm" khi check-in
                 tableInfoRepository.saveAndFlush(table);
 
-                mappingRepository.save(ReservationTableMapping.builder()
+                ReservationTableMapping mapping = ReservationTableMapping.builder()
                         .reservation(reservation)
                         .tableInfo(table)
-                        .build());
+                        .build();
+
+                newMappings.add(mappingRepository.save(mapping));
             }
         } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
             throw new ConflictException("Một trong các bàn vừa bị thay đổi bởi giao dịch khác. Vui lòng tải lại và thử lại.");
         }
+
+        reservation.setTableMappings(newMappings);
 
         return toResponse(reservationRepository.save(reservation));
     }
