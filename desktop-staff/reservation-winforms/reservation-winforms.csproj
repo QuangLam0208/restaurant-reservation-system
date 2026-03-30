@@ -58,6 +58,7 @@
     <Compile Include="DTO\report\NoShowRateResponse.cs" />
     <Compile Include="DTO\reservation\ChangeTableRequest.cs" />
     <Compile Include="DTO\reservation\ReservationResponse.cs" />
+    <Compile Include="DTO\reservation\WalkInOptionResponse.cs" />
     <Compile Include="DTO\reservation\WalkInRequest.cs" />
     <Compile Include="DTO\reservation\WalkInSuggestionResponse.cs" />
     <Compile Include="DTO\table\AvailableWindowResponse.cs" />
