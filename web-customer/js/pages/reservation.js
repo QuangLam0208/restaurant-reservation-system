@@ -1,4 +1,4 @@
-import { callApi, getStoredUser } from '../common/api.js';
+import { callApi, getStoredUser, clearUser } from '../common/api.js';
 
 const S = { party:2, date:null, dateStr:null, time:null, week:0, MAX_W:4, reservationId: null };
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -231,15 +231,22 @@ function updateSummary(){
     document.getElementById('sum-guests').innerHTML = S.party ? `${S.party} ${S.party===1?'Guest':'Guests'}` : '<span class="empty">Not set</span>';
     document.getElementById('sum-date').innerHTML   = S.date  ? `${DAYS[S.date.getDay()]}, ${S.date.getDate()} ${MONTHS[S.date.getMonth()]}` : '<span class="empty">Not set</span>';
     document.getElementById('sum-time').innerHTML   = S.time  ? S.time : '<span class="empty">Not set</span>';
-    document.getElementById('sum-dep').innerHTML    = S.party ? `€${S.party*15}` : '<span class="empty">—</span>';
+    document.getElementById('sum-dep').innerHTML    = S.party ? `${(S.party*50000).toLocaleString()} VND` : '<span class="empty">—</span>';
     if(S.party&&S.dateStr&&S.time) document.getElementById('proceed-btn').classList.add('ready');
 }
 
 async function goToPayment(){
     // Gom Occasion và Special Request thành Note
     const occasions = Array.from(document.querySelectorAll('.occ-chip.sel')).map(c => c.dataset.v);
-    const specialReq = document.getElementById('guest-note').value;
-    const fullNote = [occasions.join(', '), specialReq].filter(s => s).join(' | ');
+    const specialReq = document.getElementById('guest-note').value.trim();
+    
+    let fullNote = "";
+    if (occasions.length > 0) {
+        fullNote = "Occasions: " + occasions.join(', ');
+    }
+    if (specialReq) {
+        fullNote = fullNote ? fullNote + " | Notes: " + specialReq : specialReq;
+    }
 
     const bookingData = {
         startTime: `${S.dateStr}T${S.time}:00`,
@@ -328,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if(cardNum) cardNum.addEventListener('input',function(){ this.value=this.value.replace(/\D/g,'').replace(/(\d{4})(?=\d)/g,'$1 ').substring(0,19); });
 
     const logoutBtn = document.getElementById('logout-btn');
-    if(logoutBtn) logoutBtn.addEventListener('click',e=>{ e.preventDefault(); localStorage.removeItem('isLoggedIn'); localStorage.removeItem('authToken'); localStorage.removeItem('customerId'); localStorage.removeItem('userName'); localStorage.removeItem('userEmail'); window.location.href='index.html'; });
+    if(logoutBtn) logoutBtn.addEventListener('click',e=>{ e.preventDefault(); clearUser(); window.location.href='index.html'; });
 
     // Click listener cho Occasion chips
     document.querySelectorAll('.occ-chip').forEach(c => {
