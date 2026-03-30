@@ -59,6 +59,7 @@ public class SecurityConfig {
 
                 // ── CUSTOMER only ─────────────────────────────────────────────────
                 .requestMatchers(HttpMethod.POST, "/api/reservations/online").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/reservations/my").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/reservations/**").authenticated()
 
                 // ── MANAGER only ──────────────────────────────────────────────────

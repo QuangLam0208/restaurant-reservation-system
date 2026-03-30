@@ -1,20 +1,158 @@
-﻿using System;
+﻿using reservation_winforms.DTO.table;
+using reservation_winforms.Services;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace reservation_winforms.Forms
 {
     public partial class UcTableSetup : UserControl
     {
+        private readonly TableService _tableService;
+        private List<TableResponse> _tables = new List<TableResponse>();
+        private int _currentTableVersion = 0; // Để truyền vào lúc Update chống conflict
+
         public UcTableSetup()
         {
             InitializeComponent();
+            _tableService = new TableService();
+
+            SetupDataGridView();
+
+            this.Load += async (s, e) => await LoadDataAsync();
+            dgvTables.CellClick += DgvTables_CellClick;
+
+            btnSave.Click += BtnSave_Click;
+            btnUpdate.Click += BtnUpdate_Click;
+            btnDelete.Click += BtnDelete_Click;
+            btnClear.Click += BtnClear_Click;
+        }
+
+        private void SetupDataGridView()
+        {
+            dgvTables.Columns.Add("TableId", "Mã Bàn");
+            dgvTables.Columns.Add("Capacity", "Sức Chứa (Người)");
+            dgvTables.Columns.Add("Status", "Tình trạng sử dụng");
+            dgvTables.Columns.Add("IsActive", "Trạng thái hoạt động");
+
+            // Style DataGridView cho đẹp
+            dgvTables.EnableHeadersVisualStyles = false;
+            dgvTables.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(41, 128, 185);
+            dgvTables.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dgvTables.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            dgvTables.DefaultCellStyle.Font = new Font("Segoe UI", 12F);
+            dgvTables.AlternatingRowsDefaultCellStyle.BackColor = Color.WhiteSmoke;
+        }
+
+        private async System.Threading.Tasks.Task LoadDataAsync()
+        {
+            var res = await _tableService.GetAllTablesAsync();
+            if (res.IsSuccess)
+            {
+                _tables = res.Data;
+                dgvTables.Rows.Clear();
+                foreach (var t in _tables)
+                {
+                    string activeText = t.IsActive ? "Đang mở" : "Đã tắt (Vô hiệu hóa)";
+                    dgvTables.Rows.Add(t.TableId, t.Capacity, t.Status, activeText);
+
+                    // Đổi màu dòng bị tắt cho dễ nhìn
+                    if (!t.IsActive)
+                    {
+                        dgvTables.Rows[dgvTables.Rows.Count - 1].DefaultCellStyle.ForeColor = Color.DarkGray;
+                    }
+                }
+                BtnClear_Click(null, null); // Reset form sau khi tải xong
+            }
+            else
+            {
+                MessageBox.Show(res.Message, "Lỗi tải dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void DgvTables_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                long id = Convert.ToInt64(dgvTables.Rows[e.RowIndex].Cells["TableId"].Value);
+                var table = _tables.Find(t => t.TableId == id);
+                if (table != null)
+                {
+                    txtTableId.Text = table.TableId.ToString();
+                    numCapacity.Value = table.Capacity;
+                    chkIsActive.Checked = table.IsActive;
+                    _currentTableVersion = table.Version; // Lưu lại Version hiện tại của DB
+
+                    btnSave.Enabled = false; // Đã chọn bàn cũ thì không cho Thêm mới
+                    btnUpdate.Enabled = true;
+                    btnDelete.Enabled = table.IsActive; // Nếu đang tắt thì không cho bấm nút Vô hiệu hóa nữa
+                }
+            }
+        }
+
+        private void BtnClear_Click(object sender, EventArgs e)
+        {
+            txtTableId.Text = "";
+            numCapacity.Value = 4;
+            chkIsActive.Checked = true;
+            _currentTableVersion = 0;
+
+            btnSave.Enabled = true;
+            btnUpdate.Enabled = false;
+            btnDelete.Enabled = false;
+            dgvTables.ClearSelection();
+        }
+
+        private async void BtnSave_Click(object sender, EventArgs e)
+        {
+            var req = new TableRequest { Capacity = (int)numCapacity.Value, IsActive = chkIsActive.Checked };
+            var res = await _tableService.CreateTableAsync(req);
+
+            if (res.IsSuccess)
+            {
+                MessageBox.Show(res.Message, "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                await LoadDataAsync();
+            }
+            else MessageBox.Show(res.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        private async void BtnUpdate_Click(object sender, EventArgs e)
+        {
+            long id = Convert.ToInt64(txtTableId.Text);
+            var req = new TableRequest
+            {
+                Capacity = (int)numCapacity.Value,
+                IsActive = chkIsActive.Checked,
+                Version = _currentTableVersion // Truyền Version lên để Backend kiểm tra Optimistic Locking
+            };
+
+            var res = await _tableService.UpdateTableAsync(id, req);
+
+            if (res.IsSuccess)
+            {
+                MessageBox.Show(res.Message, "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                await LoadDataAsync();
+            }
+            else MessageBox.Show(res.Message, "Lỗi cập nhật", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        private async void BtnDelete_Click(object sender, EventArgs e)
+        {
+            long id = Convert.ToInt64(txtTableId.Text);
+            var confirm = MessageBox.Show($"Bạn có chắc muốn VÔ HIỆU HÓA Bàn số {id} không?\nKhách sẽ không thể đặt bàn này nữa.",
+                                          "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (confirm == DialogResult.Yes)
+            {
+                var res = await _tableService.DeleteTableAsync(id);
+                if (res.IsSuccess)
+                {
+                    MessageBox.Show(res.Message, "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    await LoadDataAsync();
+                }
+                else MessageBox.Show(res.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
     }
 }

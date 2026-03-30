@@ -20,10 +20,12 @@ namespace reservation_winforms.Forms
             btnTableMap.Click += BtnTableMap_Click;
             btnOnlineBooking.Click += BtnOnlineBooking_Click;
             btnWaitlist.Click += BtnWaitlist_Click;
+            btnCheckOut.Click += BtnCheckOut_Click; 
+
             btnTableSetup.Click += BtnTableSetup_Click;
             btnReports.Click += BtnReports_Click;
             btnSystemLogs.Click += BtnSystemLogs_Click;
-            btnRegisterStaff.Click += btnRegisterStaff_Click; // Nút tạo TK Lễ tân (Menu bên trái)
+            btnRegisterStaff.Click += btnRegisterStaff_Click;
 
             // 4. Nút Đăng xuất
             btnLogout.Click += BtnLogout_Click;
@@ -81,6 +83,11 @@ namespace reservation_winforms.Forms
             LoadUserControl(new UcWaitlist());
         }
 
+        private void BtnCheckOut_Click(object sender, EventArgs e)
+        {
+            LoadUserControl(new UcCheckOut());
+        }
+
         private void BtnTableSetup_Click(object sender, EventArgs e)
         {
             LoadUserControl(new UcTableSetup());
@@ -116,7 +123,7 @@ namespace reservation_winforms.Forms
             // 4. Thêm nó vào giao diện
             pnlMainContent.Controls.Add(registerCtrl);
         }
-
+            
         // =========================================================
         // XỬ LÝ ĐĂNG XUẤT
         // =========================================================

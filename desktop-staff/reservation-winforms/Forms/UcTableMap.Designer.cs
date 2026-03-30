@@ -18,8 +18,6 @@
         private void InitializeComponent()
         {
             this.pnlSidebar = new System.Windows.Forms.Panel();
-            this.btnWaitlist = new System.Windows.Forms.Button();
-            this.btnCheckOut = new System.Windows.Forms.Button();
             this.btnSeatWalkIn = new System.Windows.Forms.Button();
             this.nudGuestCount = new System.Windows.Forms.NumericUpDown();
             this.lblGuestCount = new System.Windows.Forms.Label();
@@ -44,8 +42,6 @@
             // 
             this.pnlSidebar.BackColor = System.Drawing.Color.White;
             this.pnlSidebar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pnlSidebar.Controls.Add(this.btnWaitlist);
-            this.pnlSidebar.Controls.Add(this.btnCheckOut);
             this.pnlSidebar.Controls.Add(this.btnSeatWalkIn);
             this.pnlSidebar.Controls.Add(this.nudGuestCount);
             this.pnlSidebar.Controls.Add(this.lblGuestCount);
@@ -55,37 +51,6 @@
             this.pnlSidebar.Name = "pnlSidebar";
             this.pnlSidebar.Size = new System.Drawing.Size(300, 669);
             this.pnlSidebar.TabIndex = 2;
-            // 
-            // btnWaitlist
-            // 
-            this.btnWaitlist.BackColor = System.Drawing.Color.White;
-            this.btnWaitlist.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnWaitlist.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(156)))), ((int)(((byte)(18)))));
-            this.btnWaitlist.FlatAppearance.BorderSize = 2;
-            this.btnWaitlist.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnWaitlist.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnWaitlist.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(156)))), ((int)(((byte)(18)))));
-            this.btnWaitlist.Location = new System.Drawing.Point(20, 310);
-            this.btnWaitlist.Name = "btnWaitlist";
-            this.btnWaitlist.Size = new System.Drawing.Size(260, 50);
-            this.btnWaitlist.TabIndex = 5;
-            this.btnWaitlist.Text = "ĐƯA VÀO HÀNG ĐỢI";
-            this.btnWaitlist.UseVisualStyleBackColor = false;
-            // 
-            // btnCheckOut
-            // 
-            this.btnCheckOut.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(149)))), ((int)(((byte)(165)))), ((int)(((byte)(166)))));
-            this.btnCheckOut.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnCheckOut.FlatAppearance.BorderSize = 0;
-            this.btnCheckOut.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnCheckOut.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCheckOut.ForeColor = System.Drawing.Color.White;
-            this.btnCheckOut.Location = new System.Drawing.Point(20, 240);
-            this.btnCheckOut.Name = "btnCheckOut";
-            this.btnCheckOut.Size = new System.Drawing.Size(260, 50);
-            this.btnCheckOut.TabIndex = 4;
-            this.btnCheckOut.Text = "THANH TOÁN (CHECK-OUT)";
-            this.btnCheckOut.UseVisualStyleBackColor = false;
             // 
             // btnSeatWalkIn
             // 
@@ -296,8 +261,6 @@
         #endregion
 
         private System.Windows.Forms.Panel pnlSidebar;
-        private System.Windows.Forms.Button btnWaitlist;
-        private System.Windows.Forms.Button btnCheckOut;
         private System.Windows.Forms.Button btnSeatWalkIn;
         private System.Windows.Forms.NumericUpDown nudGuestCount;
         private System.Windows.Forms.Label lblGuestCount;

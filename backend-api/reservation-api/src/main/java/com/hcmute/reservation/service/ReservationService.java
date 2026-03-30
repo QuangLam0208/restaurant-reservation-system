@@ -303,6 +303,14 @@ public class ReservationService {
         return toResponse(reservation);
     }
 
+    @Transactional(readOnly = true)
+    public List<ReservationResponse> getReservationsByCustomer(Long customerId) {
+        return reservationRepository.findByCustomer_CustomerIdOrderByStartTimeDesc(customerId)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     // ────── Get / Cancel ──────────────────────────────────────────────
 
     @Transactional(readOnly = true)
@@ -338,6 +346,13 @@ public class ReservationService {
 
         if (reservation.getStatus() != ReservationStatus.RESERVED) {
             throw new BadRequestException("Chỉ có thể hủy đơn đang chờ khách đến (Trạng thái RESERVED).");
+        }
+
+        // Kiểm tra thời gian: Chỉ khách hàng mới bị giới hạn 3 tiếng
+        if (customerId != null) {
+            if (reservation.getStartTime().isBefore(LocalDateTime.now().plusHours(3))) {
+                throw new BadRequestException("Bạn chỉ có thể hủy đơn đặt bàn tối thiểu 3 tiếng trước giờ hẹn. Vui lòng liên hệ nhà hàng để được hỗ trợ.");
+            }
         }
 
         reservation.cancel();
