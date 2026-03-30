@@ -21,21 +21,18 @@ public class EmailNotificationListener {
     @Async
     @EventListener
     public void handleReservationConfirmedEvent(ReservationConfirmedEvent event) {
-        String customerEmail = event.getCustomerEmail();
-        if (customerEmail == null) return;
+        if (event.getCustomerEmail() == null) return;
 
         String customerName = event.getCustomerName();
         Long reservationId = event.getReservationId();
         String startTimeFormatted = event.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
 
         // Gọi service gửi Email
-        emailService.send(
-                customerEmail,
-                "Xác nhận đặt bàn thành công - San-Lorenzo Restaurant",
-                String.format("Chào %s,\n\nChúc mừng bạn đã đặt bàn thành công tại San-Lorenzo!\n\n" +
-                        "Mã đặt bàn của bạn: SL-%d\n" +
-                        "Thời gian: %s\n\n" +
-                        "Hẹn gặp lại bạn sớm.\nTrân trọng.", customerName, reservationId, startTimeFormatted)
+        emailService.sendReservationConfirmationEmail(
+                event.getCustomerEmail(),
+                event.getCustomerName(),
+                event.getReservationId(),
+                event.getStartTime()
         );
     }
 }
