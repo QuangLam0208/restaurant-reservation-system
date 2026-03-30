@@ -23,6 +23,7 @@
             this.btnReports = new System.Windows.Forms.Button();
             this.btnTableSetup = new System.Windows.Forms.Button();
             this.lblAdminSection = new System.Windows.Forms.Label();
+            this.btnCheckOut = new System.Windows.Forms.Button();
             this.btnWaitlist = new System.Windows.Forms.Button();
             this.btnOnlineBooking = new System.Windows.Forms.Button();
             this.btnTableMap = new System.Windows.Forms.Button();
@@ -45,6 +46,7 @@
             this.pnlSidebar.Controls.Add(this.btnReports);
             this.pnlSidebar.Controls.Add(this.btnTableSetup);
             this.pnlSidebar.Controls.Add(this.lblAdminSection);
+            this.pnlSidebar.Controls.Add(this.btnCheckOut);
             this.pnlSidebar.Controls.Add(this.btnWaitlist);
             this.pnlSidebar.Controls.Add(this.btnOnlineBooking);
             this.pnlSidebar.Controls.Add(this.btnTableMap);
@@ -66,7 +68,7 @@
             this.btnRegisterStaff.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnRegisterStaff.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnRegisterStaff.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
-            this.btnRegisterStaff.Location = new System.Drawing.Point(0, 480);
+            this.btnRegisterStaff.Location = new System.Drawing.Point(0, 530);
             this.btnRegisterStaff.Name = "btnRegisterStaff";
             this.btnRegisterStaff.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
             this.btnRegisterStaff.Size = new System.Drawing.Size(260, 50);
@@ -74,7 +76,6 @@
             this.btnRegisterStaff.Text = "👤 Đăng ký Lễ tân";
             this.btnRegisterStaff.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnRegisterStaff.UseVisualStyleBackColor = true;
-            this.btnRegisterStaff.Click += new System.EventHandler(this.btnRegisterStaff_Click);
             // 
             // btnSystemLogs
             // 
@@ -85,7 +86,7 @@
             this.btnSystemLogs.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSystemLogs.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnSystemLogs.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
-            this.btnSystemLogs.Location = new System.Drawing.Point(0, 430);
+            this.btnSystemLogs.Location = new System.Drawing.Point(0, 480);
             this.btnSystemLogs.Name = "btnSystemLogs";
             this.btnSystemLogs.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
             this.btnSystemLogs.Size = new System.Drawing.Size(260, 50);
@@ -103,7 +104,7 @@
             this.btnReports.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnReports.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnReports.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
-            this.btnReports.Location = new System.Drawing.Point(0, 380);
+            this.btnReports.Location = new System.Drawing.Point(0, 430);
             this.btnReports.Name = "btnReports";
             this.btnReports.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
             this.btnReports.Size = new System.Drawing.Size(260, 50);
@@ -121,7 +122,7 @@
             this.btnTableSetup.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnTableSetup.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnTableSetup.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(189)))), ((int)(((byte)(195)))), ((int)(((byte)(199)))));
-            this.btnTableSetup.Location = new System.Drawing.Point(0, 330);
+            this.btnTableSetup.Location = new System.Drawing.Point(0, 380);
             this.btnTableSetup.Name = "btnTableSetup";
             this.btnTableSetup.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
             this.btnTableSetup.Size = new System.Drawing.Size(260, 50);
@@ -135,13 +136,31 @@
             this.lblAdminSection.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblAdminSection.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblAdminSection.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(127)))), ((int)(((byte)(140)))), ((int)(((byte)(141)))));
-            this.lblAdminSection.Location = new System.Drawing.Point(0, 290);
+            this.lblAdminSection.Location = new System.Drawing.Point(0, 340);
             this.lblAdminSection.Name = "lblAdminSection";
             this.lblAdminSection.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
             this.lblAdminSection.Size = new System.Drawing.Size(260, 40);
             this.lblAdminSection.TabIndex = 5;
             this.lblAdminSection.Text = "QUẢN TRỊ (MANAGER)";
             this.lblAdminSection.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // btnCheckOut
+            // 
+            this.btnCheckOut.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnCheckOut.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnCheckOut.FlatAppearance.BorderSize = 0;
+            this.btnCheckOut.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.btnCheckOut.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCheckOut.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnCheckOut.ForeColor = System.Drawing.Color.White;
+            this.btnCheckOut.Location = new System.Drawing.Point(0, 290);
+            this.btnCheckOut.Name = "btnCheckOut";
+            this.btnCheckOut.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
+            this.btnCheckOut.Size = new System.Drawing.Size(260, 50);
+            this.btnCheckOut.TabIndex = 11;
+            this.btnCheckOut.Text = "💳 Thanh toán && Trả bàn";
+            this.btnCheckOut.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnCheckOut.UseVisualStyleBackColor = true;
             // 
             // btnWaitlist
             // 
@@ -299,6 +318,7 @@
         private System.Windows.Forms.Button btnTableMap;
         private System.Windows.Forms.Button btnWaitlist;
         private System.Windows.Forms.Button btnOnlineBooking;
+        private System.Windows.Forms.Button btnCheckOut;
         private System.Windows.Forms.Label lblAdminSection;
         private System.Windows.Forms.Button btnSystemLogs;
         private System.Windows.Forms.Button btnReports;

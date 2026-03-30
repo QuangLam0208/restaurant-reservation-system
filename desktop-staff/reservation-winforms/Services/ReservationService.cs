@@ -126,5 +126,37 @@ namespace reservation_winforms.Services
             }
             catch (Exception ex) { return (false, null, $"Lỗi kết nối: {ex.Message}"); }
         }
+
+        // 8. Lấy danh sách các đơn đang ở trạng thái SEATED (Đang ăn)
+        public async Task<(bool IsSuccess, List<ReservationResponse> Data, string Message)> GetActiveReservationsAsync()
+        {
+            try
+            {
+                ApiClient.AttachToken();
+                var response = await ApiClient.Client.GetAsync($"{ApiClient.BaseUrl}/reservations/active");
+                var contentString = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                    return (true, JsonConvert.DeserializeObject<List<ReservationResponse>>(contentString), "Thành công");
+
+                return (false, null, contentString);
+            }
+            catch (Exception ex) { return (false, null, $"Lỗi: {ex.Message}"); }
+        }
+
+        // 9. Gọi API Check-out (Thanh toán & Trả bàn)
+        public async Task<(bool IsSuccess, string Message)> CheckOutAsync(long reservationId)
+        {
+            try
+            {
+                ApiClient.AttachToken();
+                // API của bạn không cần body nên truyền null
+                var response = await ApiClient.Client.PostAsync($"{ApiClient.BaseUrl}/reservations/{reservationId}/check-out", null);
+                var contentString = await response.Content.ReadAsStringAsync();
+
+                return (response.IsSuccessStatusCode, contentString);
+            }
+            catch (Exception ex) { return (false, $"Lỗi kết nối: {ex.Message}"); }
+        }
     }
 }
