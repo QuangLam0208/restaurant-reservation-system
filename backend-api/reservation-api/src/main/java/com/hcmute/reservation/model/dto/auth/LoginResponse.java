@@ -10,4 +10,5 @@ public class LoginResponse {
     private Long customerId;
     private String name;
     private String email;
+    private String phone;
 }

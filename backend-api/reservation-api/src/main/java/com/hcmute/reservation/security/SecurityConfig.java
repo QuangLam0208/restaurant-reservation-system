@@ -36,6 +36,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // ── Public: OPTIONS preflight ─────────────────────────────────────
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // ── Public: customer auth ─────────────────────────────────────────
                 .requestMatchers(
                     "/api/auth/register",
@@ -78,9 +80,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/reservations/*/override").hasAnyRole("RECEPTIONIST", "MANAGER")
                 .requestMatchers("/api/waitlist/**").hasAnyRole("RECEPTIONIST", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/api/tables/floor-map").hasAnyRole("RECEPTIONIST", "MANAGER")
-                .requestMatchers(HttpMethod.GET, "/api/tables/available-windows").hasAnyRole("RECEPTIONIST", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/api/reservations/active").hasAnyRole("RECEPTIONIST", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/api/reservations/upcoming").hasAnyRole("RECEPTIONIST", "MANAGER")
+                .requestMatchers(HttpMethod.GET, "/api/tables/available-windows").permitAll()
 
                 // ── Any authenticated user ────────────────────────────────────────
                 .anyRequest().authenticated()

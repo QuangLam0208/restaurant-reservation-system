@@ -45,6 +45,10 @@ public class Reservation {
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
+    //Tien coc
+    @Column(name = "deposit_amount")
+    private Double depositAmount;
+
     // Vòng đời: CREATED → PENDING_PAYMENT → RESERVED → SEATED → COMPLETED
     //                                     ↘ EXPIRED / CANCELLED
     //                                                  ↘ NO_SHOW
