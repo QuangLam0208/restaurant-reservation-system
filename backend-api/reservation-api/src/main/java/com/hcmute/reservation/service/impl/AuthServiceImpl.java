@@ -6,12 +6,12 @@ import com.hcmute.reservation.exception.UnauthorizedException;
 import com.hcmute.reservation.model.dto.auth.*;
 import com.hcmute.reservation.model.entity.Customer;
 import com.hcmute.reservation.repository.CustomerRepository;
+import com.hcmute.reservation.security.IPasswordHasher;
 import com.hcmute.reservation.security.JwtUtil;
 import com.hcmute.reservation.service.AuthService;
 import com.hcmute.reservation.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AuthServiceImpl implements AuthService {
 
     private final CustomerRepository customerRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final IPasswordHasher passwordHasher;
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
 
@@ -89,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
 
         checkVerificationStatus(customer);
 
-        if (!passwordEncoder.matches(req.getPassword(), customer.getPasswordHash())) {
+        if (!passwordHasher.matches(req.getPassword(), customer.getPasswordHash())) {
             throw new UnauthorizedException("Email hoặc mật khẩu không đúng.");
         }
         String token = jwtUtil.generateToken(customer.getEmail(), customer.getCustomerId());
@@ -121,7 +121,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Token đã hết hạn. Vui lòng yêu cầu lại.");
         }
 
-        customer.setPasswordHash(passwordEncoder.encode(req.getNewPassword()));
+        customer.setPasswordHash(passwordHasher.hash(req.getNewPassword()));
         customer.setResetToken(null);
         customer.setResetTokenExpiresAt(null);
         customerRepository.save(customer);
@@ -159,7 +159,7 @@ public class AuthServiceImpl implements AuthService {
         if (c.getPasswordHash() == null) {
             c.setName(req.getName());
             c.setPhone(req.getPhone());
-            c.setPasswordHash(passwordEncoder.encode(req.getPassword()));
+            c.setPasswordHash(passwordHasher.hash(req.getPassword()));
         }
 
         c.setVerificationToken(token);
@@ -175,7 +175,7 @@ public class AuthServiceImpl implements AuthService {
                 .name(req.getName())
                 .phone(req.getPhone())
                 .email(req.getEmail())
-                .passwordHash(passwordEncoder.encode(req.getPassword()))
+                .passwordHash(passwordHasher.hash(req.getPassword()))
                 .isVerified(false)
                 .verificationToken(token)
                 .verificationTokenExpiresAt(expiresAt)
