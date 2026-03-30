@@ -23,10 +23,6 @@ public class EmailNotificationListener {
     public void handleReservationConfirmedEvent(ReservationConfirmedEvent event) {
         if (event.getCustomerEmail() == null) return;
 
-        String customerName = event.getCustomerName();
-        Long reservationId = event.getReservationId();
-        String startTimeFormatted = event.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
-
         // Gọi service gửi Email
         emailService.sendReservationConfirmationEmail(
                 event.getCustomerEmail(),
