@@ -1,5 +1,6 @@
 package com.hcmute.reservation.service;
 
+import com.hcmute.reservation.event.ReservationConfirmedEvent;
 import com.hcmute.reservation.model.dto.reservation.*;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.exception.ConflictException;
@@ -14,11 +15,14 @@ import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,6 +35,7 @@ public class ReservationService {
     private final TableInfoRepository tableInfoRepository;
     private final ReservationTableMappingRepository mappingRepository;
     private final AssignmentService assignmentService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${reservation.grace-period-minutes:15}")
     private int gracePeriodMinutes;
@@ -47,6 +52,18 @@ public class ReservationService {
     @Value("${reservation.max-capacity-overflow}")
     private int maxCapacityOverflow;
 
+    @Value("${restaurant.opening-time:10:00}")
+    private String openingTimeStr;
+
+    @Value("${restaurant.closing-time:22:30}")
+    private String closingTimeStr;
+
+    @Value("${reservation.max-merge-tables:4}")
+    private int maxMergeTables;
+
+    @Value("${reservation.deposit-per-guest:50000}")
+    private Double depositPerGuest;
+
     // ────── Helpers ──────────────────────────────────────────────────
 
     private ReservationResponse toResponse(Reservation r) {
@@ -61,6 +78,7 @@ public class ReservationService {
                 .guestCount(r.getGuestCount())
                 .startTime(r.getStartTime())
                 .endTime(r.getEndTime())
+                .depositAmount(r.getDepositAmount())
                 .note(r.getNote())
                 .createdAt(r.getCreatedAt())
                 .customerId(r.getCustomer() != null ? r.getCustomer().getCustomerId() : null)
@@ -103,7 +121,7 @@ public class ReservationService {
         }
 
         // Tối đa cho phép ghép 4 bàn
-        if (currentCombo.size() > 4) return;
+        if (currentCombo.size() > maxMergeTables) return;
 
         for (int i = start; i < tables.size(); i++) {
             currentCombo.add(tables.get(i));
@@ -120,10 +138,29 @@ public class ReservationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khách hàng."));
 
         LocalDateTime start = req.getStartTime();
-        LocalDateTime end = start.plusMinutes(durationMinutes);
+
+        LocalTime openingTime = LocalTime.parse(openingTimeStr);
+        LocalTime closingTime = LocalTime.parse(closingTimeStr);
+        LocalDateTime closingDateTime = LocalDateTime.of(start.toLocalDate(), closingTime);
+
+        if (start.isBefore(LocalDateTime.now().plusHours(1))) {
+            throw new BadRequestException("Vui lòng đặt bàn trước ít nhất 1 tiếng.");
+        }
+        if (start.toLocalTime().isBefore(openingTime) || !start.isBefore(closingDateTime)) {
+            throw new BadRequestException("Giờ đến nằm ngoài thời gian hoạt động của nhà hàng (" + openingTimeStr + " - " + closingTimeStr + ").");
+        }
+
+        // Kiểm tra Soft seating >= 60 phút
+        long minutesUntilClose = Duration.between(start, closingDateTime).toMinutes();
+        if (minutesUntilClose < 60) {
+            throw new BadRequestException("Thời gian dùng bữa tối thiểu là 60 phút. Nhà hàng đóng cửa lúc " + closingTimeStr + ", vui lòng chọn giờ đến sớm hơn.");
+        }
+
+        LocalDateTime defaultEnd = start.plusMinutes(durationMinutes);
+        LocalDateTime end = defaultEnd.isAfter(closingDateTime) ? closingDateTime : defaultEnd;
+        LocalDateTime blockUntil = end.plusMinutes(bufferMinutes);
 
         // Lọc bàn theo overlap
-        LocalDateTime blockUntil = end.plusMinutes(bufferMinutes);
         Set<Long> occupiedTableIds = new HashSet<>(reservationRepository.findOccupiedTableIds(start, blockUntil));
         // Tìm bàn đơn
         List<TableInfo> available = tableInfoRepository.findAvailableTablesForGuests(req.getGuestCount())
@@ -160,6 +197,7 @@ public class ReservationService {
                 .guestCount(req.getGuestCount())
                 .startTime(start)
                 .endTime(end)
+                .depositAmount(req.getGuestCount() * depositPerGuest)
                 .status(ReservationStatus.CREATED)
                 .note(req.getNote())
                 .build();
@@ -186,41 +224,27 @@ public class ReservationService {
     @Transactional
     public ReservationResponse confirmPayment(Long id) {
         Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Đơn đặt bàn #" + id + " không tồn tại."));
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
         if (reservation.getStatus() != ReservationStatus.PENDING_PAYMENT) {
-            throw new BadRequestException("Đơn không ở trạng thái PENDING_PAYMENT.");
+            throw new BadRequestException("Only PENDING_PAYMENT reservation can be confirmed. Current status: " + reservation.getStatus());
         }
 
-        // Lấy danh sách bàn đang được soft-lock
-        final Long reservationId = reservation.getReservationId();
-        List<TableInfo> lockedTables = tableInfoRepository.findByLockedByReservationId(reservationId);
-
-        // Xử lý Race Condition với Scheduler
-        if (lockedTables.isEmpty()) {
-            // Nếu Scheduler đã chạy và giải phóng bàn trước khi payment webhook trả về,
-            // ta tuyệt đối không được chuyển status sang RESERVED (vì sẽ tạo ra đơn rác không có bàn).
-            // Ném lỗi 409 Conflict để FE/Gateway biết đường xử lý (ví dụ: kích hoạt API refund).
-            throw new ConflictException("Giao dịch thanh toán mất quá nhiều thời gian. Thời gian giữ bàn (5 phút) đã hết và bàn đã bị giải phóng. Vui lòng liên hệ nhà hàng để được hỗ trợ hoàn tiền hoặc xếp bàn mới.");
-        }
-
-        // Xác nhận → RESERVED
+        // Đánh dấu RESERVED (Hibernate tự động dirty check và update vào DB cuối Transaction)
         reservation.setStatus(ReservationStatus.RESERVED);
-        reservation = reservationRepository.save(reservation);
 
-        for (TableInfo t : lockedTables) {
-            t.setSoftLockUntil(null);
-            t.setLockedByReservationId(null);
-            t.setStatus(TableStatus.AVAILABLE);
-            tableInfoRepository.save(t);
+        // Chuẩn bị dữ liệu gửi Email (Tránh lazy loading trong Async thread sau này)
+        String customerEmail = reservation.getCustomer() != null ? reservation.getCustomer().getEmail() : null;
+        String customerName = reservation.getCustomer() != null ? reservation.getCustomer().getName() : "Guest";
 
-            mappingRepository.save(ReservationTableMapping.builder()
-                    .reservation(reservation)
-                    .tableInfo(t)
-                    .build());
-        }
+        // Bắn sự kiện (Event) ra ngoài theo format mới
+        eventPublisher.publishEvent(new ReservationConfirmedEvent(
+                this,
+                customerEmail,
+                customerName,
+                reservation.getReservationId(),
+                reservation.getStartTime()
+        ));
 
-        // Logic gửi email sẽ ở đây
-        // ...
         return toResponse(reservation);
     }
 

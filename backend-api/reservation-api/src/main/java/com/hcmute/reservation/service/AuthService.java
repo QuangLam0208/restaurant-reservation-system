@@ -136,7 +136,7 @@ public class AuthService {
             throw new UnauthorizedException("Email hoặc mật khẩu không đúng.");
         }
         String token = jwtUtil.generateToken(customer.getEmail(), customer.getCustomerId());
-        return new LoginResponse(token, customer.getCustomerId(), customer.getName(), customer.getEmail());
+        return new LoginResponse(token, customer.getCustomerId(), customer.getName(), customer.getEmail(), customer.getPhone());
     }
 
     @Transactional
