@@ -57,5 +57,23 @@ namespace reservation_winforms.Services
             }
             catch { return false; }
         }
+
+        public async Task<(bool IsSuccess, WalkInOptionResponse Data, string Message)> GetWalkInOptionsAsync(int guestCount)
+        {
+            try
+            {
+                ApiClient.AttachToken();
+                var response = await ApiClient.Client.GetAsync($"{ApiClient.BaseUrl}/reservations/walk-in/options?guestCount={guestCount}");
+                var contentString = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var data = JsonConvert.DeserializeObject<WalkInOptionResponse>(contentString);
+                    return (true, data, "Lấy danh sách tùy chọn thành công");
+                }
+                return (false, null, contentString);
+            }
+            catch (Exception ex) { return (false, null, $"Lỗi kết nối: {ex.Message}"); }
+        }
     }
 }

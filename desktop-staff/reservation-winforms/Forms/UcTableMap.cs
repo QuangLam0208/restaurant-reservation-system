@@ -253,94 +253,179 @@ namespace reservation_winforms.Forms
 
         private async void BtnSeatWalkIn_Click(object sender, EventArgs e)
         {
-            // --- BƯỚC 1: GỬI YÊU CẦU GỢI Ý (SUGGEST) ---
+            int guests = (int)nudGuestCount.Value;
+            List<long> finalTableIdsToSuggest = null;
+
+            // KỊCH BẢN 1: LỄ TÂN ĐÃ TỰ CLICK CHỌN BÀN TRÊN SƠ ĐỒ (Bypass Option, đi thẳng vào Suggest)
+            if (_selectedTables.Count > 0)
+            {
+                finalTableIdsToSuggest = _selectedTables.Select(t => t.TableId).ToList();
+            }
+            // KỊCH BẢN 2: LỄ TÂN CHƯA CHỌN BÀN -> GỌI API OPTIONS ĐỂ LẤY GỢI Ý
+            else
+            {
+                btnSeatWalkIn.Enabled = false;
+                btnSeatWalkIn.Text = "ĐANG TÌM PHƯƠNG ÁN...";
+
+                var optionsRes = await _reservationService.GetWalkInOptionsAsync(guests);
+
+                btnSeatWalkIn.Enabled = true;
+                btnSeatWalkIn.Text = "XẾP BÀN (WALK-IN)";
+
+                if (!optionsRes.IsSuccess || optionsRes.Data.Groups == null || optionsRes.Data.Groups.Count == 0)
+                {
+                    MessageBox.Show("Nhà hàng hiện đã hết bàn trống hoặc không có tổ hợp bàn ghép nào phù hợp cho số lượng khách này.", "Hết bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Hiển thị Popup danh sách phương án cho Lễ tân chọn
+                finalTableIdsToSuggest = ShowOptionsDialog(optionsRes.Data, guests);
+
+                // Lễ tân tắt Popup hoặc bấm Cancel
+                if (finalTableIdsToSuggest == null) return;
+            }
+
+            // --- BƯỚC TIẾP THEO: GỌI API SUGGEST ĐỂ SOFT-LOCK BÀN LẠI ---
             btnSeatWalkIn.Enabled = false;
-            btnSeatWalkIn.Text = "ĐANG TÌM BÀN...";
+            btnSeatWalkIn.Text = "ĐANG GIỮ BÀN...";
 
             var request = new WalkInRequest
             {
-                GuestCount = (int)nudGuestCount.Value,
-                // Nếu Lễ tân đã click chọn bàn trên sơ đồ thì gửi ID qua, nếu không để null để Backend tự tìm
-                TableId = _selectedTables.Count > 0 ? _selectedTables.Select(t => t.TableId).ToList() : null,
-                MergeTables = _selectedTables.Count > 1 || _selectedTables.Count == 0
+                GuestCount = guests,
+                TableId = finalTableIdsToSuggest, // Chắc chắn đã có ID bàn (do Lễ tân tự chọn trên Map hoặc chọn từ Popup Options)
+                MergeTables = false // Backend tự hiểu merge dựa trên List ID gửi đi
             };
 
             var suggestRes = await _reservationService.SuggestWalkInAsync(request);
 
             if (!suggestRes.IsSuccess)
             {
-                MessageBox.Show(suggestRes.Message, "Không tìm thấy bàn phù hợp", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(suggestRes.Message, "Không thể giữ bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 ResetButtonState();
-
-                // Nếu Backend báo hết bàn hoặc lỗi, load lại sơ đồ để Lễ tân thấy trạng thái mới nhất
                 await LoadTableData();
                 return;
             }
 
-            // --- BƯỚC 2: HIỆN THÔNG TIN GỢI Ý ĐỂ XÁC NHẬN ---
+            // --- BƯỚC CUỐI: XÁC NHẬN CHÍNH THỨC (CONFIRM) VỚI KHÁCH ---
             var suggestion = suggestRes.Data;
             string tableList = string.Join(", ", suggestion.SuggestedTables.Select(t => t.TableId));
 
-            // Dịch 4 loại trạng thái từ Backend sang tiếng Việt thân thiện cho Lễ tân
-            string typeText = "";
-            switch (suggestion.AvailabilityType)
-            {
-                case "FULL_AVAILABLE":
-                    typeText = "✅ TRỐNG HOÀN TOÀN (Bàn đơn)";
-                    break;
-                case "MERGED_AVAILABLE":
-                    typeText = "✅ TRỐNG HOÀN TOÀN (Ghép bàn)";
-                    break;
-                case "PARTIAL_AVAILABLE":
-                    typeText = "⚠️ TRỐNG TẠM THỜI (Bàn đơn - Sắp có khách đặt trước)";
-                    break;
-                case "PARTIAL_MERGED_AVAILABLE":
-                    typeText = "⚠️ TRỐNG TẠM THỜI (Ghép bàn - Có bàn vướng lịch đặt trước)";
-                    break;
-                default:
-                    typeText = suggestion.AvailabilityType;
-                    break;
-            }
+            // Xử lý chuỗi thông báo
+            string typeText = suggestion.AvailabilityType.Contains("PARTIAL") ? "⚠️ TRỐNG TẠM THỜI (Vướng lịch đặt sau)" : "✅ TRỐNG HOÀN TOÀN";
 
-            string confirmMsg = $"[THÔNG TIN XẾP BÀN WALK-IN]\n\n" +
-                                $"Bàn được chọn: Bàn {tableList}\n" +
-                                $"Tổng sức chứa: {suggestion.SuggestedTables.Sum(t => t.Capacity)} chỗ\n" +
+            string confirmMsg = $"[THÔNG TIN CHỐT XẾP BÀN]\n\n" +
+                                $"Bàn: {tableList} (Sức chứa {suggestion.SuggestedTables.Sum(t => t.Capacity)} chỗ)\n" +
                                 $"Loại bàn: {typeText}\n" +
                                 $"Thời gian khách ngồi: Từ {suggestion.StartTime:HH:mm} đến {suggestion.EndTime:HH:mm}\n\n" +
-                                $"Lưu ý: Hệ thống đang tạm khóa (Soft-lock) bàn này đến {suggestion.LockExpiresAt:HH:mm:ss} để chờ bạn xác nhận.\n\n" +
-                                $"Khách hàng có đồng ý với sự sắp xếp này không?";
+                                $"*Hệ thống đang khóa tạm bàn này đến {suggestion.LockExpiresAt:HH:mm:ss}.\n" +
+                                $"Khách hàng có đồng ý không?";
 
-            DialogResult result = MessageBox.Show(confirmMsg, "Xác nhận với khách hàng", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+            DialogResult result = MessageBox.Show(confirmMsg, "Xác nhận chốt đơn", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
 
             if (result == DialogResult.OK)
             {
-                // --- BƯỚC 3: XÁC NHẬN CHÍNH THỨC (CONFIRM) ---
                 btnSeatWalkIn.Text = "ĐANG CHỐT ĐƠN...";
                 var confirmRes = await _reservationService.ConfirmWalkInAsync(suggestion.SuggestionId);
 
                 if (confirmRes.IsSuccess)
                 {
-                    MessageBox.Show("Đã xếp khách vào bàn thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    // Không cần Clear() thủ công ở đây vì LoadTableData() sẽ tự làm việc đó
-                    await LoadTableData();
+                    MessageBox.Show("Xếp bàn thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    MessageBox.Show(confirmRes.Message, "Lỗi xác nhận", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    await LoadTableData(); // Tránh lỗi kẹt trạng thái
+                    MessageBox.Show(confirmRes.Message, "Lỗi chốt đơn", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else
             {
-                // --- BƯỚC 4: HỦY GỢI Ý (CANCEL SUGGESTION) ---
                 btnSeatWalkIn.Text = "ĐANG HỦY GIỮ BÀN...";
                 await _reservationService.CancelWalkInSuggestionAsync(suggestion.SuggestionId);
-
-                MessageBox.Show("Đã hủy gợi ý xếp bàn. Bàn đã được nhả lại cho hệ thống.", "Đã hủy", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                await LoadTableData(); // Tải lại để xóa soft-lock trên Server và trả lại màu gốc
+                MessageBox.Show("Đã hủy gợi ý xếp bàn.", "Đã hủy", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
             ResetButtonState();
+            await LoadTableData(); // Làm sạch toàn bộ giao diện và tải lại trạng thái
+        }
+
+        // =========================================================================
+        // HÀM VẼ GIAO DIỆN POPUP CHỌN PHƯƠNG ÁN (KHÔNG CẦN DÙNG TỚI DESIGNER)
+        // =========================================================================
+        private List<long> ShowOptionsDialog(WalkInOptionResponse data, int guestCount)
+        {
+            List<long> selectedIds = null;
+
+            Form popup = new Form
+            {
+                Text = $"Danh sách phương án xếp bàn cho {guestCount} khách",
+                Size = new Size(550, 500),
+                StartPosition = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                BackColor = Color.White
+            };
+
+            FlowLayoutPanel flp = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                Padding = new Padding(10)
+            };
+            popup.Controls.Add(flp);
+
+            // Vẽ từng nhóm (Ưu tiên, Dự phòng)
+            foreach (var group in data.Groups)
+            {
+                Label lblGroup = new Label
+                {
+                    Text = group.GroupName,
+                    Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                    AutoSize = true,
+                    Margin = new Padding(0, 10, 0, 5),
+                    ForeColor = group.GroupName.Contains("Ưu tiên") ? Color.MediumSeaGreen : Color.Orange
+                };
+                flp.Controls.Add(lblGroup);
+
+                // Vẽ từng Option trong nhóm đó dưới dạng Nút bấm
+                foreach (var opt in group.Options)
+                {
+                    string tableStr = string.Join(", ", opt.TableIds);
+                    string typeStr = opt.TableIds.Count > 1 ? "Ghép bàn" : "Bàn đơn";
+                    string limitStr = opt.AvailableUntil.HasValue ? $" | Phải trả bàn lúc: {opt.AvailableUntil.Value:HH:mm}" : "";
+
+                    string btnText = $"Bàn {tableStr} ({opt.TotalCapacity} chỗ) - {typeStr}{limitStr}";
+
+                    Button btnOpt = new Button
+                    {
+                        Text = btnText,
+                        Width = 490,
+                        Height = 45,
+                        Margin = new Padding(5, 5, 5, 5),
+                        TextAlign = ContentAlignment.MiddleLeft,
+                        FlatStyle = FlatStyle.Flat,
+                        Cursor = Cursors.Hand,
+                        Font = new Font("Segoe UI", 10, FontStyle.Regular)
+                    };
+
+                    // Trang trí viền nút theo loại
+                    btnOpt.FlatAppearance.BorderColor = opt.AvailableUntil.HasValue ? Color.Orange : Color.LightGray;
+
+                    // Gắn sự kiện: Bấm vào option nào thì bắt ID của option đó và tắt Form
+                    btnOpt.Click += (s, e) =>
+                    {
+                        selectedIds = opt.TableIds;
+                        popup.DialogResult = DialogResult.OK;
+                        popup.Close();
+                    };
+
+                    flp.Controls.Add(btnOpt);
+                }
+            }
+
+            popup.ShowDialog();
+            return selectedIds; // Trả về List ID bàn Lễ tân vừa bấm chọn
         }
 
         // Hàm phụ để reset trạng thái nút

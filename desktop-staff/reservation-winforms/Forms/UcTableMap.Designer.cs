@@ -25,13 +25,13 @@
             this.lblGuestCount = new System.Windows.Forms.Label();
             this.lblSelectedTable = new System.Windows.Forms.Label();
             this.pnlFilter = new System.Windows.Forms.Panel();
-            this.btnFilterOverstay = new System.Windows.Forms.Button(); // Thêm nút Quá giờ
+            this.btnFilterOverstay = new System.Windows.Forms.Button();
             this.btnFilterReserved = new System.Windows.Forms.Button();
             this.btnFilterOccupied = new System.Windows.Forms.Button();
             this.btnFilterAvailable = new System.Windows.Forms.Button();
             this.btnFilterAll = new System.Windows.Forms.Button();
             this.lblFilterText = new System.Windows.Forms.Label();
-            this.flpTableMap = new System.Windows.Forms.FlowLayoutPanel(); // Xóa 3 nút bàn ảo đi
+            this.flpTableMap = new System.Windows.Forms.FlowLayoutPanel();
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.lblTitle = new System.Windows.Forms.Label();
             this.pnlSidebar.SuspendLayout();
@@ -99,7 +99,8 @@
             this.btnSeatWalkIn.Name = "btnSeatWalkIn";
             this.btnSeatWalkIn.Size = new System.Drawing.Size(260, 50);
             this.btnSeatWalkIn.TabIndex = 3;
-            this.btnSeatWalkIn.Text = "XẾP BÀN (WALK-IN)";
+            // Đổi text để Lễ tân hiểu tính năng Gợi ý
+            this.btnSeatWalkIn.Text = "TÌM / XẾP BÀN (WALK-IN)";
             this.btnSeatWalkIn.UseVisualStyleBackColor = false;
             // 
             // nudGuestCount
@@ -302,13 +303,13 @@
         private System.Windows.Forms.Label lblGuestCount;
         private System.Windows.Forms.Label lblSelectedTable;
         private System.Windows.Forms.Panel pnlFilter;
-        private System.Windows.Forms.Button btnFilterOverstay; // Nút mới
+        private System.Windows.Forms.Button btnFilterOverstay;
         private System.Windows.Forms.Button btnFilterReserved;
         private System.Windows.Forms.Button btnFilterOccupied;
         private System.Windows.Forms.Button btnFilterAvailable;
         private System.Windows.Forms.Button btnFilterAll;
         private System.Windows.Forms.Label lblFilterText;
-        private System.Windows.Forms.FlowLayoutPanel flpTableMap; // Đã xóa các nút bàn con
+        private System.Windows.Forms.FlowLayoutPanel flpTableMap;
         private System.Windows.Forms.Panel pnlHeader;
         private System.Windows.Forms.Label lblTitle;
     }
