@@ -39,7 +39,7 @@
             this.lblTitleName = new System.Windows.Forms.Label();
             this.lblDetailTitle = new System.Windows.Forms.Label();
             this.btnCheckIn = new System.Windows.Forms.Button();
-            this.btnCancelBooking = new System.Windows.Forms.Button();
+            this.btnChangeTable = new System.Windows.Forms.Button();
             this.pnlHeader.SuspendLayout();
             this.pnlSearch.SuspendLayout();
             this.pnlDetails.SuspendLayout();
@@ -327,29 +327,29 @@
             this.btnCheckIn.Text = "CHECK-IN";
             this.btnCheckIn.UseVisualStyleBackColor = false;
             // 
-            // btnCancelBooking
+            // btnChangeTable
             // 
-            this.btnCancelBooking.BackColor = System.Drawing.Color.White;
-            this.btnCancelBooking.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnCancelBooking.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
-            this.btnCancelBooking.FlatAppearance.BorderSize = 2;
-            this.btnCancelBooking.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnCancelBooking.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCancelBooking.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
-            this.btnCancelBooking.Location = new System.Drawing.Point(831, 785);
-            this.btnCancelBooking.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.btnCancelBooking.Name = "btnCancelBooking";
-            this.btnCancelBooking.Size = new System.Drawing.Size(240, 92);
-            this.btnCancelBooking.TabIndex = 5;
-            this.btnCancelBooking.Text = "HỦY ĐƠN";
-            this.btnCancelBooking.UseVisualStyleBackColor = false;
+            this.btnChangeTable.BackColor = System.Drawing.Color.White;
+            this.btnChangeTable.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnChangeTable.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
+            this.btnChangeTable.FlatAppearance.BorderSize = 2;
+            this.btnChangeTable.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnChangeTable.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnChangeTable.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
+            this.btnChangeTable.Location = new System.Drawing.Point(831, 785);
+            this.btnChangeTable.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnChangeTable.Name = "btnChangeTable";
+            this.btnChangeTable.Size = new System.Drawing.Size(240, 92);
+            this.btnChangeTable.TabIndex = 5;
+            this.btnChangeTable.Text = "ĐỔI BÀN";
+            this.btnChangeTable.UseVisualStyleBackColor = false;
             // 
             // UcOnlineBooking
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(246)))), ((int)(((byte)(250)))));
-            this.Controls.Add(this.btnCancelBooking);
+            this.Controls.Add(this.btnChangeTable);
             this.Controls.Add(this.btnCheckIn);
             this.Controls.Add(this.pnlDetails);
             this.Controls.Add(this.pnlSearch);
@@ -391,6 +391,6 @@
         private System.Windows.Forms.Label lblValTableStatus;
         private System.Windows.Forms.Label lblValTimeStatus;
         private System.Windows.Forms.Button btnCheckIn;
-        private System.Windows.Forms.Button btnCancelBooking;
+        private System.Windows.Forms.Button btnChangeTable;
     }
 }
