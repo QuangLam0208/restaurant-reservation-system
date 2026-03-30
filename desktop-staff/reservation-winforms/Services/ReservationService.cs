@@ -2,6 +2,7 @@
 using reservation_winforms.DTO;
 using reservation_winforms.DTO.reservation;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -74,6 +75,47 @@ namespace reservation_winforms.Services
                 return (false, null, contentString);
             }
             catch (Exception ex) { return (false, null, $"Lỗi kết nối: {ex.Message}"); }
+        }
+
+        // Lấy danh sách đơn đặt trước (Truyền 1440 phút để tìm trong vòng 24h)
+        public async Task<(bool IsSuccess, List<ReservationResponse> Data, string Message)> GetUpcomingReservationsAsync(int minutes = 1440)
+        {
+            try
+            {
+                ApiClient.AttachToken();
+                var response = await ApiClient.Client.GetAsync($"{ApiClient.BaseUrl}/reservations/upcoming?minutes={minutes}");
+                var contentString = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                    return (true, JsonConvert.DeserializeObject<List<ReservationResponse>>(contentString), "Thành công");
+
+                return (false, null, contentString);
+            }
+            catch (Exception ex) { return (false, null, $"Lỗi: {ex.Message}"); }
+        }
+
+        // Gọi API Check-in
+        public async Task<(bool IsSuccess, string Message)> CheckInAsync(long reservationId)
+        {
+            try
+            {
+                ApiClient.AttachToken();
+                var response = await ApiClient.Client.PostAsync($"{ApiClient.BaseUrl}/reservations/{reservationId}/check-in", null);
+                return (response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex) { return (false, $"Lỗi: {ex.Message}"); }
+        }
+
+        // Gọi API Hủy đơn (Lễ tân hủy)
+        public async Task<(bool IsSuccess, string Message)> CancelReservationAsync(long reservationId)
+        {
+            try
+            {
+                ApiClient.AttachToken();
+                var response = await ApiClient.Client.DeleteAsync($"{ApiClient.BaseUrl}/reservations/{reservationId}");
+                return (response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex) { return (false, $"Lỗi: {ex.Message}"); }
         }
     }
 }
