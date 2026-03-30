@@ -16,11 +16,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +26,7 @@ import java.util.stream.Collectors;
 public class AvailabilityApiServiceImpl implements AvailabilityApiService {
 
     private final TableAvailabilityService tableAvailabilityService;
-    private final TableAllocationStrategy optimalCapacityMergeStrategy;
+    private final List<TableAllocationStrategy> allocationStrategies;
 
     @Value("${reservation.duration-minutes:120}")
     private int durationMinutes;
@@ -37,21 +35,33 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
     private int bufferMinutes;
 
     @Override
+    public Map<String, Boolean> checkSlotsAvailability(LocalDate date, int guests, List<LocalTime> slots) {
+        Map<String, Boolean> result = new LinkedHashMap<>();
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+        for (LocalTime slot : slots) {
+            LocalDateTime start = LocalDateTime.of(date, slot);
+            String timeStr = slot.format(formatter);
+
+            if (start.isBefore(LocalDateTime.now())) {
+                result.put(timeStr, false);
+                continue;
+            }
+
+            List<TableInfo> selected = findSelectedTables(start, guests);
+            result.put(timeStr, !selected.isEmpty());
+        }
+        return result;
+    }
+
+    @Override
     public Map<String, Object> checkAvailability(LocalDate date, LocalTime time, int guests) {
         LocalDateTime requestedStart = LocalDateTime.of(date, time);
         validateFutureTime(requestedStart);
 
-        LocalDateTime requestedEnd = requestedStart.plusMinutes(durationMinutes);
+        List<TableInfo> selectedTables = findSelectedTables(requestedStart, guests);
+        String selectionType = selectedTables.size() > 1 ? "MERGED_TABLES" : "SINGLE_TABLE";
 
-        // Lấy tất cả các bàn trống trong khung giờ này
-        List<TableInfo> allFreeTables = tableAvailabilityService.getFreeTables(requestedStart, requestedEnd);
-
-        // Chỉ lọc lại những bàn đủ sức chứa cho số lượng khách (guests)
-        List<TableInfo> availableTables = allFreeTables.stream()
-                .filter(table -> table.getCapacity() >= guests)
-                .collect(Collectors.toList());
-
-        List<Map<String, Object>> tablesPayload = availableTables.stream().map(table -> {
+        List<Map<String, Object>> tablesPayload = selectedTables.stream().map(table -> {
             Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("tableId", table.getTableId());
             payload.put("capacity", table.getCapacity());
@@ -62,6 +72,7 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("requestedTime", requestedStart);
         result.put("guestCount", guests);
+        result.put("selectionType", selectionType);
         result.put("availableTables", tablesPayload);
         result.put("hasAvailability", !tablesPayload.isEmpty());
 
@@ -72,6 +83,20 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
             ));
         }
         return result;
+    }
+
+    private List<TableInfo> findSelectedTables(LocalDateTime start, int guests) {
+        LocalDateTime end = start.plusMinutes(durationMinutes);
+        List<TableInfo> allFree = tableAvailabilityService.getFreeTables(start, end);
+
+        List<TableInfo> selectedTables = null;
+        for (TableAllocationStrategy strategy : allocationStrategies) {
+            selectedTables = strategy.allocate(guests, allFree);
+            if (selectedTables != null && !selectedTables.isEmpty()) {
+                break;
+            }
+        }
+        return selectedTables != null ? selectedTables : new ArrayList<>();
     }
 
     @Override
@@ -106,13 +131,17 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
                 .filter(table -> isFullyAvailableForWindow(table.getTableId(), time, maxEndTime))
                 .collect(Collectors.toList());
 
-        List<TableInfo> bestMerge = optimalCapacityMergeStrategy.allocate(guests, mergeCandidates);
+        List<TableInfo> bestMerge = null;
+        for (TableAllocationStrategy strategy : allocationStrategies) {
+            bestMerge = strategy.allocate(guests, mergeCandidates);
+            if (bestMerge != null && !bestMerge.isEmpty()) break;
+        }
 
         // 3. Tổng hợp kết quả
         List<AvailableWindowResponse> result = new ArrayList<>(fullyAvailable);
         result.addAll(partiallyAvailable);
 
-        if (!bestMerge.isEmpty()) {
+        if (bestMerge != null && !bestMerge.isEmpty()) {
             result.add(AvailableWindowResponse.builder()
                     .tableId(null)
                     .capacity(bestMerge.stream().mapToInt(TableInfo::getCapacity).sum())
@@ -149,6 +178,7 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
         return AvailableWindowResponse.builder()
                 .tableId(table.getTableId())
                 .capacity(table.getCapacity())
+                /** GET /api/reservations/availability/slots?date=&guests=&slots= */
                 .availability(availability)
                 .availableUntil(until)
                 .build();
