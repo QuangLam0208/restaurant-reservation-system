@@ -2,11 +2,7 @@ package com.hcmute.reservation.service.impl;
 
 import com.hcmute.reservation.model.dto.table.AvailableWindowResponse;
 import com.hcmute.reservation.exception.BadRequestException;
-import com.hcmute.reservation.model.entity.Reservation;
 import com.hcmute.reservation.model.entity.TableInfo;
-import com.hcmute.reservation.model.enums.TableStatus;
-import com.hcmute.reservation.repository.ReservationRepository;
-import com.hcmute.reservation.repository.TableInfoRepository;
 import com.hcmute.reservation.service.AvailabilityApiService;
 import com.hcmute.reservation.service.TableAvailabilityService;
 import com.hcmute.reservation.strategy.TableAllocationStrategy;
