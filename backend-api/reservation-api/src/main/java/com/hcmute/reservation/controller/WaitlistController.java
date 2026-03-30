@@ -30,12 +30,6 @@ public class WaitlistController {
         return ResponseEntity.ok(waitlistService.getWaitlist());
     }
 
-    /** PATCH /api/waitlist/{id}/seat */
-    @PatchMapping("/{id}/seat")
-    public ResponseEntity<WaitlistResponse> seatEntry(@PathVariable Long id) {
-        return ResponseEntity.ok(waitlistService.seatWaitlistEntry(id));
-    }
-
     /** PATCH /api/waitlist/{id}/skip */
     @PatchMapping("/{id}/skip")
     public ResponseEntity<WaitlistResponse> skipEntry(@PathVariable Long id) {
