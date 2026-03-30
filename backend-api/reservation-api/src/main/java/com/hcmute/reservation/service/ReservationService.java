@@ -291,6 +291,7 @@ public class ReservationService {
 
     // ────── Get / Cancel ──────────────────────────────────────────────
 
+    @Transactional(readOnly = true)
     public ReservationResponse getById(Long id) {
         Reservation r = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn đặt bàn #" + id + " không tồn tại."));
@@ -883,11 +884,13 @@ public class ReservationService {
 
     // ────── Active / Upcoming ─────────────────────────────────────────
 
+    @Transactional(readOnly = true)
     public List<ReservationResponse> getActiveReservations() {
         return reservationRepository.findByStatusOrderByStartTimeAsc(ReservationStatus.SEATED)
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<ReservationResponse> getUpcomingReservations(int minutes) {
         LocalDateTime now = LocalDateTime.now();
         return reservationRepository.findUpcoming(now, now.plusMinutes(minutes))

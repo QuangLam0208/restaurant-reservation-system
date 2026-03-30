@@ -23,8 +23,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             "AND r.status IN ('RESERVED','SEATED') AND r.startTime > :now ORDER BY r.startTime ASC")
     List<Reservation> findNextBookingForTable(@Param("tableId") Long tableId, @Param("now") LocalDateTime now);
 
-    @Query("SELECT r FROM Reservation r WHERE r.status = 'RESERVED' AND r.startTime BETWEEN :now AND :until")
+    @Query("SELECT DISTINCT r FROM Reservation r LEFT JOIN FETCH r.tableMappings m " +
+              "WHERE r.status = 'RESERVED' AND r.startTime BETWEEN :now AND :until " +
+              "ORDER BY r.startTime ASC")
     List<Reservation> findUpcoming(@Param("now") LocalDateTime now, @Param("until") LocalDateTime until);
+
+    // Lấy các đơn đang SEATED kèm theo bàn
+    @Query("SELECT DISTINCT r FROM Reservation r LEFT JOIN FETCH r.tableMappings m " +
+            "WHERE r.status = :status ORDER BY r.startTime ASC")
+    List<Reservation> findByStatusWithTables(@Param("status") ReservationStatus status);
 
     @Query("SELECT r FROM Reservation r WHERE r.status = 'PENDING_PAYMENT' AND r.createdAt < :expiredBefore")
     List<Reservation> findExpiredPendingPayments(@Param("expiredBefore") LocalDateTime expiredBefore);

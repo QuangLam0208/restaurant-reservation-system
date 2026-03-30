@@ -23,6 +23,8 @@ namespace reservation_winforms.DTO.reservation
 
         [JsonProperty("endTime")]
         public DateTime EndTime { get; set; }
+        [JsonProperty("depositAmount")]
+        public double? DepositAmount { get; set; } // Dùng double? (nullable) để tương thích với Walk-in
 
         [JsonProperty("note")]
         public string Note { get; set; }
