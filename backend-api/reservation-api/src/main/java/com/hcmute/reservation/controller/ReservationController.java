@@ -33,6 +33,15 @@ public class ReservationController {
         return ResponseEntity.ok(availabilityApiService.checkAvailability(date, time, guests));
     }
 
+    /** GET /api/reservations/availability/slots?date=&guests=&slots= */
+    @GetMapping("/availability/slots")
+    public ResponseEntity<Map<String, Boolean>> checkSlotsAvailability(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam int guests,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) List<LocalTime> slots) {
+        return ResponseEntity.ok(availabilityApiService.checkSlotsAvailability(date, guests, slots));
+    }
+
     /** POST /api/reservations/online */
     @PostMapping("/online")
     public ResponseEntity<ReservationResponse> createOnline(

@@ -154,10 +154,9 @@
         <div class="step-body">
           <div class="divider"></div>
           <div class="detail-grid">
-            <div class="fgroup"><label class="flabel">First Name</label><input class="finput" type="text" placeholder="Marco"></div>
-            <div class="fgroup"><label class="flabel">Last Name</label><input class="finput" type="text" placeholder="Rossi"></div>
-            <div class="fgroup"><label class="flabel">Email Address</label><input class="finput" type="email" placeholder="marco@email.com"></div>
-            <div class="fgroup"><label class="flabel">Phone Number</label><input class="finput" type="tel" placeholder="+39 06 1234 5678"></div>
+            <div class="fgroup full"><label class="flabel">Full Name</label><input class="finput" type="text" id="guest-name" placeholder="Marco Rossi" readonly></div>
+            <div class="fgroup"><label class="flabel">Email Address</label><input class="finput" type="email" id="guest-email" placeholder="marco@email.com" readonly></div>
+            <div class="fgroup"><label class="flabel">Phone Number</label><input class="finput" type="tel" id="guest-phone" placeholder="+84 09 1234 5678" readonly></div>
             <div class="fgroup full">
               <label class="flabel">Occasion (optional)</label>
               <div class="occ-wrap">
@@ -170,7 +169,7 @@
             </div>
             <div class="fgroup full">
               <label class="flabel">Special Requests</label>
-              <textarea class="finput" placeholder="Dietary restrictions, seating preferences, allergies, or anything else that will make your evening perfect…"></textarea>
+              <textarea class="finput" id="guest-note" placeholder="Dietary restrictions, seating preferences, allergies, or anything else that will make your evening perfect…"></textarea>
             </div>
           </div>
           <button class="step-cta" onclick="goToPayment()" style="background:var(--gold); margin-top:28px;">Review &amp; Proceed to Payment <span class="arr">→</span></button>

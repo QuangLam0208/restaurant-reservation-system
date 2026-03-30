@@ -1,4 +1,6 @@
-const S = { party:2, date:null, dateStr:null, time:null, week:0, MAX_W:4 };
+import { callApi, getStoredUser } from '../common/api.js';
+
+const S = { party:2, date:null, dateStr:null, time:null, week:0, MAX_W:4, reservationId: null };
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const today  = new Date(); today.setHours(0,0,0,0);
@@ -142,29 +144,45 @@ function renderDates(){
 const LUNCH  = ['12:00','12:30','13:00','13:30','14:00','14:30','15:00'];
 const DINNER = ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30','22:00','22:30'];
 
-function renderTimes(){ fillSlots('tg-lunch',LUNCH); fillSlots('tg-dinner',DINNER); }
+function renderTimes(){ 
+    fillSlots('tg-lunch',LUNCH); 
+    fillSlots('tg-dinner',DINNER); 
+}
 
-function fillSlots(id,slots){
-    const grid=document.getElementById(id);
-    if(!grid) return;
-    grid.innerHTML='';
-    const seed=S.dateStr?S.dateStr.charCodeAt(S.dateStr.length-1):0;
-    slots.forEach((slot,i)=>{
-        const booked=(seed+i)%3===0;
-        const btn=document.createElement('button');
-        btn.className='t-chip'+(booked?' bkd':'')+(S.time===slot?' sel':'');
-        btn.disabled=booked;
-        btn.innerHTML=`<span>${slot}</span>`;
-        if(!booked) btn.addEventListener('click',()=>{
-            S.time=slot;
-            document.querySelectorAll('.t-chip').forEach(c=>c.classList.remove('sel'));
-            btn.classList.add('sel');
-            const cta=document.getElementById('time-cta');
-            cta.disabled=false; cta.innerHTML='Continue <span class="arr">→</span>';
-            updateSummary();
+async function fillSlots(id, slots) {
+    const grid = document.getElementById(id);
+    if (!grid || !S.dateStr) return;
+    grid.innerHTML = '<div class="loading-slots">Checking availability...</div>';
+
+    try {
+        // Gọi API kiểm tra giờ (có bàn trống đáp ứng slot)
+        const { ok, data } = await callApi(`/reservations/availability/slots?date=${S.dateStr}&guests=${S.party}&slots=${slots.join(',')}`);
+        
+        grid.innerHTML = '';
+        slots.forEach((slot) => {
+            const isAvailable = ok && data && data[slot] === true;
+            const btn = document.createElement('button');
+            btn.className = 't-chip' + (!isAvailable ? ' bkd' : '') + (S.time === slot ? ' sel' : '');
+            btn.disabled = !isAvailable;
+            btn.innerHTML = `<span>${slot}</span>`;
+            
+            if (isAvailable) {
+                btn.addEventListener('click', () => {
+                    S.time = slot;
+                    document.querySelectorAll('.t-chip').forEach(c => c.classList.remove('sel'));
+                    btn.classList.add('sel');
+                    const cta = document.getElementById('time-cta');
+                    cta.disabled = false;
+                    cta.innerHTML = 'Continue <span class="arr">→</span>';
+                    updateSummary();
+                });
+            }
+            grid.appendChild(btn);
         });
-        grid.appendChild(btn);
-    });
+    } catch (err) {
+        console.error("Failed to fetch slots:", err);
+        grid.innerHTML = '<div class="error-slots">Error loading slots</div>';
+    }
 }
 
 function confirmDate(){
@@ -178,6 +196,18 @@ function confirmTime(){
     if(!S.time)return;
     const sv=document.getElementById('sv-3'); sv.textContent=S.time; sv.classList.remove('ph');
     doneStep(3); openStep(4);
+    loadStep4AutoFill();
+}
+
+function loadStep4AutoFill() {
+    const user = getStoredUser();
+    const nameInput = document.getElementById('guest-name');
+    const emailInput = document.getElementById('guest-email');
+    const phoneInput = document.getElementById('guest-phone');
+
+    if (nameInput) nameInput.value = user.name || "";
+    if (emailInput) emailInput.value = user.email || "";
+    if (phoneInput) phoneInput.value = user.phone || "";
 }
 
 function doneStep(n){ const el=document.getElementById(`step-${n}`); el.classList.remove('active'); el.classList.add('completed'); setProg(n,'done'); }
@@ -205,17 +235,37 @@ function updateSummary(){
     if(S.party&&S.dateStr&&S.time) document.getElementById('proceed-btn').classList.add('ready');
 }
 
-function goToPayment(){
+async function goToPayment(){
+    // Gom Occasion và Special Request thành Note
+    const occasions = Array.from(document.querySelectorAll('.occ-chip.sel')).map(c => c.dataset.v);
+    const specialReq = document.getElementById('guest-note').value;
+    const fullNote = [occasions.join(', '), specialReq].filter(s => s).join(' | ');
+
+    const bookingData = {
+        startTime: `${S.dateStr}T${S.time}:00`,
+        guestCount: S.party,
+        note: fullNote
+    };
+
+    // Gọi API Đặt bàn Online (Backend sẽ soft-lock bàn)
+    const { ok, data } = await callApi('/reservations/online', 'POST', bookingData);
+    if (!ok) {
+        alert(data?.message || "Failed to create reservation. The slot might have been taken.");
+        return;
+    }
+
+    S.reservationId = data.reservationId;
+
     document.getElementById('booking-page').style.display='none';
     document.getElementById('payment-page').style.display='block';
     window.scrollTo(0,0);
 
     startTimer();
 
-    const dep=S.party*15;
-    document.getElementById('p-guests').textContent=`Deposit (${S.party} guest${S.party>1?'s':''} × €15)`;
-    document.getElementById('p-deposit').textContent=`€${dep}`;
-    document.getElementById('p-total').textContent=`€${dep}`;
+    const dep = data.depositAmount || (S.party * 50000); // Backend dùng VND
+    document.getElementById('p-guests').textContent=`Deposit (${S.party} guest${S.party>1?'s':''} × ${dep/S.party} VND)`;
+    document.getElementById('p-deposit').textContent=`${dep.toLocaleString()} VND`;
+    document.getElementById('p-total').textContent=`${dep.toLocaleString()} VND`;
     if(S.date) document.getElementById('p-date').textContent=`${DAYS[S.date.getDay()]}, ${S.date.getDate()} ${MONTHS[S.date.getMonth()]}`;
     if(S.time) document.getElementById('p-time').textContent=S.time;
 }
@@ -227,13 +277,23 @@ function backToBooking(){
     window.scrollTo(0,0);
 }
 
-function confirmReservation(){
+async function confirmReservation(){
+    if (!S.reservationId) return;
+
+    // Gọi API xác nhận thanh toán (Backend sẽ chốt bàn vào Mapping)
+    const { ok, data } = await callApi(`/reservations/${S.reservationId}/payment/confirm`, 'POST');
+    
+    if (!ok) {
+        alert(data?.message || "Payment confirmation failed.");
+        return;
+    }
+
     stopTimer();
     document.getElementById('payment-page').style.display='none';
     const sp=document.getElementById('success-page'); sp.style.display='flex';
     window.scrollTo(0,0);
 
-    const refId = 'SL-'+Math.random().toString(36).substring(2,8).toUpperCase();
+    const refId = 'RS-' + S.reservationId;
     document.getElementById('success-ref').textContent='Reservation · ' + refId;
 
     myBookingsList.push({
@@ -269,6 +329,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const logoutBtn = document.getElementById('logout-btn');
     if(logoutBtn) logoutBtn.addEventListener('click',e=>{ e.preventDefault(); localStorage.removeItem('isLoggedIn'); localStorage.removeItem('authToken'); localStorage.removeItem('customerId'); localStorage.removeItem('userName'); localStorage.removeItem('userEmail'); window.location.href='index.html'; });
+
+    // Click listener cho Occasion chips
+    document.querySelectorAll('.occ-chip').forEach(c => {
+        c.addEventListener('click', () => {
+            c.classList.toggle('sel');
+        });
+    });
 
     // Cài đặt trạng thái ban đầu
     setParty(2);

@@ -17,6 +17,12 @@ public interface AvailabilityApiService {
     Map<String, Object> checkAvailability(LocalDate date, LocalTime time, int guests);
 
     /**
+     * GET /api/reservations/availability/slots
+     * Kiểm tra trạng thái khả dụng cho một danh sách các khung giờ (dùng cho UI Grid).
+     */
+    Map<String, Boolean> checkSlotsAvailability(LocalDate date, int guests, List<LocalTime> slots);
+
+    /**
      * GET /api/tables/available-windows
      * Phân tích real-time các khoảng thời gian trống của bàn để hiển thị cho màn hình POS.
      */
