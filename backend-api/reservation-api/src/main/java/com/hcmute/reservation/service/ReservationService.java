@@ -229,8 +229,29 @@ public class ReservationService {
             throw new BadRequestException("Only PENDING_PAYMENT reservation can be confirmed. Current status: " + reservation.getStatus());
         }
 
+        // Lấy danh sách bàn đang được soft-lock
+        final Long reservationId = reservation.getReservationId();
+        List<TableInfo> lockedTables = tableInfoRepository.findByLockedByReservationId(reservationId);
+
+        // Xử lý Race Condition với Scheduler
+        if (lockedTables.isEmpty()) {
+            throw new ConflictException("Giao dịch thanh toán mất quá nhiều thời gian. Thời gian giữ bàn (5 phút) đã hết và bàn đã bị giải phóng. Vui lòng liên hệ nhà hàng để được hỗ trợ hoàn tiền hoặc xếp bàn mới.");
+        }
+
         // Đánh dấu RESERVED (Hibernate tự động dirty check và update vào DB cuối Transaction)
         reservation.setStatus(ReservationStatus.RESERVED);
+
+        for (TableInfo t : lockedTables) {
+            t.setSoftLockUntil(null);
+            t.setLockedByReservationId(null);
+            t.setStatus(TableStatus.AVAILABLE);
+            tableInfoRepository.save(t);
+
+            mappingRepository.save(ReservationTableMapping.builder()
+                    .reservation(reservation)
+                    .tableInfo(t)
+                    .build());
+        }
 
         // Chuẩn bị dữ liệu gửi Email (Tránh lazy loading trong Async thread sau này)
         String customerEmail = reservation.getCustomer() != null ? reservation.getCustomer().getEmail() : null;
