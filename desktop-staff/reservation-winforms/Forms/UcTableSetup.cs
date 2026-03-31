@@ -11,7 +11,7 @@ namespace reservation_winforms.Forms
     {
         private readonly TableService _tableService;
         private List<TableResponse> _tables = new List<TableResponse>();
-        private int _currentTableVersion = 0; // Để truyền vào lúc Update chống conflict
+        private int _currentTableVersion = 0;
 
         public UcTableSetup()
         {
@@ -36,7 +36,6 @@ namespace reservation_winforms.Forms
             dgvTables.Columns.Add("Status", "Tình trạng sử dụng");
             dgvTables.Columns.Add("IsActive", "Trạng thái hoạt động");
 
-            // Style DataGridView cho đẹp
             dgvTables.EnableHeadersVisualStyles = false;
             dgvTables.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(41, 128, 185);
             dgvTables.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
@@ -57,13 +56,12 @@ namespace reservation_winforms.Forms
                     string activeText = t.IsActive ? "Đang mở" : "Đã tắt (Vô hiệu hóa)";
                     dgvTables.Rows.Add(t.TableId, t.Capacity, t.Status, activeText);
 
-                    // Đổi màu dòng bị tắt cho dễ nhìn
                     if (!t.IsActive)
                     {
                         dgvTables.Rows[dgvTables.Rows.Count - 1].DefaultCellStyle.ForeColor = Color.DarkGray;
                     }
                 }
-                BtnClear_Click(null, null); // Reset form sau khi tải xong
+                BtnClear_Click(null, null);
             }
             else
             {
@@ -82,11 +80,11 @@ namespace reservation_winforms.Forms
                     txtTableId.Text = table.TableId.ToString();
                     numCapacity.Value = table.Capacity;
                     chkIsActive.Checked = table.IsActive;
-                    _currentTableVersion = table.Version; // Lưu lại Version hiện tại của DB
+                    _currentTableVersion = table.Version;
 
-                    btnSave.Enabled = false; // Đã chọn bàn cũ thì không cho Thêm mới
+                    btnSave.Enabled = false;
                     btnUpdate.Enabled = true;
-                    btnDelete.Enabled = table.IsActive; // Nếu đang tắt thì không cho bấm nút Vô hiệu hóa nữa
+                    btnDelete.Enabled = table.IsActive;
                 }
             }
         }
@@ -124,7 +122,7 @@ namespace reservation_winforms.Forms
             {
                 Capacity = (int)numCapacity.Value,
                 IsActive = chkIsActive.Checked,
-                Version = _currentTableVersion // Truyền Version lên để Backend kiểm tra Optimistic Locking
+                Version = _currentTableVersion
             };
 
             var res = await _tableService.UpdateTableAsync(id, req);

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq; // Thêm thư viện này
 using reservation_winforms.DTO.auth;
 using reservation_winforms.DTO;
 using System;
@@ -10,27 +11,39 @@ namespace reservation_winforms.Services
 {
     public class AuthService
     {
-        // 1. HÀM ĐĂNG NHẬP
+        private string GetErrorMessage(string jsonContent)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(jsonContent)) return "Lỗi không xác định từ máy chủ.";
+
+                var jObject = JObject.Parse(jsonContent);
+
+                if (jObject["message"] != null) return jObject["message"].ToString();
+
+                if (jObject["error"] != null) return jObject["error"].ToString();
+            }
+            catch
+            {
+                if (jsonContent.Length > 100) return jsonContent.Substring(0, 100) + "...";
+            }
+            return jsonContent;
+        }
+
         public async Task<(bool IsSuccess, string Message)> LoginAsync(string username, string password)
         {
             try
             {
-                // Gói dữ liệu gửi đi
                 var requestData = new StaffLoginRequest { Username = username, Password = password };
-
-                // Chuyển thành JSON
                 var jsonContent = new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json");
 
-                // Gọi API Login (Không cần AttachToken vì lúc này chưa đăng nhập)
                 var response = await ApiClient.Client.PostAsync($"{ApiClient.BaseUrl}/staff/auth/login", jsonContent);
+                var responseString = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // Đọc dữ liệu JSON trả về
-                    var responseString = await response.Content.ReadAsStringAsync();
                     var loginData = JsonConvert.DeserializeObject<StaffLoginResponse>(responseString);
 
-                    // Lưu thông tin vào bộ nhớ dùng chung (GlobalState)
                     GlobalState.StaffToken = loginData.SessionToken;
                     GlobalState.CurrentUsername = loginData.Username;
                     GlobalState.Role = loginData.Role;
@@ -43,7 +56,7 @@ namespace reservation_winforms.Services
                 }
                 else
                 {
-                    return (false, $"Hệ thống đang lỗi (Mã lỗi: {(int)response.StatusCode})");
+                    return (false, GetErrorMessage(responseString));
                 }
             }
             catch (Exception ex)
@@ -52,7 +65,7 @@ namespace reservation_winforms.Services
             }
         }
 
-        // 2. HÀM ĐĂNG KÝ TÀI KHOẢN MỚI (Dành cho Quản lý)
+        // HÀM ĐĂNG KÝ TÀI KHOẢN MỚI (Dành cho Quản lý)
         public async Task<(bool IsSuccess, string Message)> RegisterStaffAsync(string username, string password, string role = "RECEPTIONIST")
         {
             try
@@ -66,20 +79,18 @@ namespace reservation_winforms.Services
 
                 var jsonContent = new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json");
 
-                // Bắt buộc gọi dòng này để đính kèm Token của Manager vào Header thì Spring Boot mới cho phép đi qua
                 ApiClient.AttachToken();
 
                 var response = await ApiClient.Client.PostAsync($"{ApiClient.BaseUrl}/staff/auth/register", jsonContent);
+                var resultString = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return (true, "Tạo tài khoản Lễ tân thành công!");
+                    return (true, "Tạo tài khoản thành công!");
                 }
                 else
                 {
-                    // Nếu Backend trả về lỗi (ví dụ: Username đã tồn tại, pass quá ngắn...)
-                    var errorString = await response.Content.ReadAsStringAsync();
-                    return (false, $"Đăng ký thất bại: {errorString}");
+                    return (false, GetErrorMessage(resultString));
                 }
             }
             catch (Exception ex)
