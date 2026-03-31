@@ -7,7 +7,6 @@ import com.hcmute.reservation.model.dto.auth.*;
 import com.hcmute.reservation.model.entity.Customer;
 import com.hcmute.reservation.repository.CustomerRepository;
 import com.hcmute.reservation.security.IPasswordHasher;
-import com.hcmute.reservation.security.JwtUtil;
 import com.hcmute.reservation.service.AuthService;
 import com.hcmute.reservation.service.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +25,6 @@ public class AuthServiceImpl implements AuthService {
 
     private final CustomerRepository customerRepository;
     private final IPasswordHasher passwordHasher;
-    private final JwtUtil jwtUtil;
     private final EmailService emailService;
 
     private final Map<String, Boolean> tokenApprovalMap = new ConcurrentHashMap<>();
@@ -92,15 +90,19 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordHasher.matches(req.getPassword(), customer.getPasswordHash())) {
             throw new UnauthorizedException("Email hoặc mật khẩu không đúng.");
         }
-        String token = jwtUtil.generateToken(customer.getEmail(), customer.getCustomerId());
-        return new LoginResponse(token, customer.getCustomerId(), customer.getName(), customer.getEmail(), customer.getPhone());
+        return LoginResponse.builder()
+                .token("SESSION_MANAGED")
+                .customerId(customer.getCustomerId())
+                .name(customer.getName())
+                .email(customer.getEmail())
+                .phone(customer.getPhone())
+                .build();
     }
 
     @Override
     @Transactional
     public String forgotPassword(ForgotPasswordRequest req) {
         String token = UUID.randomUUID().toString();
-        // Trả về im lặng nếu không có email (Best practice bảo mật tránh lộ thông tin người dùng)
         customerRepository.findByEmail(req.getEmail()).ifPresent(customer -> {
             customer.setResetToken(token);
             customer.setResetTokenExpiresAt(LocalDateTime.now().plusMinutes(10));
@@ -127,8 +129,6 @@ public class AuthServiceImpl implements AuthService {
         customerRepository.save(customer);
     }
 
-    // --- Các hàm Getter & Quản lý Map ---
-
     @Override public void approveVerification(String token) { verifyApprovalMap.put(token, true); }
     @Override public boolean isVerificationApproved(String token) { return verifyApprovalMap.getOrDefault(token, false); }
     @Override public void removeVerificationApproval(String token) { verifyApprovalMap.remove(token); }
@@ -150,12 +150,23 @@ public class AuthServiceImpl implements AuthService {
 
     @Override public String getBaseUrl() { return baseUrl; }
 
+    @Override
+    public LoginResponse getCustomerInfo(Long customerId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng."));
+        return LoginResponse.builder()
+                .customerId(customer.getCustomerId())
+                .name(customer.getName())
+                .email(customer.getEmail())
+                .phone(customer.getPhone())
+                .build();
+    }
+
     private String handleExistingUnverifiedCustomer(Customer c, RegisterRequest req, String token, LocalDateTime expiresAt) {
         if (c.getIsVerified()) {
             throw new ConflictException("Email đã được đăng ký: " + req.getEmail());
         }
 
-        // Cập nhật thông tin nếu account chưa có password hash (Đăng ký dở dang)
         if (c.getPasswordHash() == null) {
             c.setName(req.getName());
             c.setPhone(req.getPhone());
@@ -188,7 +199,6 @@ public class AuthServiceImpl implements AuthService {
 
     private void checkVerificationStatus(Customer customer) {
         if (!customer.getIsVerified()) {
-            // Tự động gửi lại nếu token hết hạn
             if (customer.getVerificationTokenExpiresAt() != null &&
                     customer.getVerificationTokenExpiresAt().isBefore(LocalDateTime.now())) {
                 resendVerification(customer.getEmail());

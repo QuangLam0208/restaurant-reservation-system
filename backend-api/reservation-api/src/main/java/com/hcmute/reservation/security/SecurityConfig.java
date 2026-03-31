@@ -22,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final AuthFilter authFilter;
+    private final SessionAuthFilter sessionAuthFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -34,7 +34,11 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(s -> s
+                    .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                    .maximumSessions(1)
+            )
+            .addFilterBefore(sessionAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 // ── Public: OPTIONS preflight ─────────────────────────────────────
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -87,8 +91,7 @@ public class SecurityConfig {
 
                 // ── Any authenticated user ────────────────────────────────────────
                 .anyRequest().authenticated()
-            )
-            .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
+            );
 
         return http.build();
     }
@@ -96,9 +99,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Staff-Token"));
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

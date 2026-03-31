@@ -12,9 +12,17 @@
 <header id="main-header">
     <a href="index.html" class="logo">SAN-LORENZO</a>
     <nav class="nav-links">
-        <a href="#about" class="nav-link">About</a>
+        <a href="index.html#about" class="nav-link">About</a>
+        <a href="reservation.html" class="nav-link btn-reserve-header">Reserve</a>
+        
+        <!-- Nhóm hiển thị khi chưa đăng nhập (Sẽ được JS điều khiển) -->
         <a href="#" class="nav-link auth-action-btn" id="header-auth-btn" style="color: var(--gold); font-weight: bold;">Login</a>
-        <a href="#" class="nav-link hidden" id="logout-btn">Logout</a>
+        
+        <!-- Nhóm hiển thị khi đã đăng nhập (Sẽ được JS điều khiển) -->
+        <div id="nav-auth-group" class="nav-auth-group" style="display: none;">
+            <span class="nav-link user-hi" id="user-greeting">Hi, Guest</span>
+            <a href="#" class="nav-link" id="logout-btn">Sign Out</a>
+        </div>
     </nav>
 </header>
 
@@ -24,7 +32,7 @@
     <div class="container hero-content fade-in">
         <span class="hero-subtitle">Restaurant & Bar</span>
         <h1>SAN-LORENZO</h1>
-        <p style="font-size: 1.25rem;">Experience culinary excellence in a nostalgic Italian atmosphere</p>
+        <p>Experience culinary excellence in a nostalgic Italian atmosphere</p>
     </div>
 </section>
 
@@ -65,9 +73,9 @@
         <p style="margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
             Secure your table today and let us treat you to the finest Italian dining.
         </p>
-        <button class="btn auth-action-btn" style="font-size: 1.2rem; padding: 16px 40px;">
+        <a href="reservation.html" class="btn" style="font-size: 1.2rem; padding: 16px 40px; display: inline-block;">
             Book Your Table Now
-        </button>
+        </a>
     </div>
 </section>
 
@@ -94,6 +102,25 @@
         </div>
     </div>
 </footer>
+
+    <!-- MY BOOKINGS MODAL (Đồng bộ với trang reservation) -->
+    <div id="bookings-modal" class="modal-overlay hidden" style="z-index: 2000;">
+        <div class="modal-container fade-in appear" style="max-width: 500px;">
+            <button class="close-btn" id="close-bookings-btn">&times;</button>
+            <div class="form-card" style="margin: 0; box-shadow: none; background: transparent;">
+                <h3 class="section-title" style="font-size: 24px; font-style: italic; margin-bottom: 24px; border-bottom: 1px solid var(--parchment); padding-bottom: 12px;">Your Reservations</h3>
+                
+                <div class="modal-tabs" style="display: flex; gap: 32px; border-bottom: 1px solid var(--parchment); margin-bottom: 24px;">
+                    <button class="tab-btn active" id="tab-upcoming">Upcoming</button>
+                    <button class="tab-btn" id="tab-history">History</button>
+                </div>
+
+                <div id="bookings-list" class="booking-list" style="max-height: 400px; overflow-y: auto;">
+                    <p class="empty-state">Loading your reservations...</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <div id="login-modal" class="modal-overlay hidden">
     <div class="modal-container fade-in appear">
