@@ -18,15 +18,17 @@ export function initHeaderScroll() {
 
 // Hàm cập nhật chữ ở Header khi Login/Logout
 export function updateHeaderAuthUI(isLoggedIn) {
-    const headerAuthBtn = document.getElementById("header-auth-btn");
-    const logoutBtn = document.getElementById("logout-btn");
+    const authBtn = document.getElementById("header-auth-btn");
+    const authGroup = document.getElementById("nav-auth-group");
+    const greeting = document.getElementById("user-greeting");
 
     if (isLoggedIn) {
         const userName = localStorage.getItem("userName");
-        if (headerAuthBtn) headerAuthBtn.innerText = userName ? `Hi, ${userName}` : "Book a Table";
-        if (logoutBtn) logoutBtn.classList.remove("hidden");
+        if (authBtn) authBtn.style.display = "none";
+        if (authGroup) authGroup.style.display = "flex";
+        if (greeting) greeting.textContent = userName ? `Hi, ${userName}` : "Hi, Guest";
     } else {
-        if (headerAuthBtn) headerAuthBtn.innerText = "Login";
-        if (logoutBtn) logoutBtn.classList.add("hidden");
+        if (authBtn) authBtn.style.display = "flex";
+        if (authGroup) authGroup.style.display = "none";
     }
 }

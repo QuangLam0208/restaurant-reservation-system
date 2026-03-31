@@ -1,38 +1,203 @@
+/* ═══════════════════════════════════════════════════════════════
+   EXPLODING PREMIUM HEADER — San-Lorenzo Final Version
+   ═══════════════════════════════════════════════════════════════ */
+
 header {
     position: fixed;
     top: 0; left: 0; right: 0;
-    z-index: 100;
-    padding: 20px 0;
-    transition: var(--transition-smooth);
-}
-header.scrolled {
-    background-color: rgba(245, 241, 235, 0.95);
-    backdrop-filter: blur(8px);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-.header-content {
+    z-index: 1000;
+    padding: 28px 52px;
+    height: 90px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    background: transparent;
 }
+
+/* Gradient Guard: Làm tối đỉnh trang để chữ trắng luôn nổi bật */
+header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 140%;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.2) 60%, transparent 100%);
+    z-index: -1;
+    opacity: 1;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+}
+
+header.scrolled::before,
+header.header-solid::before {
+    opacity: 0;
+}
+
+/* Base Styles for Scrolled/Solid States */
+header.scrolled,
+header.header-solid {
+    padding: 16px 52px;
+    height: 74px;
+    background: rgba(251, 248, 244, 1);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border-bottom: 1px solid rgba(163, 131, 84, 0.15);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* Logo Styling */
 .logo {
+    font-family: 'Cormorant Garamond', serif;
     font-size: 24px;
-    letter-spacing: 0.3em;
-    color: var(--white);
+    font-weight: 500;
+    letter-spacing: 0.45em;
+    color: #FFFFFF;
     text-decoration: none;
-    transition: var(--transition-smooth);
+    text-transform: uppercase;
+    transition: all 0.5s ease;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
+
 header.scrolled .logo,
-header.scrolled .nav-link {
-    color: var(--text-dark);
+header.header-solid .logo {
+    color: #1C1814;
+    font-size: 21px;
+    text-shadow: none;
 }
-.nav-links { display: none; gap: 32px; align-items: center; }
-@media (min-width: 768px) { .nav-links { display: flex; } }
+
+/* Navigation Links */
+.nav-links {
+    display: flex;
+    gap: 44px;
+    align-items: center;
+}
 
 .nav-link {
-    color: var(--white);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #FFFFFF;
     text-decoration: none;
-    font-size: 14px;
-    transition: var(--transition-smooth);
+    position: relative;
+    padding: 8px 0;
+    transition: all 0.4s ease;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
-.nav-link:hover { opacity: 0.7; }
+
+header.scrolled .nav-link,
+header.header-solid .nav-link {
+    color: #A39485;
+    text-shadow: none;
+}
+
+header.header-solid .nav-link.btn-reserve-header,
+header.scrolled .nav-link.btn-reserve-header {
+    color: #FFFFFF !important;
+}
+
+/* Micro-animation: Slide underline */
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: #CDB17A;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-link:hover {
+    color: #CDB17A !important;
+    transform: translateY(-1px);
+}
+
+.nav-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+/* Auth Group */
+.nav-auth-group {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    margin-left: 16px;
+    padding-left: 32px;
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+header.scrolled .nav-auth-group,
+header.header-solid .nav-auth-group {
+    border-left-color: rgba(163, 131, 84, 0.2);
+}
+
+.user-hi {
+    color: #CDB17A !important;
+    font-weight: 700;
+}
+
+/* ──────────────────────────────────────────────────────────
+   PREMIUM GOLD BUTTON WITH SHIMMER SWEEP
+   ────────────────────────────────────────────────────────── */
+.btn-reserve-header {
+    background: linear-gradient(135deg, #A38354 0%, #CDB17A 100%);
+    color: #FFFFFF !important;
+    padding: 13px 32px !important;
+    border-radius: 100px;
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.25em !important;
+    border: none;
+    box-shadow: 0 6px 20px rgba(163, 131, 84, 0.4);
+    overflow: hidden; /* Quan trọng cho hiệu ứng Shimmer */
+    position: relative;
+    text-shadow: none !important;
+}
+
+/* Hiệu ứng Shimmer (Ánh sáng lướt qua) */
+.btn-reserve-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-25deg);
+    transition: none;
+    animation: shimmer-sweep 4s infinite;
+}
+
+@keyframes shimmer-sweep {
+    0% { left: -100%; }
+    20% { left: 150%; }
+    100% { left: 150%; }
+}
+
+.btn-reserve-header:hover {
+    transform: translateY(-3px) scale(1.03) !important;
+    box-shadow: 0 10px 30px rgba(163, 131, 84, 0.6);
+    filter: brightness(1.1);
+}
+
+.btn-reserve-header::after { display: none; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+    header, header.scrolled { padding-left: 24px; padding-right: 24px; }
+    .nav-links { gap: 28px; }
+}
+
+@media (max-width: 860px) {
+    .nav-links a:not(.btn-reserve-header):not(.logo) {
+        display: none;
+    }
+}

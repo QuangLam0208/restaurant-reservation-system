@@ -1,4 +1,6 @@
 import { callApi, getStoredUser, clearUser } from '../common/api.js';
+import { initAuth } from '../features/auth.js';
+import { openBookingsModal, closeBookingsModal, switchBookingTab, cancelMyBooking } from '../features/my-bookings.js';
 
 const S = { party:2, date:null, dateStr:null, time:null, week:0, MAX_W:4, reservationId: null };
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -7,7 +9,6 @@ const today  = new Date(); today.setHours(0,0,0,0);
 const dow = today.getDay(), toMon = dow===0?6:dow-1;
 const thisMonday = new Date(today); thisMonday.setDate(today.getDate()-toMon);
 
-let myBookingsList = [];
 let countdownInterval = null;
 let timeLeft = 300; // 5 phút = 300 giây
 
@@ -22,6 +23,7 @@ window.backToBooking = backToBooking;
 window.confirmReservation = confirmReservation;
 window.openBookingsModal = openBookingsModal;
 window.closeBookingsModal = closeBookingsModal;
+window.switchBookingTab = switchBookingTab;
 window.cancelMyBooking = cancelMyBooking;
 
 // ─── LÔ-GIC TIMER ───
@@ -65,76 +67,6 @@ function updateTimerDisplay() {
         pill.style.background = 'var(--gold-pale)';
         prog.style.stroke = 'var(--gold)';
         text.style.color = 'var(--gold)';
-    }
-}
-
-// ─── LÔ-GIC MY BOOKINGS ───
-async function openBookingsModal() {
-    const listHtml = document.getElementById('bookings-list');
-    listHtml.innerHTML = '<div class="loading-bookings">Loading your reservations...</div>';
-    document.getElementById('bookings-modal').classList.add('open');
-
-    const { ok, status, data: reservations } = await callApi('/reservations/my');
-
-    if (!ok) {
-        listHtml.innerHTML = `<p class="error-state">Failed to load reservations. (Error: ${status})</p>`;
-        return;
-    }
-
-    if (!reservations || reservations.length === 0) {
-        listHtml.innerHTML = '<p class="empty-state">You have no reservations yet.</p>';
-        return;
-    }
-
-    listHtml.innerHTML = '';
-    const now = new Date();
-    
-    reservations.forEach(r => {
-        const start = new Date(r.startTime);
-        const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
-        const timeStr = r.startTime.split('T')[1].substring(0, 5);
-        
-        // Điều kiện hủy: Phải là RESERVED và cách hiện tại ít nhất 3 tiếng
-        const canCancel = r.status === 'RESERVED' && (start.getTime() - now.getTime() > 3 * 60 * 60 * 1000);
-
-        let statusClass = 'st-default';
-        if (r.status === 'RESERVED') statusClass = 'st-reserved';
-        if (r.status === 'CANCELLED' || r.status === 'NO_SHOW') statusClass = 'st-cancelled';
-        if (r.status === 'COMPLETED' || r.status === 'SEATED') statusClass = 'st-completed';
-
-        listHtml.innerHTML += `
-        <div class="booking-item">
-          <div class="b-header">
-            <p class="b-ref">#${r.reservationId}</p>
-            <span class="status-badge ${statusClass}">${r.status}</span>
-          </div>
-          <div class="b-body">
-            <p class="b-detail"><strong>Date:</strong> ${dateStr} at ${timeStr}</p>
-            <p class="b-detail"><strong>Guests:</strong> ${r.guestCount} people</p>
-            ${r.note ? `<p class="b-note">"${r.note}"</p>` : ''}
-          </div>
-          <div class="b-footer">
-            ${canCancel ? `<button class="btn-cancel-small" onclick="cancelMyBooking(${r.reservationId})">Cancel Reservation</button>` : ''}
-            ${r.status === 'RESERVED' && !canCancel ? '<span class="cancel-deadline">Cancellation closed (within 3h)</span>' : ''}
-          </div>
-        </div>
-      `;
-    });
-}
-
-function closeBookingsModal() {
-    document.getElementById('bookings-modal').classList.remove('open');
-}
-
-async function cancelMyBooking(id) {
-    if (!confirm(`Are you sure you want to cancel reservation #${id}?`)) return;
-
-    const { ok, data } = await callApi(`/reservations/${id}`, 'DELETE');
-    if (ok) {
-        alert("Reservation cancelled successfully.");
-        openBookingsModal(); // Refresh list
-    } else {
-        alert(data?.message || "Failed to cancel reservation.");
     }
 }
 
@@ -358,7 +290,34 @@ async function confirmReservation(){
 }
 
 // ─── KHỞI TẠO DOM ───
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Xác thực session thực tế với Backend (Quan trọng để tránh Stale UI)
+    await initAuth();
+
+    // 2. Sau khi initAuth hoàn tất, kiểm tra quyền truy cập để bảo vệ Route
+    const user = getStoredUser();
+    if (!user.customerId) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // 3. Quản lý sự kiện cho My Bookings
+    const viewBookingsLink = document.getElementById('view-bookings-link');
+    if (viewBookingsLink) {
+        viewBookingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            openBookingsModal();
+        });
+    }
+
+    const tabUpcoming = document.getElementById('tab-upcoming');
+    const tabHistory = document.getElementById('tab-history');
+    if (tabUpcoming) tabUpcoming.onclick = () => switchBookingTab('upcoming');
+    if (tabHistory) tabHistory.onclick = () => switchBookingTab('history');
+
+    const closeBookingsBtn = document.getElementById('close-bookings-btn');
+    if (closeBookingsBtn) closeBookingsBtn.onclick = closeBookingsModal;
+
     // Gắn sự kiện các nút
     const pInput = document.getElementById('party-val');
     if(pInput) {

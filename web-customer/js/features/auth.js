@@ -94,8 +94,23 @@ async function checkUrlActions() {
 // ═══════════════════════════════════════════════════════════════
 // HÀM KHỞI TẠO AUTH — Gắn event listener cho tất cả form
 // ═══════════════════════════════════════════════════════════════
-export function initAuth() {
-    updateHeaderAuthUI(checkIsLoggedIn());
+export async function initAuth() {
+    const isLoggedIn = checkIsLoggedIn();
+    updateHeaderAuthUI(isLoggedIn);
+
+    // XÁC THỰC SESSION THẬT (Sync with Backend)
+    if (isLoggedIn) {
+        const { ok, status, data } = await callApi("/auth/me", "GET");
+        if (!ok && (status === 401 || status === 403)) {
+            console.warn("Session expired on backend. Clearing local auth state.");
+            clearUser();
+            updateHeaderAuthUI(false);
+        } else if (ok && data) {
+            // Cập nhật lại thông tin mới nhất (optional)
+            saveUser(data); 
+            updateHeaderAuthUI(true);
+        }
+    }
 
     // Kiểm tra URL có chứa token verify-email hoặc reset-password không
     checkUrlActions();
@@ -401,8 +416,16 @@ export function initAuth() {
     // ─────────────────────────────────────────────────────────
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
-        logoutBtn.addEventListener("click", (e) => {
+        logoutBtn.addEventListener("click", async (e) => {
             e.preventDefault();
+            
+            // Goị API logout để xoá session trên server
+            try {
+                await callApi("/auth/logout", "POST");
+            } catch (err) {
+                console.error("Logout API failed:", err);
+            }
+
             clearUser();
             updateHeaderAuthUI(false);
             if (window.location.pathname.includes("reservation.html")) {
