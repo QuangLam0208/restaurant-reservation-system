@@ -3,6 +3,7 @@ package com.hcmute.reservation.service.impl;
 import com.hcmute.reservation.model.dto.report.DailyReservationReport;
 import com.hcmute.reservation.model.dto.report.NoShowRateResponse;
 import com.hcmute.reservation.exception.BadRequestException;
+import com.hcmute.reservation.model.enums.ReservationType;
 import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.service.ReportService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.hcmute.reservation.model.enums.ReservationStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -51,10 +54,16 @@ public class ReportServiceImpl implements ReportService {
         LocalDateTime fromDt = from.atStartOfDay();
         LocalDateTime toDt = to.atTime(LocalTime.MAX);
 
-        long totalOnline = reservationRepository.countTotalOnlineForServiceDate(fromDt, toDt);
-        long totalWalkIn = reservationRepository.countTotalWalkInForServiceDate(fromDt, toDt);
+        long totalOnline = reservationRepository.countReservations(
+                fromDt, toDt, ReservationType.ONLINE, List.of(RESERVED, SEATED, COMPLETED, NO_SHOW));
+
+        long totalWalkIn = reservationRepository.countReservations(
+                fromDt, toDt, ReservationType.WALK_IN, List.of(SEATED, COMPLETED));
+
         long totalAll = totalOnline + totalWalkIn;
-        long noShows = reservationRepository.countNoShowsForServiceDate(fromDt, toDt);
+
+        long noShows = reservationRepository.countReservations(
+                fromDt, toDt, ReservationType.ONLINE, List.of(NO_SHOW));
         double rate = totalOnline == 0 ? 0.0
                 : Math.round((double) noShows / totalOnline * 10000.0) / 100.0;
         return new NoShowRateResponse(totalOnline, totalWalkIn, totalAll, noShows, rate);

@@ -2,6 +2,7 @@ package com.hcmute.reservation.repository;
 
 import com.hcmute.reservation.model.entity.Reservation;
 import com.hcmute.reservation.model.enums.ReservationStatus;
+import com.hcmute.reservation.model.enums.ReservationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -58,29 +59,14 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
            "WHERE r.startTime BETWEEN :from AND :to GROUP BY DATE(r.startTime) ORDER BY DATE(r.startTime)")
     List<Object[]> countScheduledByDate(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
-    @Query(value = "SELECT COUNT(*) FROM reservation " +
-            "WHERE type = 'ONLINE' " +
-            "AND status IN ('RESERVED', 'SEATED', 'COMPLETED', 'NO_SHOW') " +
-            "AND start_time BETWEEN :from AND :to",
-            nativeQuery = true)
-    long countTotalOnlineForServiceDate(@Param("from") LocalDateTime from,
-                                        @Param("to") LocalDateTime to);
-
-    @Query(value = "SELECT COUNT(*) FROM reservation " +
-            "WHERE type = 'WALK_IN' " +
-            "AND status IN ('SEATED', 'COMPLETED') " +
-            "AND start_time BETWEEN :from AND :to",
-            nativeQuery = true)
-    long countTotalWalkInForServiceDate(@Param("from") LocalDateTime from,
-                                        @Param("to") LocalDateTime to);
-
-    @Query(value = "SELECT COUNT(*) FROM reservation " +
-            "WHERE type = 'ONLINE' " +
-            "AND status = 'NO_SHOW' " +
-            "AND start_time BETWEEN :from AND :to",
-            nativeQuery = true)
-    long countNoShowsForServiceDate(@Param("from") LocalDateTime from,
-                                    @Param("to") LocalDateTime to);
+    @Query("SELECT COUNT(r) FROM Reservation r " +
+            "WHERE (:type IS NULL OR r.type = :type) " +
+            "AND (:#{#statuses == null} = true OR r.status IN :statuses) " +
+            "AND r.startTime BETWEEN :from AND :to")
+    long countReservations(@Param("from") LocalDateTime from,
+                           @Param("to") LocalDateTime to,
+                           @Param("type") ReservationType type,
+                           @Param("statuses") List<ReservationStatus> statuses);
 
     @Query("SELECT DISTINCT m.tableInfo.tableId FROM ReservationTableMapping m " +
            "WHERE m.reservation.status IN ('CREATED','PENDING_PAYMENT','RESERVED','SEATED') " +
