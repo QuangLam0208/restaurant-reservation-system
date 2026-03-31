@@ -1,20 +1,48 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace reservation_winforms.Forms
 {
     public partial class OverrideDialog : Form
     {
+        public string Reason { get; private set; }
+
         public OverrideDialog()
         {
             InitializeComponent();
+
+            btnConfirm.Click += BtnConfirm_Click;
+            btnCancel.Click += BtnCancel_Click;
+
+            this.AcceptButton = btnConfirm;
+            this.CancelButton = btnCancel;
+        }
+
+        public void SetWarningMessage(string message)
+        {
+            lblWarning.Text = message;
+        }
+
+        private void BtnConfirm_Click(object sender, EventArgs e)
+        {
+            string inputReason = txtReason.Text.Trim();
+
+            if (string.IsNullOrEmpty(inputReason))
+            {
+                MessageBox.Show("Vui lòng nhập lý do cưỡng chế ghi đè (Override)!", "Bắt buộc nhập", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtReason.Focus();
+                return;
+            }
+
+            this.Reason = inputReason;
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
+
+        private void BtnCancel_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
+            this.Close();
         }
     }
 }

@@ -13,7 +13,7 @@ namespace reservation_winforms.DTO.table
         public int Capacity { get; set; }
 
         [JsonProperty("availability")]
-        public string Availability { get; set; } // Trả về "FULL_AVAILABLE" hoặc "PARTIAL_AVAILABLE"
+        public string Availability { get; set; } // "FULL_AVAILABLE" hoặc "PARTIAL_AVAILABLE"
 
         [JsonProperty("availableUntil")]
         public DateTime? AvailableUntil { get; set; }

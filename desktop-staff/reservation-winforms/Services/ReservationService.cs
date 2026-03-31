@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq; // Thêm thư viện này để đọc JSON
 using reservation_winforms.DTO;
 using reservation_winforms.DTO.reservation;
 using System;
@@ -11,6 +12,25 @@ namespace reservation_winforms.Services
 {
     public class ReservationService
     {
+        private string GetErrorMessage(string jsonContent)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(jsonContent)) return "Lỗi không xác định từ máy chủ.";
+
+                var jObject = JObject.Parse(jsonContent);
+
+                if (jObject["message"] != null) return jObject["message"].ToString();
+
+                if (jObject["error"] != null) return jObject["error"].ToString();
+            }
+            catch
+            {
+                if (jsonContent.Length > 100) return jsonContent.Substring(0, 100) + "...";
+            }
+            return jsonContent;
+        }
+
         // 1. Gửi yêu cầu gợi ý (Soft-lock bàn) cho khách Walk-in
         public async Task<(bool IsSuccess, WalkInSuggestionResponse Data, string Message)> SuggestWalkInAsync(WalkInRequest request)
         {
@@ -19,7 +39,6 @@ namespace reservation_winforms.Services
                 ApiClient.AttachToken();
                 var jsonContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
                 var response = await ApiClient.Client.PostAsync($"{ApiClient.BaseUrl}/reservations/walk-in/suggest", jsonContent);
-
                 var contentString = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -27,8 +46,7 @@ namespace reservation_winforms.Services
                     var data = JsonConvert.DeserializeObject<WalkInSuggestionResponse>(contentString);
                     return (true, data, "Gợi ý thành công");
                 }
-
-                return (false, null, contentString);
+                return (false, null, GetErrorMessage(contentString));
             }
             catch (Exception ex) { return (false, null, $"Lỗi kết nối: {ex.Message}"); }
         }
@@ -42,7 +60,8 @@ namespace reservation_winforms.Services
                 var response = await ApiClient.Client.PostAsync($"{ApiClient.BaseUrl}/reservations/walk-in/confirm/{suggestionId}", null);
                 var contentString = await response.Content.ReadAsStringAsync();
 
-                return (response.IsSuccessStatusCode, contentString);
+                if (response.IsSuccessStatusCode) return (true, "Xác nhận thành công");
+                return (false, GetErrorMessage(contentString));
             }
             catch (Exception ex) { return (false, $"Lỗi kết nối: {ex.Message}"); }
         }
@@ -71,14 +90,14 @@ namespace reservation_winforms.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var data = JsonConvert.DeserializeObject<WalkInOptionResponse>(contentString);
-                    return (true, data, "Lấy danh sách tùy chọn thành công");
+                    return (true, data, "Thành công");
                 }
-                return (false, null, contentString);
+                return (false, null, GetErrorMessage(contentString));
             }
             catch (Exception ex) { return (false, null, $"Lỗi kết nối: {ex.Message}"); }
         }
 
-        // 5. Lấy danh sách đơn đặt trước Online (Truyền 1440 phút để tìm trong vòng 24h)
+        // 5. Lấy danh sách đơn đặt trước Online
         public async Task<(bool IsSuccess, List<ReservationResponse> Data, string Message)> GetUpcomingReservationsAsync(int minutes = 1440)
         {
             try
@@ -90,7 +109,7 @@ namespace reservation_winforms.Services
                 if (response.IsSuccessStatusCode)
                     return (true, JsonConvert.DeserializeObject<List<ReservationResponse>>(contentString), "Thành công");
 
-                return (false, null, contentString);
+                return (false, null, GetErrorMessage(contentString));
             }
             catch (Exception ex) { return (false, null, $"Lỗi: {ex.Message}"); }
         }
@@ -102,7 +121,10 @@ namespace reservation_winforms.Services
             {
                 ApiClient.AttachToken();
                 var response = await ApiClient.Client.PostAsync($"{ApiClient.BaseUrl}/reservations/{reservationId}/check-in", null);
-                return (response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+                var contentString = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode) return (true, "Check-in thành công");
+                return (false, GetErrorMessage(contentString));
             }
             catch (Exception ex) { return (false, $"Lỗi: {ex.Message}"); }
         }
@@ -122,12 +144,12 @@ namespace reservation_winforms.Services
                 if (response.IsSuccessStatusCode)
                     return (true, JsonConvert.DeserializeObject<ReservationResponse>(resContent), "Thành công");
 
-                return (false, null, resContent);
+                return (false, null, GetErrorMessage(resContent));
             }
             catch (Exception ex) { return (false, null, $"Lỗi kết nối: {ex.Message}"); }
         }
 
-        // 8. Lấy danh sách các đơn đang ở trạng thái SEATED (Đang ăn)
+        // 8. Lấy danh sách các đơn đang ở trạng thái SEATED
         public async Task<(bool IsSuccess, List<ReservationResponse> Data, string Message)> GetActiveReservationsAsync()
         {
             try
@@ -139,22 +161,22 @@ namespace reservation_winforms.Services
                 if (response.IsSuccessStatusCode)
                     return (true, JsonConvert.DeserializeObject<List<ReservationResponse>>(contentString), "Thành công");
 
-                return (false, null, contentString);
+                return (false, null, GetErrorMessage(contentString));
             }
             catch (Exception ex) { return (false, null, $"Lỗi: {ex.Message}"); }
         }
 
-        // 9. Gọi API Check-out (Thanh toán & Trả bàn)
+        // 9. Gọi API Check-out
         public async Task<(bool IsSuccess, string Message)> CheckOutAsync(long reservationId)
         {
             try
             {
                 ApiClient.AttachToken();
-                // API của bạn không cần body nên truyền null
                 var response = await ApiClient.Client.PostAsync($"{ApiClient.BaseUrl}/reservations/{reservationId}/check-out", null);
                 var contentString = await response.Content.ReadAsStringAsync();
 
-                return (response.IsSuccessStatusCode, contentString);
+                if (response.IsSuccessStatusCode) return (true, "Thanh toán thành công");
+                return (false, GetErrorMessage(contentString));
             }
             catch (Exception ex) { return (false, $"Lỗi kết nối: {ex.Message}"); }
         }

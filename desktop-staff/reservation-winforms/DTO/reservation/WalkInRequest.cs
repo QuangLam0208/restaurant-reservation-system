@@ -22,7 +22,7 @@ namespace reservation_winforms.DTO.reservation
         public DateTime? EndTime { get; set; }
 
         [JsonProperty("tableId")]
-        public List<long> TableId { get; set; } // Hỗ trợ chọn nhiều bàn ghép lại
+        public List<long> TableId { get; set; }
 
         [JsonProperty("mergeTables")]
         public bool MergeTables { get; set; }

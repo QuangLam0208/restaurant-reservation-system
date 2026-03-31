@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
-using reservation_winforms.Services; // Chứa ApiService
+using reservation_winforms.Services;
 
 namespace reservation_winforms.Forms
 {
@@ -36,7 +36,6 @@ namespace reservation_winforms.Forms
             btnRegister.Text = "Đang xử lý...";
             lblMessage.Text = "";
 
-            // Gọi hàm đăng ký mà chúng ta đã viết ban nãy
             var response = await _authService.RegisterStaffAsync(user, pass, role);
 
             btnRegister.Enabled = true;
@@ -56,7 +55,6 @@ namespace reservation_winforms.Forms
 
         private void BtnCancel_Click(object sender, EventArgs e)
         {
-            // Xóa rỗng các ô nhập liệu
             txtUsername.Clear();
             txtPassword.Clear();
             lblMessage.Text = "";

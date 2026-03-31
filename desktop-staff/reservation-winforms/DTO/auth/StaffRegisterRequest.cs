@@ -11,6 +11,6 @@ namespace reservation_winforms.DTO.auth
         public string Password { get; set; }
 
         [JsonProperty("role")]
-        public string Role { get; set; } // Dùng string để hứng Enum UserRole (ví dụ: "RECEPTIONIST" hoặc "MANAGER")
+        public string Role { get; set; } // "RECEPTIONIST" hoặc "MANAGER"
     }
 }

@@ -11,7 +11,7 @@ namespace reservation_winforms.DTO.table
         public int Capacity { get; set; }
 
         [JsonProperty("status")]
-        public string Status { get; set; } // Nhận Enum TableStatus (AVAILABLE, OCCUPIED...)
+        public string Status { get; set; }
 
         [JsonProperty("active")]
         public bool IsActive { get; set; }

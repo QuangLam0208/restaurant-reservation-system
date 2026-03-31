@@ -139,6 +139,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ApiClient.cs" />
     <Compile Include="Services\AuthService.cs" />
+    <Compile Include="Services\OverrideService.cs" />
     <Compile Include="Services\ReportService.cs" />
     <Compile Include="Services\ReservationService.cs" />
     <Compile Include="Services\TableService.cs" />
@@ -147,6 +148,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\MainDashboardForm.resx">
       <DependentUpon>MainDashboardForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\OverrideDialog.resx">
+      <DependentUpon>OverrideDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\UcRegister.resx">
       <DependentUpon>UcRegister.cs</DependentUpon>

@@ -14,10 +14,18 @@ namespace reservation_winforms.Services
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(jsonContent)) return "Lỗi không xác định từ máy chủ.";
+
                 var jObject = JObject.Parse(jsonContent);
+
                 if (jObject["message"] != null) return jObject["message"].ToString();
+
+                if (jObject["error"] != null) return jObject["error"].ToString();
             }
-            catch { }
+            catch
+            {
+                if (jsonContent.Length > 100) return jsonContent.Substring(0, 100) + "...";
+            }
             return jsonContent;
         }
 
@@ -36,7 +44,8 @@ namespace reservation_winforms.Services
         {
             return await GetChartDataAsync($"reservations-by-year?from={from}&to={to}");
         }
-        private async Task<(bool, List<DailyReservationReport>, string)> GetChartDataAsync(string endpoint)
+
+        private async Task<(bool IsSuccess, List<DailyReservationReport> Data, string Message)> GetChartDataAsync(string endpoint)
         {
             try
             {
@@ -45,13 +54,18 @@ namespace reservation_winforms.Services
                 var content = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
-                    return (true, JsonConvert.DeserializeObject<List<DailyReservationReport>>(content), "Thành công");
+                {
+                    var data = JsonConvert.DeserializeObject<List<DailyReservationReport>>(content);
+                    return (true, data, "Thành công");
+                }
 
                 return (false, null, GetErrorMessage(content));
             }
-            catch (Exception ex) { return (false, null, $"Lỗi: {ex.Message}"); }
+            catch (Exception ex)
+            {
+                return (false, null, $"Lỗi kết nối: {ex.Message}");
+            }
         }
-
 
         // 2. Lấy dữ liệu Tỷ lệ Khách bùng bàn (No-show)
         public async Task<(bool IsSuccess, NoShowRateResponse Data, string Message)> GetNoShowRateAsync(string from, string to)
@@ -68,7 +82,8 @@ namespace reservation_winforms.Services
         {
             return await GetRateDataAsync($"no-show-rate-by-year?from={from}&to={to}");
         }
-        private async Task<(bool, NoShowRateResponse, string)> GetRateDataAsync(string endpoint)
+
+        private async Task<(bool IsSuccess, NoShowRateResponse Data, string Message)> GetRateDataAsync(string endpoint)
         {
             try
             {
@@ -77,11 +92,17 @@ namespace reservation_winforms.Services
                 var content = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
-                    return (true, JsonConvert.DeserializeObject<NoShowRateResponse>(content), "Thành công");
+                {
+                    var data = JsonConvert.DeserializeObject<NoShowRateResponse>(content);
+                    return (true, data, "Thành công");
+                }
 
                 return (false, null, GetErrorMessage(content));
             }
-            catch (Exception ex) { return (false, null, $"Lỗi: {ex.Message}"); }
+            catch (Exception ex)
+            {
+                return (false, null, $"Lỗi kết nối: {ex.Message}");
+            }
         }
     }
 }

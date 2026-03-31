@@ -12,8 +12,8 @@ namespace reservation_winforms.Forms
 
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.lblTitle = new System.Windows.Forms.Label();
             this.pnlFilter = new System.Windows.Forms.Panel();
@@ -289,7 +289,7 @@ namespace reservation_winforms.Forms
             this.btnFilter.Name = "btnFilter";
             this.btnFilter.Size = new System.Drawing.Size(274, 50);
             this.btnFilter.TabIndex = 1;
-            this.btnFilter.Text = "🔍 LỌC DỮ LIỆU";
+            this.btnFilter.Text = "LỌC DỮ LIỆU";
             this.btnFilter.UseVisualStyleBackColor = false;
             // 
             // pnlCards
@@ -437,15 +437,15 @@ namespace reservation_winforms.Forms
             // 
             // chartReservations
             // 
-            chartArea1.Name = "ChartArea1";
-            this.chartReservations.ChartAreas.Add(chartArea1);
+            chartArea2.Name = "ChartArea1";
+            this.chartReservations.ChartAreas.Add(chartArea2);
             this.chartReservations.Location = new System.Drawing.Point(30, 460);
             this.chartReservations.Name = "chartReservations";
-            series1.ChartArea = "ChartArea1";
-            series1.Color = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
-            series1.IsValueShownAsLabel = true;
-            series1.Name = "Đơn đặt bàn";
-            this.chartReservations.Series.Add(series1);
+            series2.ChartArea = "ChartArea1";
+            series2.Color = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            series2.IsValueShownAsLabel = true;
+            series2.Name = "Đơn đặt bàn";
+            this.chartReservations.Series.Add(series2);
             this.chartReservations.Size = new System.Drawing.Size(1470, 520);
             this.chartReservations.TabIndex = 0;
             // 
