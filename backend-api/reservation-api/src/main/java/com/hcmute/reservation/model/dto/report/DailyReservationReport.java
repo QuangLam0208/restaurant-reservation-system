@@ -7,5 +7,8 @@ import lombok.Data;
 @AllArgsConstructor
 public class DailyReservationReport {
     private String date;
-    private long count;
+    private long totalOnline;
+    private long totalWalkIn;
+    private long total;
+    private long noShowCount;
 }

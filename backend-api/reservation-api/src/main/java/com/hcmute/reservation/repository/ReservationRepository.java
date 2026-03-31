@@ -55,9 +55,37 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query("SELECT r FROM Reservation r WHERE r.status = 'SEATED' AND r.endTime < :now")
     List<Reservation> findOverstayed(@Param("now") LocalDateTime now);
 
-    @Query("SELECT DATE(r.startTime), COUNT(r) FROM Reservation r " +
-           "WHERE r.startTime BETWEEN :from AND :to GROUP BY DATE(r.startTime) ORDER BY DATE(r.startTime)")
+    // Group by day
+    @Query("SELECT DATE(r.startTime), " +
+            "SUM(CASE WHEN r.type = 'ONLINE' AND r.status IN ('RESERVED','SEATED','COMPLETED','NO_SHOW') THEN 1 ELSE 0 END), " +
+            "SUM(CASE WHEN r.type = 'WALK_IN' AND r.status IN ('SEATED','COMPLETED') THEN 1 ELSE 0 END), " +
+            "SUM(CASE WHEN r.status = 'NO_SHOW' THEN 1 ELSE 0 END) " +
+            "FROM Reservation r " +
+            "WHERE r.startTime BETWEEN :from AND :to " +
+            "GROUP BY DATE(r.startTime) ORDER BY DATE(r.startTime)")
     List<Object[]> countScheduledByDate(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    // Group by month
+    @Query("SELECT YEAR(r.startTime), MONTH(r.startTime), " +
+            "SUM(CASE WHEN r.type = 'ONLINE' AND r.status IN ('RESERVED','SEATED','COMPLETED','NO_SHOW') THEN 1 ELSE 0 END), " +
+            "SUM(CASE WHEN r.type = 'WALK_IN' AND r.status IN ('SEATED','COMPLETED') THEN 1 ELSE 0 END), " +
+            "SUM(CASE WHEN r.status = 'NO_SHOW' THEN 1 ELSE 0 END) " +
+            "FROM Reservation r " +
+            "WHERE r.startTime BETWEEN :from AND :to " +
+            "GROUP BY YEAR(r.startTime), MONTH(r.startTime) " +
+            "ORDER BY YEAR(r.startTime), MONTH(r.startTime)")
+    List<Object[]> countScheduledByMonth(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    // Group by year
+    @Query("SELECT YEAR(r.startTime), " +
+            "SUM(CASE WHEN r.type = 'ONLINE' AND r.status IN ('RESERVED','SEATED','COMPLETED','NO_SHOW') THEN 1 ELSE 0 END), " +
+            "SUM(CASE WHEN r.type = 'WALK_IN' AND r.status IN ('SEATED','COMPLETED') THEN 1 ELSE 0 END), " +
+            "SUM(CASE WHEN r.status = 'NO_SHOW' THEN 1 ELSE 0 END) " +
+            "FROM Reservation r " +
+            "WHERE r.startTime BETWEEN :from AND :to " +
+            "GROUP BY YEAR(r.startTime) " +
+            "ORDER BY YEAR(r.startTime)")
+    List<Object[]> countScheduledByYear(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
     @Query("SELECT COUNT(r) FROM Reservation r " +
             "WHERE (:type IS NULL OR r.type = :type) " +
