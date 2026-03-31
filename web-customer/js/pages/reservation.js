@@ -1,4 +1,5 @@
 import { callApi, getStoredUser, clearUser } from '../common/api.js';
+import { initAuth } from '../features/auth.js';
 
 const S = { party:2, date:null, dateStr:null, time:null, week:0, MAX_W:4, reservationId: null };
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -8,6 +9,8 @@ const dow = today.getDay(), toMon = dow===0?6:dow-1;
 const thisMonday = new Date(today); thisMonday.setDate(today.getDate()-toMon);
 
 let myBookingsList = [];
+let allReservations = []; // Để lưu trữ dữ liệu tải từ API
+let currentBookingTab = 'upcoming'; // 'upcoming' hoặc 'history'
 let countdownInterval = null;
 let timeLeft = 300; // 5 phút = 300 giây
 
@@ -22,6 +25,7 @@ window.backToBooking = backToBooking;
 window.confirmReservation = confirmReservation;
 window.openBookingsModal = openBookingsModal;
 window.closeBookingsModal = closeBookingsModal;
+window.switchBookingTab = switchBookingTab;
 window.cancelMyBooking = cancelMyBooking;
 
 // ─── LÔ-GIC TIMER ───
@@ -75,26 +79,60 @@ async function openBookingsModal() {
     document.getElementById('bookings-modal').classList.add('open');
 
     const { ok, status, data: reservations } = await callApi('/reservations/my');
+    if (status === 401 || status === 403) {
+        alert("Session expired. Please log in again.");
+        clearUser();
+        window.location.href = 'index.html';
+        return;
+    }
 
     if (!ok) {
         listHtml.innerHTML = `<p class="error-state">Failed to load reservations. (Error: ${status})</p>`;
         return;
     }
 
-    if (!reservations || reservations.length === 0) {
-        listHtml.innerHTML = '<p class="empty-state">You have no reservations yet.</p>';
+    allReservations = reservations || [];
+    renderBookings();
+}
+
+function switchBookingTab(tab) {
+    currentBookingTab = tab;
+    document.getElementById('tab-upcoming').classList.toggle('active', tab === 'upcoming');
+    document.getElementById('tab-history').classList.toggle('active', tab === 'history');
+    renderBookings();
+}
+
+function renderBookings() {
+    const listHtml = document.getElementById('bookings-list');
+    const now = new Date();
+    
+    // Logic phân loại:
+    // Upcoming: Status hơp lệ VÀ thời gian chưa kết thúc (hoặc vừa mới bắt đầu)
+    // History: Status hủy/xong HOẶC thời gian đã qua lâu
+    let filtered = allReservations.filter(r => {
+        const isPastStatus = ['COMPLETED', 'CANCELLED', 'NO_SHOW', 'EXPIRED'].includes(r.status);
+        if (currentBookingTab === 'upcoming') return !isPastStatus;
+        return isPastStatus;
+    });
+
+    // Sort: Upcoming (ASC), History (DESC)
+    filtered.sort((a, b) => {
+        const da = new Date(a.startTime).getTime();
+        const db = new Date(b.startTime).getTime();
+        return currentBookingTab === 'upcoming' ? da - db : db - da;
+    });
+
+    if (filtered.length === 0) {
+        listHtml.innerHTML = `<p class="empty-state">No ${currentBookingTab} reservations found.</p>`;
         return;
     }
 
     listHtml.innerHTML = '';
-    const now = new Date();
-    
-    reservations.forEach(r => {
+    filtered.forEach(r => {
         const start = new Date(r.startTime);
         const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
         const timeStr = r.startTime.split('T')[1].substring(0, 5);
         
-        // Điều kiện hủy: Phải là RESERVED và cách hiện tại ít nhất 3 tiếng
         const canCancel = r.status === 'RESERVED' && (start.getTime() - now.getTime() > 3 * 60 * 60 * 1000);
 
         let statusClass = 'st-default';
@@ -358,7 +396,25 @@ async function confirmReservation(){
 }
 
 // ─── KHỞI TẠO DOM ───
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Xác thực session thực tế với Backend (Quan trọng để tránh Stale UI)
+    await initAuth();
+
+    // 2. Sau khi initAuth hoàn tất, kiểm tra quyền truy cập để bảo vệ Route
+    const user = getStoredUser();
+    if (!user.customerId) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // 3. Cập nhật giao diện (Header) - Đã được initAuth gọi một phần nhưng ở đây đảm bảo ID trên trang này được map đúng
+    const authGroup = document.getElementById('nav-auth-group');
+    const greeting = document.getElementById('user-greeting');
+    if (authGroup && greeting) {
+        greeting.textContent = `Hi, ${user.name || 'Guest'}`;
+        authGroup.style.display = 'flex';
+    }
+
     // Gắn sự kiện các nút
     const pInput = document.getElementById('party-val');
     if(pInput) {

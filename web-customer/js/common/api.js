@@ -14,13 +14,11 @@ const API_BASE_URL = "http://localhost:8081/api";
 export async function callApi(endpoint, method = "GET", body = null) {
     const headers = { "Content-Type": "application/json" };
 
-    // Tự động gắn JWT token nếu có
-    const token = localStorage.getItem("authToken");
-    if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const options = { method, headers };
+    const options = { 
+        method, 
+        headers,
+        credentials: "include" // QUAN TRỌNG: Để trình duyệt gửi Cookie (JSESSIONID) kèm theo
+    };
     if (body) {
         options.body = JSON.stringify(body);
     }

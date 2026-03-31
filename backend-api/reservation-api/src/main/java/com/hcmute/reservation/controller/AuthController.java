@@ -1,7 +1,9 @@
 package com.hcmute.reservation.controller;
 
 import com.hcmute.reservation.model.dto.auth.*;
+import com.hcmute.reservation.security.AppSessionManager;
 import com.hcmute.reservation.service.AuthService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final AppSessionManager sessionManager;
 
     /** POST /api/auth/register */
     @PostMapping("/register")
@@ -67,8 +70,23 @@ public class AuthController {
 
     /** POST /api/auth/login */
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest req) {
-        return ResponseEntity.ok(authService.login(req));
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest req, HttpSession session) {
+        LoginResponse response = authService.login(req);
+        
+        // SRP: Delegate session creation to SessionManager
+        sessionManager.createSession(session, response.getCustomerId(), response.getEmail());
+        
+        // We set token to null or empty since it's no longer used by the client
+        response.setToken("SESSION_MANAGED");
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /** POST /api/auth/logout */
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(HttpSession session) {
+        sessionManager.invalidateSession(session);
+        return ResponseEntity.ok(Map.of("message", "Đã đăng xuất thành công."));
     }
 
     /** POST /api/auth/forgot-password */
@@ -129,5 +147,16 @@ public class AuthController {
             authService.removeVerificationApproval(token);
         }
         return ResponseEntity.ok(Map.of("approved", approved));
+    }
+
+    /** GET /api/auth/me — Lấy thông tin session hiện tại */
+    @GetMapping("/me")
+    public ResponseEntity<LoginResponse> getMe(HttpSession session) {
+        Long customerId = sessionManager.getCustomerId(session);
+        if (customerId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        LoginResponse response = authService.getCustomerInfo(customerId);
+        return ResponseEntity.ok(response);
     }
 }
