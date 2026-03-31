@@ -20,7 +20,7 @@
     <a href="index.html" class="logo">San — Lorenzo</a>
     <nav class="nav-links">
       <a href="index.html" class="nav-link">Home</a>
-      <div id="nav-auth-group" style="display: none;">
+      <div id="nav-auth-group" class="nav-auth-group" style="display: none;">
         <span class="nav-link user-hi" id="user-greeting">Hi, Guest</span>
         <a href="#" class="nav-link" onclick="openBookingsModal(); return false;">My Bookings</a>
         <a href="#" class="nav-link" id="logout-btn">Sign Out</a>
@@ -32,8 +32,15 @@
     <div class="modal-card">
       <button class="close-modal" onclick="closeBookingsModal()">✕</button>
       <h3 class="modal-title">Your Reservations</h3>
+      
+      <div class="modal-tabs">
+        <button class="tab-btn active" id="tab-upcoming" onclick="switchBookingTab('upcoming')">Upcoming</button>
+        <button class="tab-btn" id="tab-history" onclick="switchBookingTab('history')">History</button>
+      </div>
+
       <div id="bookings-list" class="booking-list">
-        <p class="empty-state">You have no upcoming reservations.</p>
+        <!-- Rendered by JS -->
+        <p class="empty-state">Loading your reservations...</p>
       </div>
     </div>
   </div>

@@ -78,6 +78,13 @@ async function openBookingsModal() {
     listHtml.innerHTML = '<div class="loading-bookings">Loading your reservations...</div>';
     document.getElementById('bookings-modal').classList.add('open');
 
+    // Reset về tab Upcoming mỗi khi mở
+    currentBookingTab = 'upcoming';
+    const tabUpcoming = document.getElementById('tab-upcoming');
+    const tabHistory = document.getElementById('tab-history');
+    if (tabUpcoming) tabUpcoming.classList.add('active');
+    if (tabHistory) tabHistory.classList.remove('active');
+
     const { ok, status, data: reservations } = await callApi('/reservations/my');
     if (status === 401 || status === 403) {
         alert("Session expired. Please log in again.");

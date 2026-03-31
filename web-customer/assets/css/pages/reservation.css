@@ -36,7 +36,9 @@ header {
 }
 .logo { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; letter-spacing: 0.35em; color: var(--ink); text-decoration: none; text-transform: uppercase; }
 .nav-links { display: flex; gap: 36px; align-items: center; }
-.nav-link { font-size: 11.5px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color 0.3s var(--ease); }
+.nav-auth-group { display: flex; align-items: center; gap: 24px; }
+.nav-link { font-size: 11.5px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color 0.3s var(--ease); white-space: nowrap; }
+.user-hi { color: var(--gold); border-right: 1px solid var(--parchment); padding-right: 24px; margin-right: 0; }
 .nav-link:hover { color: var(--gold); }
 
 /* HERO BAND */
@@ -254,15 +256,16 @@ textarea.finput { min-height: 96px; resize: vertical; line-height: 1.6; }
 .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: var(--ink); margin-bottom: 20px; font-style: italic; border-bottom: 1px solid var(--parchment); padding-bottom: 16px; }
 
 /* TABS STYLING */
-.modal-tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--parchment); margin-bottom: 20px; }
-.tab-btn { background: none; border: none; padding: 12px 4px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); cursor: pointer; position: relative; transition: color 0.3s var(--ease); }
-.tab-btn::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: var(--gold); transform: scaleX(0); transition: transform 0.4s var(--ease); }
+.modal-tabs { display: flex; gap: 32px; border-bottom: 1px solid var(--parchment); margin-bottom: 24px; padding: 0 4px; }
+.tab-btn { background: none; border: none; padding: 12px 0; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted-2); cursor: pointer; position: relative; transition: all 0.3s var(--ease); }
+.tab-btn::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: var(--gold); transform: scaleX(0); transition: transform 0.4s var(--ease); transform-origin: left; }
 .tab-btn:hover { color: var(--gold); }
-.tab-btn.active { color: var(--ink); font-weight: 500; }
+.tab-btn.active { color: var(--ink); }
 .tab-btn.active::after { transform: scaleX(1); }
 
-.booking-list { max-height: 400px; overflow-y: auto; padding-right: 8px; }
-.booking-list::-webkit-scrollbar { width: 6px; }
+.booking-list { max-height: 440px; overflow-y: auto; padding-right: 12px; margin-right: -12px; }
+.booking-list::-webkit-scrollbar { width: 4px; }
+.booking-list::-webkit-scrollbar-track { background: transparent; }
 .booking-list::-webkit-scrollbar-thumb { background: var(--parchment-2); border-radius: 10px; }
 .empty-state { font-size: 14px; font-style: italic; color: var(--muted); text-align: center; padding: 20px 0; }
 .booking-item { padding: 18px; border: 1px solid var(--parchment); border-radius: var(--r-sm); background: var(--white); margin-bottom: 12px; transition: border-color 0.3s; }
