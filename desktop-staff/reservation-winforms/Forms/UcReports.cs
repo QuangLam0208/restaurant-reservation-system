@@ -21,7 +21,11 @@ namespace reservation_winforms.Forms
 
             // Xóa rác biểu đồ lúc thiết kế
             chartReservations.Series[0].Points.Clear();
+            chartReservations.ChartAreas[0].AxisX.Title = "Thời gian (Ngày)";
+            chartReservations.ChartAreas[0].AxisX.TitleFont = new Font("Segoe UI", 12, FontStyle.Bold);
 
+            chartReservations.ChartAreas[0].AxisY.Title = "Số lượng đơn đặt bàn (Đơn)";
+            chartReservations.ChartAreas[0].AxisY.TitleFont = new Font("Segoe UI", 12, FontStyle.Bold);
             btnFilter.Click += BtnFilter_Click;
 
             // Tự động load dữ liệu khi vừa mở tab
@@ -54,11 +58,13 @@ namespace reservation_winforms.Forms
                 var noShowRes = await _reportService.GetNoShowRateAsync(from, to);
                 if (noShowRes.IsSuccess && noShowRes.Data != null)
                 {
-                    lblTotal.Text = noShowRes.Data.TotalReservations.ToString();
+                    lblTotalAll.Text = noShowRes.Data.TotalAll.ToString();
+                    lblTotalOnline.Text = noShowRes.Data.TotalOnline.ToString();
+                    lblTotalWalkIn.Text = noShowRes.Data.TotalWalkIn.ToString();
                     lblNoShow.Text = noShowRes.Data.NoShowCount.ToString();
                     lblRate.Text = $"{noShowRes.Data.NoShowRate}%";
 
-                    // Đổi màu tỷ lệ: > 15% thì báo động Đỏ
+                    // Đổi màu tỷ lệ: > 15% thì báo động Đỏ, an toàn thì Xanh
                     lblRate.ForeColor = noShowRes.Data.NoShowRate > 15 ? Color.FromArgb(231, 76, 60) : Color.FromArgb(46, 204, 113);
                 }
                 else
