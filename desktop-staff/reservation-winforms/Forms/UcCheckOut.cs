@@ -12,17 +12,18 @@ namespace reservation_winforms.Forms
     public partial class UcCheckOut : UserControl
     {
         private readonly ReservationService _reservationService;
+        private readonly OverrideService _overrideService;
         private ReservationResponse _currentSelectedRes = null;
 
         public UcCheckOut()
         {
             InitializeComponent();
             _reservationService = new ReservationService();
+            _overrideService = new OverrideService();
 
             btnRefresh.Click += BtnRefresh_Click;
             btnCheckOut.Click += BtnCheckOut_Click;
 
-            // Tự động load dữ liệu khi mở Tab này
             this.Load += async (s, e) => await LoadActiveTablesAsync();
 
             ResetDetailsPanel();
@@ -33,9 +34,6 @@ namespace reservation_winforms.Forms
             await LoadActiveTablesAsync();
         }
 
-        // ==========================================================
-        // 1. GỌI API LẤY DANH SÁCH BÀN ĐANG CÓ KHÁCH (SEATED)
-        // ==========================================================
         private async Task LoadActiveTablesAsync()
         {
             btnRefresh.Enabled = false;
@@ -55,9 +53,6 @@ namespace reservation_winforms.Forms
             RenderActiveTables(res.Data);
         }
 
-        // ==========================================================
-        // 2. VẼ DANH SÁCH CÁC THẺ (CARD) LÊN PANEL TRÁI
-        // ==========================================================
         private void RenderActiveTables(List<ReservationResponse> activeReservations)
         {
             flpActiveTables.Controls.Clear();
@@ -100,11 +95,9 @@ namespace reservation_winforms.Forms
                     Tag = r
                 };
 
-                // Thẻ nào ngồi lố giờ thì viền đỏ nhấp nháy, bình thường viền xanh dương
                 btnCard.FlatAppearance.BorderColor = durationMins > 120 ? Color.FromArgb(231, 76, 60) : Color.FromArgb(41, 128, 185);
                 btnCard.FlatAppearance.BorderSize = 2;
 
-                // Sự kiện: Click vào thẻ nào thì thẻ đó chuyển màu xanh đậm và bật thông tin sang Panel phải
                 btnCard.Click += (s, e) =>
                 {
                     foreach (Control c in flpActiveTables.Controls)
@@ -121,13 +114,12 @@ namespace reservation_winforms.Forms
             }
         }
 
-        // ==========================================================
-        // 3. ĐẨY THÔNG TIN ĐƠN LÊN BẢNG BÊN PHẢI
-        // ==========================================================
         private void ShowReservationDetails(ReservationResponse r)
         {
             pnlDetails.Visible = true;
             btnCheckOut.Visible = true;
+            chkOverride.Visible = true;
+            chkOverride.Checked = false;
 
             lblValTable.Text = (r.TableIds != null && r.TableIds.Count > 0) ? string.Join(", ", r.TableIds) : "N/A";
             lblValName.Text = r.CustomerName ?? "Khách vãng lai";
@@ -139,19 +131,60 @@ namespace reservation_winforms.Forms
             lblValDuration.ForeColor = mins > 120 ? Color.Red : Color.FromArgb(243, 156, 18);
 
             lblValDeposit.Text = (r.DepositAmount != null && r.DepositAmount > 0) ? $"{r.DepositAmount:N0}đ" : "0đ";
+            chkOverride.Checked = false;
+            if (mins > 120)
+            {
+                chkOverride.Visible = true;
+            }
+            else
+            {
+                chkOverride.Visible = false;
+            }
         }
 
-        // ==========================================================
-        // 4. THỰC HIỆN CHECK-OUT VÀ GIẢI PHÓNG BÀN
-        // ==========================================================
         private async void BtnCheckOut_Click(object sender, EventArgs e)
         {
             if (_currentSelectedRes == null) return;
 
+            if (chkOverride.Checked)
+            {
+                using (var frm = new OverrideDialog())
+                {
+                    frm.SetWarningMessage($"Bàn của khách {_currentSelectedRes.CustomerName} đang bị quá giờ (Overstay).\nBạn phải nhập lý do xử lý để ghi đè hệ thống.");
+
+                    if (frm.ShowDialog() == DialogResult.OK)
+                    {
+                        try
+                        {
+                            btnCheckOut.Enabled = false;
+                            btnCheckOut.Text = "ĐANG GHI ĐÈ...";
+
+                            var res = await _overrideService.OverrideReservationAsync(_currentSelectedRes.ReservationId, frm.Reason);
+
+                            if (res.IsSuccess)
+                            {
+                                MessageBox.Show("Đã thanh toán cưỡng chế, lưu log và giải phóng bàn thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                await LoadActiveTablesAsync(); // Tải lại danh sách
+                            }
+                            else
+                            {
+                                MessageBox.Show(res.Message, "Lỗi ghi đè", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
+                        }
+                        finally
+                        {
+                            btnCheckOut.Enabled = true;
+                            btnCheckOut.Text = "XÁC NHẬN TRẢ BÀN";
+                        }
+                    }
+                }
+
+                return;
+            }
+
             string confirmMsg = $"Bạn xác nhận thanh toán và trả bàn cho Khách hàng: {_currentSelectedRes.CustomerName}?\n";
             if (_currentSelectedRes.DepositAmount > 0)
             {
-                // Cảnh báo cực mạnh cho Thu ngân để không thu dư tiền của khách
                 confirmMsg += $"\n💰 LƯU Ý: KHÁCH NÀY ĐÃ CỌC TRƯỚC, NHỚ TRỪ TIỀN CỌC: {_currentSelectedRes.DepositAmount:N0}đ VÀO HÓA ĐƠN!";
             }
 
@@ -168,7 +201,7 @@ namespace reservation_winforms.Forms
                 if (result.IsSuccess)
                 {
                     MessageBox.Show("Trả bàn thành công! Hệ thống đã giải phóng các bàn này để đón khách tiếp theo.", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    await LoadActiveTablesAsync(); // Tải lại danh sách
+                    await LoadActiveTablesAsync();
                 }
                 else
                 {
@@ -180,7 +213,6 @@ namespace reservation_winforms.Forms
                 btnCheckOut.Enabled = true;
                 btnCheckOut.Text = "XÁC NHẬN TRẢ BÀN";
             }
-
         }
 
         private void ResetDetailsPanel()
@@ -188,6 +220,8 @@ namespace reservation_winforms.Forms
             pnlDetails.Visible = false;
             btnCheckOut.Visible = false;
             _currentSelectedRes = null;
+            chkOverride.Visible = false;
+            chkOverride.Checked = false;
         }
     }
 }

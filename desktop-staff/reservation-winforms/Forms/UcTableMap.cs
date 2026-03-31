@@ -17,7 +17,6 @@ namespace reservation_winforms.Forms
         private readonly ReservationService _reservationService;
 
         private List<FloorMapTableResponse> _allTables = new List<FloorMapTableResponse>();
-        // Lưu trữ cái bàn mà Lễ tân vừa click vào
         private List<FloorMapTableResponse> _selectedTables = new List<FloorMapTableResponse>();
 
         public UcTableMap()
@@ -28,14 +27,12 @@ namespace reservation_winforms.Forms
 
             this.Load += UcTableMap_Load;
             
-            // Sự kiện các nút lọc
             btnFilterAll.Click += (s, e) => ApplyFilter("ALL");
             btnFilterAvailable.Click += (s, e) => ApplyFilter("AVAILABLE");
             btnFilterOccupied.Click += (s, e) => ApplyFilter("OCCUPIED");
             btnFilterReserved.Click += (s, e) => ApplyFilter("RESERVED");
             btnFilterOverstay.Click += (s, e) => ApplyFilter("OVERSTAY");
-
-            // Sự kiện nút xếp bàn
+            
             btnSeatWalkIn.Click += BtnSeatWalkIn_Click;
         }
 
@@ -208,7 +205,6 @@ namespace reservation_winforms.Forms
                 }
                 else
                 {
-                    // FIX: Chỉ khi bấm OK mới thực hiện chọn bàn màu Cam
                     if (tableData.CurrentReservationStatus == "RESERVED")
                     {
                         string timeStr = tableData.CurrentReservationTime?.ToString("HH:mm") ?? "N/A";
@@ -220,7 +216,7 @@ namespace reservation_winforms.Forms
                             MessageBoxButtons.OKCancel,
                             MessageBoxIcon.Information);
 
-                        if (confirmResult != DialogResult.OK) return; // Thoát nếu không chọn OK
+                        if (confirmResult != DialogResult.OK) return;
                     }
 
                     _selectedTables.Add(tableData);
@@ -255,19 +251,16 @@ namespace reservation_winforms.Forms
         {
             try
             {
-                // KHÓA NÚT KHI VỪA BẤM
                 btnSeatWalkIn.Enabled = false;
                 btnSeatWalkIn.Text = "ĐANG XỬ LÝ...";
 
                 int guests = (int)nudGuestCount.Value;
                 List<long> finalTableIdsToSuggest = null;
 
-                // KỊCH BẢN 1: LỄ TÂN ĐÃ TỰ CLICK CHỌN BÀN TRÊN SƠ ĐỒ
                 if (_selectedTables.Count > 0)
                 {
                     finalTableIdsToSuggest = _selectedTables.Select(t => t.TableId).ToList();
                 }
-                // KỊCH BẢN 2: LỄ TÂN CHƯA CHỌN BÀN -> GỌI API LẤY GỢI Ý
                 else
                 {
                     var optionsRes = await _reservationService.GetWalkInOptionsAsync(guests);
@@ -275,17 +268,14 @@ namespace reservation_winforms.Forms
                     if (!optionsRes.IsSuccess || optionsRes.Data.Groups == null || optionsRes.Data.Groups.Count == 0)
                     {
                         MessageBox.Show("Nhà hàng hiện đã hết bàn trống hoặc không có tổ hợp bàn ghép nào phù hợp cho số lượng khách này.", "Hết bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return; // Thoát hàm -> Sẽ nhảy thẳng xuống khối finally để mở khóa nút
+                        return;
                     }
 
-                    // Hiển thị Popup danh sách phương án cho Lễ tân chọn
                     finalTableIdsToSuggest = ShowOptionsDialog(optionsRes.Data, guests);
 
-                    // Lễ tân tắt Popup hoặc bấm Cancel
                     if (finalTableIdsToSuggest == null) return;
                 }
 
-                // --- BƯỚC TIẾP THEO: GỌI API SUGGEST ĐỂ SOFT-LOCK BÀN LẠI ---
                 var request = new WalkInRequest
                 {
                     GuestCount = guests,
@@ -302,7 +292,6 @@ namespace reservation_winforms.Forms
                     return;
                 }
 
-                // --- BƯỚC CUỐI: XÁC NHẬN CHÍNH THỨC (CONFIRM) VỚI KHÁCH ---
                 var suggestion = suggestRes.Data;
                 string tableList = string.Join(", ", suggestion.SuggestedTables.Select(t => t.TableId));
                 string typeText = suggestion.AvailabilityType.Contains("PARTIAL") ? "⚠️ TRỐNG TẠM THỜI (Vướng lịch đặt sau)" : "✅ TRỐNG HOÀN TOÀN";
@@ -339,15 +328,11 @@ namespace reservation_winforms.Forms
             }
             finally
             {
-                // BÙA HỘ MỆNH: LUÔN TRẢ LẠI TRẠNG THÁI NÚT VỀ BAN ĐẦU
                 btnSeatWalkIn.Enabled = true;
                 btnSeatWalkIn.Text = "XẾP BÀN (WALK-IN)";
             }
         }
 
-        // =========================================================================
-        // HÀM VẼ GIAO DIỆN POPUP CHỌN PHƯƠNG ÁN (KHÔNG CẦN DÙNG TỚI DESIGNER)
-        // =========================================================================
         private List<long> ShowOptionsDialog(WalkInOptionResponse data, int guestCount)
         {
             List<long> selectedIds = null;
@@ -373,7 +358,6 @@ namespace reservation_winforms.Forms
             };
             popup.Controls.Add(flp);
 
-            // Vẽ từng nhóm (Ưu tiên, Dự phòng)
             foreach (var group in data.Groups)
             {
                 Label lblGroup = new Label
@@ -386,7 +370,6 @@ namespace reservation_winforms.Forms
                 };
                 flp.Controls.Add(lblGroup);
 
-                // Vẽ từng Option trong nhóm đó dưới dạng Nút bấm
                 foreach (var opt in group.Options)
                 {
                     string tableStr = string.Join(", ", opt.TableIds);
@@ -407,10 +390,8 @@ namespace reservation_winforms.Forms
                         Font = new Font("Segoe UI", 10, FontStyle.Regular)
                     };
 
-                    // Trang trí viền nút theo loại
                     btnOpt.FlatAppearance.BorderColor = opt.AvailableUntil.HasValue ? Color.Orange : Color.LightGray;
 
-                    // Gắn sự kiện: Bấm vào option nào thì bắt ID của option đó và tắt Form
                     btnOpt.Click += (s, e) =>
                     {
                         selectedIds = opt.TableIds;
@@ -423,7 +404,7 @@ namespace reservation_winforms.Forms
             }
 
             popup.ShowDialog();
-            return selectedIds; // Trả về List ID bàn Lễ tân vừa bấm chọn
+            return selectedIds;
         }
 
     }

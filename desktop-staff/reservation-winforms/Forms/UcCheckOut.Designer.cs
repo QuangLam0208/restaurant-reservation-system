@@ -32,6 +32,8 @@
             this.lblTitleDeposit = new System.Windows.Forms.Label();
             this.lblValDeposit = new System.Windows.Forms.Label();
             this.btnCheckOut = new System.Windows.Forms.Button();
+            this.chkOverride = new System.Windows.Forms.CheckBox();
+
             this.pnlHeader.SuspendLayout();
             this.pnlDetails.SuspendLayout();
             this.SuspendLayout();
@@ -76,7 +78,7 @@
             this.pnlDetails.BackColor = System.Drawing.Color.White;
             this.pnlDetails.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlDetails.Location = new System.Drawing.Point(920, 120);
-            this.pnlDetails.Size = new System.Drawing.Size(580, 550);
+            this.pnlDetails.Size = new System.Drawing.Size(580, 500);
             this.pnlDetails.Controls.Add(this.lblDetailTitle);
             this.pnlDetails.Controls.Add(this.lblTitleTable);
             this.pnlDetails.Controls.Add(this.lblValTable);
@@ -111,7 +113,7 @@
             this.lblValTable.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
             this.lblValTable.ForeColor = System.Drawing.Color.FromArgb(41, 128, 185);
             this.lblValTable.Location = new System.Drawing.Point(220, 105);
-            this.lblValTable.Text = "5, 6";
+            this.lblValTable.Text = "---";
             // 
             // lblTitleName
             // 
@@ -126,7 +128,7 @@
             this.lblValName.AutoSize = true;
             this.lblValName.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.lblValName.Location = new System.Drawing.Point(220, 180);
-            this.lblValName.Text = "Nguyễn Văn A";
+            this.lblValName.Text = "---";
             // 
             // lblTitleTime
             // 
@@ -141,7 +143,7 @@
             this.lblValTime.AutoSize = true;
             this.lblValTime.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.lblValTime.Location = new System.Drawing.Point(220, 250);
-            this.lblValTime.Text = "18:00";
+            this.lblValTime.Text = "--:--";
             // 
             // lblTitleDuration
             // 
@@ -157,7 +159,7 @@
             this.lblValDuration.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.lblValDuration.ForeColor = System.Drawing.Color.FromArgb(243, 156, 18);
             this.lblValDuration.Location = new System.Drawing.Point(220, 320);
-            this.lblValDuration.Text = "45 phút";
+            this.lblValDuration.Text = "-- phút";
             // 
             // lblTitleDeposit
             // 
@@ -173,7 +175,17 @@
             this.lblValDeposit.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
             this.lblValDeposit.ForeColor = System.Drawing.Color.FromArgb(231, 76, 60);
             this.lblValDeposit.Location = new System.Drawing.Point(220, 385);
-            this.lblValDeposit.Text = "200,000đ";
+            this.lblValDeposit.Text = "0đ";
+            // 
+            // chkOverride
+            // 
+            this.chkOverride.AutoSize = true;
+            this.chkOverride.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.chkOverride.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+            this.chkOverride.ForeColor = System.Drawing.Color.FromArgb(231, 76, 60); // Màu đỏ cảnh báo
+            this.chkOverride.Location = new System.Drawing.Point(920, 640); // Đặt nằm phía trên nút CheckOut
+            this.chkOverride.Text = "⚠️ Đánh dấu để Cưỡng chế Trả bàn (OVERRIDE)";
+            this.chkOverride.Visible = false; // Mặc định ẩn
             // 
             // btnCheckOut
             // 
@@ -192,6 +204,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(245, 246, 250);
+            this.Controls.Add(this.chkOverride);
             this.Controls.Add(this.btnCheckOut);
             this.Controls.Add(this.pnlDetails);
             this.Controls.Add(this.flpActiveTables);
@@ -203,6 +216,7 @@
             this.pnlDetails.ResumeLayout(false);
             this.pnlDetails.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
         }
 
         private System.Windows.Forms.Panel pnlHeader;
@@ -221,6 +235,7 @@
         private System.Windows.Forms.Label lblValDuration;
         private System.Windows.Forms.Label lblTitleDeposit;
         private System.Windows.Forms.Label lblValDeposit;
+        private System.Windows.Forms.CheckBox chkOverride;
         private System.Windows.Forms.Button btnCheckOut;
     }
 }

@@ -25,7 +25,7 @@ namespace reservation_winforms.DTO.waitList
         public DateTime JoinedAt { get; set; }
 
         [JsonProperty("status")]
-        public string Status { get; set; } // Enum WaitlistStatus
+        public string Status { get; set; }
 
         [JsonProperty("readyToSeat")]
         public bool ReadyToSeat { get; set; }
@@ -34,7 +34,7 @@ namespace reservation_winforms.DTO.waitList
         public string SeatingType { get; set; }
 
         [JsonProperty("suggestedAvailableUntil")]
-        public DateTime? SuggestedAvailableUntil { get; set; } // Có thể null
+        public DateTime? SuggestedAvailableUntil { get; set; }
 
         [JsonProperty("suggestedTableIds")]
         public List<long> SuggestedTableIds { get; set; }
