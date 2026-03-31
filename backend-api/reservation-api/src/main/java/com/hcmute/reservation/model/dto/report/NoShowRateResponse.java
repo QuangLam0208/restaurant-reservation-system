@@ -6,7 +6,9 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class NoShowRateResponse {
-    private long totalReservations;
+    private long totalOnline;
+    private long totalWalkIn;
+    private long totalAll;
     private long noShowCount;
-    private double noShowRate; // percentage 0-100
+    private double noShowRate;
 }
