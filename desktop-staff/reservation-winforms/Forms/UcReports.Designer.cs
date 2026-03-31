@@ -17,11 +17,23 @@ namespace reservation_winforms.Forms
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.lblTitle = new System.Windows.Forms.Label();
             this.pnlFilter = new System.Windows.Forms.Panel();
+            this.tabFilter = new System.Windows.Forms.TabControl();
+            this.tabPageDate = new System.Windows.Forms.TabPage();
+            this.lblToDate = new System.Windows.Forms.Label();
+            this.dtpToDate = new System.Windows.Forms.DateTimePicker();
+            this.lblFromDate = new System.Windows.Forms.Label();
+            this.dtpFromDate = new System.Windows.Forms.DateTimePicker();
+            this.tabPageMonth = new System.Windows.Forms.TabPage();
+            this.lblToMonth = new System.Windows.Forms.Label();
+            this.dtpToMonth = new System.Windows.Forms.DateTimePicker();
+            this.lblFromMonth = new System.Windows.Forms.Label();
+            this.dtpFromMonth = new System.Windows.Forms.DateTimePicker();
+            this.tabPageYear = new System.Windows.Forms.TabPage();
+            this.lblFromYear = new System.Windows.Forms.Label();
+            this.numFromYear = new System.Windows.Forms.NumericUpDown();
+            this.lblToYear = new System.Windows.Forms.Label();
+            this.numToYear = new System.Windows.Forms.NumericUpDown();
             this.btnFilter = new System.Windows.Forms.Button();
-            this.dtpTo = new System.Windows.Forms.DateTimePicker();
-            this.lblTo = new System.Windows.Forms.Label();
-            this.dtpFrom = new System.Windows.Forms.DateTimePicker();
-            this.lblFrom = new System.Windows.Forms.Label();
             this.pnlCards = new System.Windows.Forms.Panel();
             this.lblTotalAllTitle = new System.Windows.Forms.Label();
             this.lblTotalAll = new System.Windows.Forms.Label();
@@ -36,6 +48,12 @@ namespace reservation_winforms.Forms
             this.chartReservations = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.pnlHeader.SuspendLayout();
             this.pnlFilter.SuspendLayout();
+            this.tabFilter.SuspendLayout();
+            this.tabPageDate.SuspendLayout();
+            this.tabPageMonth.SuspendLayout();
+            this.tabPageYear.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numFromYear)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numToYear)).BeginInit();
             this.pnlCards.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chartReservations)).BeginInit();
             this.SuspendLayout();
@@ -65,15 +83,199 @@ namespace reservation_winforms.Forms
             // 
             this.pnlFilter.BackColor = System.Drawing.Color.White;
             this.pnlFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlFilter.Controls.Add(this.tabFilter);
             this.pnlFilter.Controls.Add(this.btnFilter);
-            this.pnlFilter.Controls.Add(this.dtpTo);
-            this.pnlFilter.Controls.Add(this.lblTo);
-            this.pnlFilter.Controls.Add(this.dtpFrom);
-            this.pnlFilter.Controls.Add(this.lblFrom);
-            this.pnlFilter.Location = new System.Drawing.Point(30, 120);
+            this.pnlFilter.Location = new System.Drawing.Point(30, 100);
             this.pnlFilter.Name = "pnlFilter";
-            this.pnlFilter.Size = new System.Drawing.Size(1470, 100);
+            this.pnlFilter.Size = new System.Drawing.Size(1470, 160);
             this.pnlFilter.TabIndex = 2;
+            // 
+            // tabFilter
+            // 
+            this.tabFilter.Controls.Add(this.tabPageDate);
+            this.tabFilter.Controls.Add(this.tabPageMonth);
+            this.tabFilter.Controls.Add(this.tabPageYear);
+            this.tabFilter.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.tabFilter.ItemSize = new System.Drawing.Size(275, 35);
+            this.tabFilter.Location = new System.Drawing.Point(20, 10);
+            this.tabFilter.Name = "tabFilter";
+            this.tabFilter.SelectedIndex = 0;
+            this.tabFilter.Size = new System.Drawing.Size(835, 135);
+            this.tabFilter.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+            this.tabFilter.TabIndex = 0;
+            // 
+            // tabPageDate
+            // 
+            this.tabPageDate.Controls.Add(this.lblToDate);
+            this.tabPageDate.Controls.Add(this.dtpToDate);
+            this.tabPageDate.Controls.Add(this.lblFromDate);
+            this.tabPageDate.Controls.Add(this.dtpFromDate);
+            this.tabPageDate.Location = new System.Drawing.Point(4, 39);
+            this.tabPageDate.Name = "tabPageDate";
+            this.tabPageDate.Size = new System.Drawing.Size(827, 92);
+            this.tabPageDate.TabIndex = 0;
+            this.tabPageDate.Text = "Lọc theo Ngày";
+            this.tabPageDate.UseVisualStyleBackColor = true;
+            // 
+            // lblToDate
+            // 
+            this.lblToDate.AutoSize = true;
+            this.lblToDate.Location = new System.Drawing.Point(338, 13);
+            this.lblToDate.Name = "lblToDate";
+            this.lblToDate.Size = new System.Drawing.Size(122, 32);
+            this.lblToDate.TabIndex = 2;
+            this.lblToDate.Text = "Đến ngày:";
+            // 
+            // dtpToDate
+            // 
+            this.dtpToDate.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dtpToDate.Location = new System.Drawing.Point(468, 10);
+            this.dtpToDate.Name = "dtpToDate";
+            this.dtpToDate.Size = new System.Drawing.Size(180, 39);
+            this.dtpToDate.TabIndex = 3;
+            // 
+            // lblFromDate
+            // 
+            this.lblFromDate.AutoSize = true;
+            this.lblFromDate.Location = new System.Drawing.Point(18, 13);
+            this.lblFromDate.Name = "lblFromDate";
+            this.lblFromDate.Size = new System.Drawing.Size(105, 32);
+            this.lblFromDate.TabIndex = 0;
+            this.lblFromDate.Text = "Từ ngày:";
+            // 
+            // dtpFromDate
+            // 
+            this.dtpFromDate.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dtpFromDate.Location = new System.Drawing.Point(128, 10);
+            this.dtpFromDate.Name = "dtpFromDate";
+            this.dtpFromDate.Size = new System.Drawing.Size(180, 39);
+            this.dtpFromDate.TabIndex = 1;
+            // 
+            // tabPageMonth
+            // 
+            this.tabPageMonth.Controls.Add(this.lblToMonth);
+            this.tabPageMonth.Controls.Add(this.dtpToMonth);
+            this.tabPageMonth.Controls.Add(this.lblFromMonth);
+            this.tabPageMonth.Controls.Add(this.dtpFromMonth);
+            this.tabPageMonth.Location = new System.Drawing.Point(4, 39);
+            this.tabPageMonth.Name = "tabPageMonth";
+            this.tabPageMonth.Size = new System.Drawing.Size(827, 92);
+            this.tabPageMonth.TabIndex = 1;
+            this.tabPageMonth.Text = "Lọc theo Tháng";
+            this.tabPageMonth.UseVisualStyleBackColor = true;
+            // 
+            // lblToMonth
+            // 
+            this.lblToMonth.AutoSize = true;
+            this.lblToMonth.Location = new System.Drawing.Point(319, 15);
+            this.lblToMonth.Name = "lblToMonth";
+            this.lblToMonth.Size = new System.Drawing.Size(132, 32);
+            this.lblToMonth.TabIndex = 2;
+            this.lblToMonth.Text = "Đến tháng:";
+            // 
+            // dtpToMonth
+            // 
+            this.dtpToMonth.CustomFormat = "MM/yyyy";
+            this.dtpToMonth.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+            this.dtpToMonth.Location = new System.Drawing.Point(459, 12);
+            this.dtpToMonth.Name = "dtpToMonth";
+            this.dtpToMonth.ShowUpDown = true;
+            this.dtpToMonth.Size = new System.Drawing.Size(150, 39);
+            this.dtpToMonth.TabIndex = 3;
+            // 
+            // lblFromMonth
+            // 
+            this.lblFromMonth.AutoSize = true;
+            this.lblFromMonth.Location = new System.Drawing.Point(19, 15);
+            this.lblFromMonth.Name = "lblFromMonth";
+            this.lblFromMonth.Size = new System.Drawing.Size(115, 32);
+            this.lblFromMonth.TabIndex = 0;
+            this.lblFromMonth.Text = "Từ tháng:";
+            // 
+            // dtpFromMonth
+            // 
+            this.dtpFromMonth.CustomFormat = "MM/yyyy";
+            this.dtpFromMonth.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+            this.dtpFromMonth.Location = new System.Drawing.Point(139, 12);
+            this.dtpFromMonth.Name = "dtpFromMonth";
+            this.dtpFromMonth.ShowUpDown = true;
+            this.dtpFromMonth.Size = new System.Drawing.Size(150, 39);
+            this.dtpFromMonth.TabIndex = 1;
+            // 
+            // tabPageYear
+            // 
+            this.tabPageYear.Controls.Add(this.lblFromYear);
+            this.tabPageYear.Controls.Add(this.numFromYear);
+            this.tabPageYear.Controls.Add(this.lblToYear);
+            this.tabPageYear.Controls.Add(this.numToYear);
+            this.tabPageYear.Location = new System.Drawing.Point(4, 39);
+            this.tabPageYear.Name = "tabPageYear";
+            this.tabPageYear.Size = new System.Drawing.Size(827, 92);
+            this.tabPageYear.TabIndex = 2;
+            this.tabPageYear.Text = "Lọc theo Năm";
+            this.tabPageYear.UseVisualStyleBackColor = true;
+            // 
+            // lblFromYear
+            // 
+            this.lblFromYear.AutoSize = true;
+            this.lblFromYear.Location = new System.Drawing.Point(16, 16);
+            this.lblFromYear.Name = "lblFromYear";
+            this.lblFromYear.Size = new System.Drawing.Size(100, 32);
+            this.lblFromYear.TabIndex = 0;
+            this.lblFromYear.Text = "Từ năm:";
+            // 
+            // numFromYear
+            // 
+            this.numFromYear.Location = new System.Drawing.Point(122, 13);
+            this.numFromYear.Maximum = new decimal(new int[] {
+            2100,
+            0,
+            0,
+            0});
+            this.numFromYear.Minimum = new decimal(new int[] {
+            2020,
+            0,
+            0,
+            0});
+            this.numFromYear.Name = "numFromYear";
+            this.numFromYear.Size = new System.Drawing.Size(100, 39);
+            this.numFromYear.TabIndex = 1;
+            this.numFromYear.Value = new decimal(new int[] {
+            2024,
+            0,
+            0,
+            0});
+            // 
+            // lblToYear
+            // 
+            this.lblToYear.AutoSize = true;
+            this.lblToYear.Location = new System.Drawing.Point(249, 16);
+            this.lblToYear.Name = "lblToYear";
+            this.lblToYear.Size = new System.Drawing.Size(117, 32);
+            this.lblToYear.TabIndex = 2;
+            this.lblToYear.Text = "Đến năm:";
+            // 
+            // numToYear
+            // 
+            this.numToYear.Location = new System.Drawing.Point(376, 13);
+            this.numToYear.Maximum = new decimal(new int[] {
+            2100,
+            0,
+            0,
+            0});
+            this.numToYear.Minimum = new decimal(new int[] {
+            2020,
+            0,
+            0,
+            0});
+            this.numToYear.Name = "numToYear";
+            this.numToYear.Size = new System.Drawing.Size(100, 39);
+            this.numToYear.TabIndex = 3;
+            this.numToYear.Value = new decimal(new int[] {
+            2026,
+            0,
+            0,
+            0});
             // 
             // btnFilter
             // 
@@ -83,50 +285,12 @@ namespace reservation_winforms.Forms
             this.btnFilter.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFilter.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.btnFilter.ForeColor = System.Drawing.Color.White;
-            this.btnFilter.Location = new System.Drawing.Point(750, 25);
+            this.btnFilter.Location = new System.Drawing.Point(890, 55);
             this.btnFilter.Name = "btnFilter";
-            this.btnFilter.Size = new System.Drawing.Size(234, 50);
-            this.btnFilter.TabIndex = 0;
-            this.btnFilter.Text = "LỌC DỮ LIỆU";
+            this.btnFilter.Size = new System.Drawing.Size(274, 50);
+            this.btnFilter.TabIndex = 1;
+            this.btnFilter.Text = "🔍 LỌC DỮ LIỆU";
             this.btnFilter.UseVisualStyleBackColor = false;
-            // 
-            // dtpTo
-            // 
-            this.dtpTo.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.dtpTo.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpTo.Location = new System.Drawing.Point(510, 30);
-            this.dtpTo.Name = "dtpTo";
-            this.dtpTo.Size = new System.Drawing.Size(200, 39);
-            this.dtpTo.TabIndex = 1;
-            // 
-            // lblTo
-            // 
-            this.lblTo.AutoSize = true;
-            this.lblTo.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.lblTo.Location = new System.Drawing.Point(380, 35);
-            this.lblTo.Name = "lblTo";
-            this.lblTo.Size = new System.Drawing.Size(130, 32);
-            this.lblTo.TabIndex = 2;
-            this.lblTo.Text = "Đến ngày:";
-            // 
-            // dtpFrom
-            // 
-            this.dtpFrom.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.dtpFrom.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpFrom.Location = new System.Drawing.Point(140, 30);
-            this.dtpFrom.Name = "dtpFrom";
-            this.dtpFrom.Size = new System.Drawing.Size(200, 39);
-            this.dtpFrom.TabIndex = 3;
-            // 
-            // lblFrom
-            // 
-            this.lblFrom.AutoSize = true;
-            this.lblFrom.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.lblFrom.Location = new System.Drawing.Point(30, 35);
-            this.lblFrom.Name = "lblFrom";
-            this.lblFrom.Size = new System.Drawing.Size(114, 32);
-            this.lblFrom.TabIndex = 4;
-            this.lblFrom.Text = "Từ ngày:";
             // 
             // pnlCards
             // 
@@ -141,7 +305,7 @@ namespace reservation_winforms.Forms
             this.pnlCards.Controls.Add(this.lblNoShow);
             this.pnlCards.Controls.Add(this.lblRateTitle);
             this.pnlCards.Controls.Add(this.lblRate);
-            this.pnlCards.Location = new System.Drawing.Point(30, 250);
+            this.pnlCards.Location = new System.Drawing.Point(30, 280);
             this.pnlCards.Name = "pnlCards";
             this.pnlCards.Size = new System.Drawing.Size(1470, 160);
             this.pnlCards.TabIndex = 1;
@@ -275,14 +439,14 @@ namespace reservation_winforms.Forms
             // 
             chartArea1.Name = "ChartArea1";
             this.chartReservations.ChartAreas.Add(chartArea1);
-            this.chartReservations.Location = new System.Drawing.Point(30, 440);
+            this.chartReservations.Location = new System.Drawing.Point(30, 460);
             this.chartReservations.Name = "chartReservations";
             series1.ChartArea = "ChartArea1";
             series1.Color = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             series1.IsValueShownAsLabel = true;
             series1.Name = "Đơn đặt bàn";
             this.chartReservations.Series.Add(series1);
-            this.chartReservations.Size = new System.Drawing.Size(1470, 550);
+            this.chartReservations.Size = new System.Drawing.Size(1470, 520);
             this.chartReservations.TabIndex = 0;
             // 
             // UcReports
@@ -299,7 +463,15 @@ namespace reservation_winforms.Forms
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
             this.pnlFilter.ResumeLayout(false);
-            this.pnlFilter.PerformLayout();
+            this.tabFilter.ResumeLayout(false);
+            this.tabPageDate.ResumeLayout(false);
+            this.tabPageDate.PerformLayout();
+            this.tabPageMonth.ResumeLayout(false);
+            this.tabPageMonth.PerformLayout();
+            this.tabPageYear.ResumeLayout(false);
+            this.tabPageYear.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numFromYear)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numToYear)).EndInit();
             this.pnlCards.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.chartReservations)).EndInit();
             this.ResumeLayout(false);
@@ -310,13 +482,24 @@ namespace reservation_winforms.Forms
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Panel pnlFilter;
         private System.Windows.Forms.Button btnFilter;
-        private System.Windows.Forms.DateTimePicker dtpTo;
-        private System.Windows.Forms.Label lblTo;
-        private System.Windows.Forms.DateTimePicker dtpFrom;
-        private System.Windows.Forms.Label lblFrom;
-        private System.Windows.Forms.Panel pnlCards;
+        private System.Windows.Forms.TabControl tabFilter;
+        private System.Windows.Forms.TabPage tabPageDate;
+        private System.Windows.Forms.DateTimePicker dtpToDate;
+        private System.Windows.Forms.Label lblToDate;
+        private System.Windows.Forms.DateTimePicker dtpFromDate;
+        private System.Windows.Forms.Label lblFromDate;
+        private System.Windows.Forms.TabPage tabPageMonth;
+        private System.Windows.Forms.DateTimePicker dtpToMonth;
+        private System.Windows.Forms.Label lblToMonth;
+        private System.Windows.Forms.DateTimePicker dtpFromMonth;
+        private System.Windows.Forms.Label lblFromMonth;
+        private System.Windows.Forms.TabPage tabPageYear;
+        private System.Windows.Forms.NumericUpDown numToYear;
+        private System.Windows.Forms.Label lblToYear;
+        private System.Windows.Forms.NumericUpDown numFromYear;
+        private System.Windows.Forms.Label lblFromYear;
 
-        // Cập nhật các Label
+        private System.Windows.Forms.Panel pnlCards;
         private System.Windows.Forms.Label lblTotalAllTitle;
         private System.Windows.Forms.Label lblTotalAll;
         private System.Windows.Forms.Label lblTotalOnlineTitle;
@@ -327,7 +510,6 @@ namespace reservation_winforms.Forms
         private System.Windows.Forms.Label lblNoShow;
         private System.Windows.Forms.Label lblRateTitle;
         private System.Windows.Forms.Label lblRate;
-
         private System.Windows.Forms.DataVisualization.Charting.Chart chartReservations;
     }
 }
