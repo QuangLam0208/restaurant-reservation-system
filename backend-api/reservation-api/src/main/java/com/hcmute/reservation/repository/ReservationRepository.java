@@ -60,10 +60,19 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query(value = "SELECT COUNT(*) FROM reservation " +
             "WHERE type = 'ONLINE' " +
+            "AND status IN ('RESERVED', 'SEATED', 'COMPLETED', 'NO_SHOW') " +
             "AND start_time BETWEEN :from AND :to",
             nativeQuery = true)
-    long countTotalForServiceDate(@Param("from") LocalDateTime from,
-                                  @Param("to") LocalDateTime to);
+    long countTotalOnlineForServiceDate(@Param("from") LocalDateTime from,
+                                        @Param("to") LocalDateTime to);
+
+    @Query(value = "SELECT COUNT(*) FROM reservation " +
+            "WHERE type = 'WALK_IN' " +
+            "AND status IN ('SEATED', 'COMPLETED') " +
+            "AND start_time BETWEEN :from AND :to",
+            nativeQuery = true)
+    long countTotalWalkInForServiceDate(@Param("from") LocalDateTime from,
+                                        @Param("to") LocalDateTime to);
 
     @Query(value = "SELECT COUNT(*) FROM reservation " +
             "WHERE type = 'ONLINE' " +

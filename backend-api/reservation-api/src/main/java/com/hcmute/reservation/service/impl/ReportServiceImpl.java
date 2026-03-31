@@ -51,11 +51,13 @@ public class ReportServiceImpl implements ReportService {
         LocalDateTime fromDt = from.atStartOfDay();
         LocalDateTime toDt = to.atTime(LocalTime.MAX);
 
-        long total = reservationRepository.countTotalForServiceDate(fromDt, toDt);
+        long totalOnline = reservationRepository.countTotalOnlineForServiceDate(fromDt, toDt);
+        long totalWalkIn = reservationRepository.countTotalWalkInForServiceDate(fromDt, toDt);
+        long totalAll = totalOnline + totalWalkIn;
         long noShows = reservationRepository.countNoShowsForServiceDate(fromDt, toDt);
-        double rate = total == 0 ? 0.0 : Math.round((double) noShows / total * 10000.0) / 100.0;
-
-        return new NoShowRateResponse(total, noShows, rate);
+        double rate = totalOnline == 0 ? 0.0
+                : Math.round((double) noShows / totalOnline * 10000.0) / 100.0;
+        return new NoShowRateResponse(totalOnline, totalWalkIn, totalAll, noShows, rate);
     }
 
     private void validateDateRange(LocalDate from, LocalDate to) {
