@@ -4,8 +4,14 @@ namespace reservation_winforms.DTO.report
 {
     public class NoShowRateResponse
     {
-        [JsonProperty("totalReservations")]
-        public long TotalReservations { get; set; }
+        [JsonProperty("totalOnline")]
+        public long TotalOnline { get; set; }
+
+        [JsonProperty("totalWalkIn")]
+        public long TotalWalkIn { get; set; }
+
+        [JsonProperty("totalAll")]
+        public long TotalAll { get; set; }
 
         [JsonProperty("noShowCount")]
         public long NoShowCount { get; set; }

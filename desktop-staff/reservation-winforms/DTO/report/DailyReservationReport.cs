@@ -5,9 +5,18 @@ namespace reservation_winforms.DTO.report
     public class DailyReservationReport
     {
         [JsonProperty("date")]
-        public string Date { get; set; }
+        public string Date { get; set; } // Chứa "yyyy-MM-dd", "yyyy-MM", hoặc "yyyy"
 
-        [JsonProperty("count")]
-        public long Count { get; set; }
+        [JsonProperty("totalOnline")]
+        public long TotalOnline { get; set; }
+
+        [JsonProperty("totalWalkIn")]
+        public long TotalWalkIn { get; set; }
+
+        [JsonProperty("total")]
+        public long Total { get; set; }
+
+        [JsonProperty("noShowCount")]
+        public long NoShowCount { get; set; }
     }
 }
