@@ -39,13 +39,15 @@ public class TableAvailabilityServiceImpl implements TableAvailabilityService {
 
     @Override
     public List<TableInfo> getFreeTables(LocalDateTime startTime, LocalDateTime endTime) {
-        // Cộng thêm buffer time cho mọi truy vấn tìm bàn trống
+        // 1. Cộng thêm buffer time cho mọi truy vấn tìm bàn trống
         LocalDateTime endWithBuffer = endTime.plusMinutes(bufferMinutes);
 
+        // 2. Tìm danh sách ID các bàn đã bị đặt (Occupied) trong khoảng thời gian này
         Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(startTime, endWithBuffer));
 
-        // Lấy tất cả bàn đang ở trạng thái AVAILABLE, kích hoạt, không bị soft-lock và không bị occupied
-        return tableInfoRepository.findByStatusAndIsActiveTrue(TableStatus.AVAILABLE)
+        // 3. Lấy tất cả bàn đang hoạt động. Bỏ qua status AVAILABLE/OCCUPIED hiện thời 
+        // vì chúng chỉ đại diện cho trạng thái thực tế tại quán, không ảnh hưởng đến đặt bàn tương lai.
+        return tableInfoRepository.findByIsActiveTrue()
                 .stream()
                 .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
                 .collect(Collectors.toList());

@@ -67,8 +67,8 @@ public class ReservationService {
     // ────── Helpers ──────────────────────────────────────────────────
 
     private ReservationResponse toResponse(Reservation r) {
-        List<Long> tableIds = r.getTableMappings() == null ? List.of() :
-                r.getTableMappings().stream()
+        List<Long> tableIds = r.getTableMappings() == null ? List.of()
+                : r.getTableMappings().stream()
                         .map(m -> m.getTableInfo().getTableId())
                         .collect(Collectors.toList());
         return ReservationResponse.builder()
@@ -96,8 +96,8 @@ public class ReservationService {
                 .collect(Collectors.toList());
 
         List<TableInfo> bestCombination = new ArrayList<>();
-        int[] bestDiff = {Integer.MAX_VALUE};
-        int[] minTables = {Integer.MAX_VALUE};
+        int[] bestDiff = { Integer.MAX_VALUE };
+        int[] minTables = { Integer.MAX_VALUE };
 
         backtrack(sortedTables, targetGuests, 0, new ArrayList<>(), 0, bestCombination, bestDiff, minTables);
 
@@ -105,8 +105,8 @@ public class ReservationService {
     }
 
     private void backtrack(List<TableInfo> tables, int target, int start,
-                           List<TableInfo> currentCombo, int currentSum,
-                           List<TableInfo> bestCombo, int[] bestDiff, int[] minTables) {
+            List<TableInfo> currentCombo, int currentSum,
+            List<TableInfo> bestCombo, int[] bestDiff, int[] minTables) {
         if (currentSum >= target) {
             int diff = currentSum - target;
             if (diff <= maxCapacityOverflow) {
@@ -121,11 +121,13 @@ public class ReservationService {
         }
 
         // Tối đa cho phép ghép 4 bàn
-        if (currentCombo.size() > maxMergeTables) return;
+        if (currentCombo.size() > maxMergeTables)
+            return;
 
         for (int i = start; i < tables.size(); i++) {
             currentCombo.add(tables.get(i));
-            backtrack(tables, target, i + 1, currentCombo, currentSum + tables.get(i).getCapacity(), bestCombo, bestDiff, minTables);
+            backtrack(tables, target, i + 1, currentCombo, currentSum + tables.get(i).getCapacity(), bestCombo,
+                    bestDiff, minTables);
             currentCombo.remove(currentCombo.size() - 1);
         }
     }
@@ -147,13 +149,15 @@ public class ReservationService {
             throw new BadRequestException("Vui lòng đặt bàn trước ít nhất 1 tiếng.");
         }
         if (start.toLocalTime().isBefore(openingTime) || !start.isBefore(closingDateTime)) {
-            throw new BadRequestException("Giờ đến nằm ngoài thời gian hoạt động của nhà hàng (" + openingTimeStr + " - " + closingTimeStr + ").");
+            throw new BadRequestException("Giờ đến nằm ngoài thời gian hoạt động của nhà hàng (" + openingTimeStr
+                    + " - " + closingTimeStr + ").");
         }
 
         // Kiểm tra Soft seating >= 60 phút
         long minutesUntilClose = Duration.between(start, closingDateTime).toMinutes();
         if (minutesUntilClose < 60) {
-            throw new BadRequestException("Thời gian dùng bữa tối thiểu là 60 phút. Nhà hàng đóng cửa lúc " + closingTimeStr + ", vui lòng chọn giờ đến sớm hơn.");
+            throw new BadRequestException("Thời gian dùng bữa tối thiểu là 60 phút. Nhà hàng đóng cửa lúc "
+                    + closingTimeStr + ", vui lòng chọn giờ đến sớm hơn.");
         }
 
         LocalDateTime defaultEnd = start.plusMinutes(durationMinutes);
@@ -195,7 +199,8 @@ public class ReservationService {
             selectedTables = findBestTableCombination(allAvailable, req.getGuestCount());
 
             if (selectedTables.isEmpty()) {
-                throw new BadRequestException("Hiện không có tổ hợp bàn trống phù hợp để ghép cho " + req.getGuestCount() + " người. Vui lòng chọn giờ khác.");
+                throw new BadRequestException("Hiện không có tổ hợp bàn trống phù hợp để ghép cho "
+                        + req.getGuestCount() + " người. Vui lòng chọn giờ khác.");
             }
         }
 
@@ -225,7 +230,8 @@ public class ReservationService {
                 mappings.add(mappingRepository.save(mapping));
             }
         } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
-            throw new ConflictException("Rất tiếc, bàn bạn chọn vừa được khách hàng khác đặt thành công. Vui lòng chọn lại khung giờ hoặc bàn khác!");
+            throw new ConflictException(
+                    "Rất tiếc, bàn bạn chọn vừa được khách hàng khác đặt thành công. Vui lòng chọn lại khung giờ hoặc bàn khác!");
         }
 
         // Gắn mapping vào reservation
@@ -245,7 +251,8 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
         if (reservation.getStatus() != ReservationStatus.PENDING_PAYMENT) {
-            throw new BadRequestException("Only PENDING_PAYMENT reservation can be confirmed. Current status: " + reservation.getStatus());
+            throw new BadRequestException(
+                    "Only PENDING_PAYMENT reservation can be confirmed. Current status: " + reservation.getStatus());
         }
 
         // Lấy danh sách bàn đang được soft-lock
@@ -254,10 +261,12 @@ public class ReservationService {
 
         // Xử lý Race Condition với Scheduler
         if (lockedTables.isEmpty()) {
-            throw new ConflictException("Giao dịch thanh toán mất quá nhiều thời gian. Thời gian giữ bàn (5 phút) đã hết và bàn đã bị giải phóng. Vui lòng liên hệ nhà hàng để được hỗ trợ hoàn tiền hoặc xếp bàn mới.");
+            throw new ConflictException(
+                    "Giao dịch thanh toán mất quá nhiều thời gian. Thời gian giữ bàn (5 phút) đã hết và bàn đã bị giải phóng. Vui lòng liên hệ nhà hàng để được hỗ trợ hoàn tiền hoặc xếp bàn mới.");
         }
 
-        // Đánh dấu RESERVED (Hibernate tự động dirty check và update vào DB cuối Transaction)
+        // Đánh dấu RESERVED (Hibernate tự động dirty check và update vào DB cuối
+        // Transaction)
         reservation.setStatus(ReservationStatus.RESERVED);
 
         for (TableInfo t : lockedTables) {
@@ -277,8 +286,7 @@ public class ReservationService {
                 customerEmail,
                 customerName,
                 reservation.getReservationId(),
-                reservation.getStartTime()
-        ));
+                reservation.getStartTime()));
 
         return toResponse(reservation);
     }
@@ -325,7 +333,7 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn đặt bàn #" + id + " không tồn tại."));
         if (customerId != null && (reservation.getCustomer() == null ||
-            !reservation.getCustomer().getCustomerId().equals(customerId))) {
+                !reservation.getCustomer().getCustomerId().equals(customerId))) {
             throw new BadRequestException("Bạn không có quyền hủy đơn này.");
         }
         if (reservation.getStatus() == ReservationStatus.PENDING_PAYMENT) {
@@ -336,7 +344,8 @@ public class ReservationService {
         }
 
         if (reservation.getStatus() == ReservationStatus.SEATED) {
-            throw new BadRequestException("Khách đã nhận bàn (SEATED). Không thể hủy đơn. Nếu khách muốn rời đi, vui lòng sử dụng chức năng Check-out (Trả bàn).");
+            throw new BadRequestException(
+                    "Khách đã nhận bàn (SEATED). Không thể hủy đơn. Nếu khách muốn rời đi, vui lòng sử dụng chức năng Check-out (Trả bàn).");
         }
 
         if (reservation.getStatus() == ReservationStatus.NO_SHOW ||
@@ -351,7 +360,8 @@ public class ReservationService {
         // Kiểm tra thời gian: Chỉ khách hàng mới bị giới hạn 3 tiếng
         if (customerId != null) {
             if (reservation.getStartTime().isBefore(LocalDateTime.now().plusHours(3))) {
-                throw new BadRequestException("Bạn chỉ có thể hủy đơn đặt bàn tối thiểu 3 tiếng trước giờ hẹn. Vui lòng liên hệ nhà hàng để được hỗ trợ.");
+                throw new BadRequestException(
+                        "Bạn chỉ có thể hủy đơn đặt bàn tối thiểu 3 tiếng trước giờ hẹn. Vui lòng liên hệ nhà hàng để được hỗ trợ.");
             }
         }
 
@@ -505,7 +515,8 @@ public class ReservationService {
 
             // Xác định availabilityType
             if (selectedTables.size() > 1) {
-                availabilityType = hasPartialTable ? "PARTIAL_MERGED_AVAILABLE" : "MERGED_AVAILABLE";;
+                availabilityType = hasPartialTable ? "PARTIAL_MERGED_AVAILABLE" : "MERGED_AVAILABLE";
+                ;
             } else {
                 availabilityType = hasPartialTable ? "PARTIAL_AVAILABLE" : "FULL_AVAILABLE";
             }
@@ -523,7 +534,8 @@ public class ReservationService {
             selectedTables = findBestTableCombination(availableMerge, req.getGuestCount());
 
             if (selectedTables.isEmpty()) {
-                throw new BadRequestException("Không có tổ hợp bàn ghép nào phù hợp (yêu cầu sức chứa từ " + req.getGuestCount() + " đến " + (req.getGuestCount() + 2) + " chỗ).");
+                throw new BadRequestException("Không có tổ hợp bàn ghép nào phù hợp (yêu cầu sức chứa từ "
+                        + req.getGuestCount() + " đến " + (req.getGuestCount() + 2) + " chỗ).");
             }
             availabilityType = "MERGED_AVAILABLE";
         } else {
@@ -577,8 +589,7 @@ public class ReservationService {
         } else {
             LocalDateTime earliestNextBooking = null;
             for (TableInfo t : selectedTables) {
-                List<Reservation> nextBookings =
-                        reservationRepository.findNextBookingForTable(t.getTableId(), now);
+                List<Reservation> nextBookings = reservationRepository.findNextBookingForTable(t.getTableId(), now);
                 if (!nextBookings.isEmpty()) {
                     LocalDateTime nextStart = nextBookings.get(0).getStartTime();
                     if (earliestNextBooking == null || nextStart.isBefore(earliestNextBooking)) {
@@ -598,7 +609,7 @@ public class ReservationService {
         Customer customer = resolveWalkInCustomer(req);
 
         // ── Tạo Reservation tạm (CREATED) + soft-lock các bàn ─────────
-        //    Scheduler sẽ tự hủy nếu lễ tân không confirm trong softLockMinutes.
+        // Scheduler sẽ tự hủy nếu lễ tân không confirm trong softLockMinutes.
         Reservation reservation = Reservation.builder()
                 .customer(customer)
                 .type(ReservationType.WALK_IN)
@@ -676,8 +687,7 @@ public class ReservationService {
         }
 
         // Lấy bàn đang soft-lock
-        List<TableInfo> lockedTables =
-                tableInfoRepository.findByLockedByReservationId(suggestionId);
+        List<TableInfo> lockedTables = tableInfoRepository.findByLockedByReservationId(suggestionId);
 
         if (lockedTables.isEmpty()) {
             // Scheduler đã giải phóng soft-lock trước khi lễ tân bấm confirm
@@ -771,10 +781,12 @@ public class ReservationService {
             // Nếu bàn mới không phải bàn cũ → kiểm tra trạng thái
             if (!currentTableIds.contains(tableId)) {
                 if (table.isSoftLocked()) {
-                    throw new ConflictException("Bàn #" + tableId + " đang được giữ tạm cho giao dịch thanh toán khác.");
+                    throw new ConflictException(
+                            "Bàn #" + tableId + " đang được giữ tạm cho giao dịch thanh toán khác.");
                 }
                 if (table.getStatus() != TableStatus.AVAILABLE) {
-                    throw new ConflictException("Bàn #" + tableId + " hiện không trống (Trạng thái: " + table.getStatus() + ").");
+                    throw new ConflictException(
+                            "Bàn #" + tableId + " hiện không trống (Trạng thái: " + table.getStatus() + ").");
                 }
 
                 // Kiểm tra overlap với booking khác (trừ chính đơn này)
@@ -792,7 +804,9 @@ public class ReservationService {
         }
 
         if (newTotalCapacity > reservation.getGuestCount() + 2) {
-            throw new BadRequestException("Không thể đổi bàn! Chỉ được phép chuyển sang bàn lớn hơn tối đa 2 chỗ so với sức chứa hiện tại. (Sức chứa cũ: " + oldTotalCapacity + " chỗ, yêu cầu mới: " + newTotalCapacity + " chỗ).");
+            throw new BadRequestException(
+                    "Không thể đổi bàn! Chỉ được phép chuyển sang bàn lớn hơn tối đa 2 chỗ so với sức chứa hiện tại. (Sức chứa cũ: "
+                            + oldTotalCapacity + " chỗ, yêu cầu mới: " + newTotalCapacity + " chỗ).");
         }
 
         // Giải phóng bàn cũ
@@ -829,7 +843,8 @@ public class ReservationService {
                 newMappings.add(mappingRepository.save(mapping));
             }
         } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
-            throw new ConflictException("Một trong các bàn vừa bị thay đổi bởi giao dịch khác. Vui lòng tải lại và thử lại.");
+            throw new ConflictException(
+                    "Một trong các bàn vừa bị thay đổi bởi giao dịch khác. Vui lòng tải lại và thử lại.");
         }
 
         reservation.setTableMappings(newMappings);
@@ -846,8 +861,7 @@ public class ReservationService {
 
         if (reservation.getStatus() != ReservationStatus.RESERVED) {
             throw new BadRequestException(
-                    "Đơn không ở trạng thái RESERVED. (Lưu ý: Đơn Walk-in hoặc đơn khách đã vào bàn sẽ không thể check-in lại)."
-            );
+                    "Đơn không ở trạng thái RESERVED. (Lưu ý: Đơn Walk-in hoặc đơn khách đã vào bàn sẽ không thể check-in lại).");
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -864,7 +878,8 @@ public class ReservationService {
             reservationRepository.save(reservation);
             releaseTablesByReservation(reservation);
 
-            throw new BadRequestException("Đơn đặt bàn đã quá giờ giữ chỗ (" + gracePeriodMinutes + " phút). Đơn đã bị hủy theo chính sách No-Show.");
+            throw new BadRequestException("Đơn đặt bàn đã quá giờ giữ chỗ (" + gracePeriodMinutes
+                    + " phút). Đơn đã bị hủy theo chính sách No-Show.");
         }
 
         // ────── Kịch bản B & C: Kiểm tra trạng thái thực tế của bàn ──────
@@ -877,9 +892,11 @@ public class ReservationService {
 
             if (!hasAlternativeTable) {
                 if (now.isBefore(startTime)) {
-                    throw new ConflictException("Bàn đặt trước hiện chưa trống và không có bàn thay thế phù hợp. Mời quý khách ngồi chờ ở khu vực Waitlist.");
+                    throw new ConflictException(
+                            "Bàn đặt trước hiện chưa trống và không có bàn thay thế phù hợp. Mời quý khách ngồi chờ ở khu vực Waitlist.");
                 } else {
-                    throw new ConflictException("OVERSTAY_CONFLICT: Bàn gốc đang bị khách ca trước ngồi quá giờ và không có bàn thay thế trống. Vui lòng sử dụng chức năng Override để xử lý.");
+                    throw new ConflictException(
+                            "OVERSTAY_CONFLICT: Bàn gốc đang bị khách ca trước ngồi quá giờ và không có bàn thay thế trống. Vui lòng sử dụng chức năng Override để xử lý.");
                 }
             } else {
                 reservationRepository.flush();
@@ -890,7 +907,7 @@ public class ReservationService {
             }
         }
 
-        // ────── Check-in Thành công  ──────
+        // ────── Check-in Thành công ──────
 
         reservation.checkIn();
         if (now.isBefore(startTime)) {
@@ -898,7 +915,7 @@ public class ReservationService {
         } else {
             reservation.setEndTime(startTime.plusMinutes(durationMinutes));
         }
-        //Cập nhật Table_Info.status = OCCUPIED cho TẤT CẢ bàn trong Mapping
+        // Cập nhật Table_Info.status = OCCUPIED cho TẤT CẢ bàn trong Mapping
         for (TableInfo t : assignedTables) {
             t.setStatus(TableStatus.OCCUPIED);
             tableInfoRepository.save(t);
@@ -946,13 +963,13 @@ public class ReservationService {
                 .collect(Collectors.toList());
 
         List<List<TableInfo>> combinations = new ArrayList<>();
-            backtrackWalkInOptionCombinations(sortedTables, targetGuests, 0, new ArrayList<>(), 0, combinations);
+        backtrackWalkInOptionCombinations(sortedTables, targetGuests, 0, new ArrayList<>(), 0, combinations);
         return combinations;
     }
 
     private void backtrackWalkInOptionCombinations(List<TableInfo> tables, int target, int start,
-                                                   List<TableInfo> currentCombo, int currentSum,
-                                                   List<List<TableInfo>> combinations) {
+            List<TableInfo> currentCombo, int currentSum,
+            List<List<TableInfo>> combinations) {
         if (combinations.size() >= 20) {
             return;
         }
@@ -970,14 +987,15 @@ public class ReservationService {
 
         for (int i = start; i < tables.size(); i++) {
             currentCombo.add(tables.get(i));
-            backtrackWalkInOptionCombinations(tables, target, i + 1, currentCombo, currentSum + tables.get(i).getCapacity(), combinations);
+            backtrackWalkInOptionCombinations(tables, target, i + 1, currentCombo,
+                    currentSum + tables.get(i).getCapacity(), combinations);
             currentCombo.remove(currentCombo.size() - 1);
         }
     }
 
     private WalkInOptionResponse.TableOption buildWalkInOption(List<TableInfo> tables,
-                                                                String type,
-                                                                LocalDateTime availableUntil) {
+            String type,
+            LocalDateTime availableUntil) {
         List<Long> tableIds = tables.stream()
                 .map(TableInfo::getTableId)
                 .sorted()
@@ -1001,7 +1019,8 @@ public class ReservationService {
         return customerRepository.findByPhoneAndPasswordHashIsNull(req.getCustomerPhone())
                 .orElseGet(() -> customerRepository.save(Customer.builder()
                         .name(req.getCustomerName() != null && !req.getCustomerName().isBlank()
-                                ? req.getCustomerName() : "Khach Walk-in")
+                                ? req.getCustomerName()
+                                : "Khach Walk-in")
                         .phone(req.getCustomerPhone())
                         .isVerified(true)
                         .build()));
