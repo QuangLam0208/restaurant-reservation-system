@@ -313,7 +313,7 @@ public class ReservationService {
 
     @Transactional(readOnly = true)
     public List<ReservationResponse> getReservationsByCustomer(Long customerId) {
-        return reservationRepository.findByCustomer_CustomerIdOrderByCreatedAtDesc(customerId)
+        return reservationRepository.findByCustomer_CustomerIdOrderByStartTimeDesc(customerId)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());

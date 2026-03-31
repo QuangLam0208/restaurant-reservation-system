@@ -15,7 +15,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
         List<Reservation> findByStatus(ReservationStatus status);
 
-        List<Reservation> findByCustomer_CustomerIdOrderByCreatedAtDesc(Long customerId);
+        List<Reservation> findByCustomer_CustomerIdOrderByStartTimeDesc(Long customerId);
 
         List<Reservation> findByStatusOrderByStartTimeAsc(ReservationStatus status);
 

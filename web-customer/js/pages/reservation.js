@@ -1,5 +1,6 @@
 import { callApi, getStoredUser, clearUser } from '../common/api.js';
 import { initAuth } from '../features/auth.js';
+import { openBookingsModal, closeBookingsModal, switchBookingTab, cancelMyBooking } from '../features/my-bookings.js';
 
 const S = { party:2, date:null, dateStr:null, time:null, week:0, MAX_W:4, reservationId: null };
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -8,9 +9,6 @@ const today  = new Date(); today.setHours(0,0,0,0);
 const dow = today.getDay(), toMon = dow===0?6:dow-1;
 const thisMonday = new Date(today); thisMonday.setDate(today.getDate()-toMon);
 
-let myBookingsList = [];
-let allReservations = []; // Để lưu trữ dữ liệu tải từ API
-let currentBookingTab = 'upcoming'; // 'upcoming' hoặc 'history'
 let countdownInterval = null;
 let timeLeft = 300; // 5 phút = 300 giây
 
@@ -69,117 +67,6 @@ function updateTimerDisplay() {
         pill.style.background = 'var(--gold-pale)';
         prog.style.stroke = 'var(--gold)';
         text.style.color = 'var(--gold)';
-    }
-}
-
-// ─── LÔ-GIC MY BOOKINGS ───
-async function openBookingsModal() {
-    const listHtml = document.getElementById('bookings-list');
-    listHtml.innerHTML = '<div class="loading-bookings">Loading your reservations...</div>';
-    document.getElementById('bookings-modal').classList.add('open');
-
-    // Reset về tab Upcoming mỗi khi mở
-    currentBookingTab = 'upcoming';
-    const tabUpcoming = document.getElementById('tab-upcoming');
-    const tabHistory = document.getElementById('tab-history');
-    if (tabUpcoming) tabUpcoming.classList.add('active');
-    if (tabHistory) tabHistory.classList.remove('active');
-
-    const { ok, status, data: reservations } = await callApi('/reservations/my');
-    if (status === 401 || status === 403) {
-        alert("Session expired. Please log in again.");
-        clearUser();
-        window.location.href = 'index.html';
-        return;
-    }
-
-    if (!ok) {
-        listHtml.innerHTML = `<p class="error-state">Failed to load reservations. (Error: ${status})</p>`;
-        return;
-    }
-
-    allReservations = reservations || [];
-    renderBookings();
-}
-
-function switchBookingTab(tab) {
-    currentBookingTab = tab;
-    document.getElementById('tab-upcoming').classList.toggle('active', tab === 'upcoming');
-    document.getElementById('tab-history').classList.toggle('active', tab === 'history');
-    renderBookings();
-}
-
-function renderBookings() {
-    const listHtml = document.getElementById('bookings-list');
-    const now = new Date();
-    
-    // Logic phân loại:
-    // Upcoming: Status hơp lệ VÀ thời gian chưa kết thúc (hoặc vừa mới bắt đầu)
-    // History: Status hủy/xong HOẶC thời gian đã qua lâu
-    let filtered = allReservations.filter(r => {
-        const isPastStatus = ['COMPLETED', 'CANCELLED', 'NO_SHOW', 'EXPIRED'].includes(r.status);
-        if (currentBookingTab === 'upcoming') return !isPastStatus;
-        return isPastStatus;
-    });
-
-    // Sort: Upcoming (ASC), History (DESC)
-    filtered.sort((a, b) => {
-        const da = new Date(a.startTime).getTime();
-        const db = new Date(b.startTime).getTime();
-        return currentBookingTab === 'upcoming' ? da - db : db - da;
-    });
-
-    if (filtered.length === 0) {
-        listHtml.innerHTML = `<p class="empty-state">No ${currentBookingTab} reservations found.</p>`;
-        return;
-    }
-
-    listHtml.innerHTML = '';
-    filtered.forEach(r => {
-        const start = new Date(r.startTime);
-        const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
-        const timeStr = r.startTime.split('T')[1].substring(0, 5);
-        
-        const canCancel = r.status === 'RESERVED' && (start.getTime() - now.getTime() > 3 * 60 * 60 * 1000);
-
-        let statusClass = 'st-default';
-        if (r.status === 'RESERVED') statusClass = 'st-reserved';
-        if (r.status === 'CANCELLED' || r.status === 'NO_SHOW') statusClass = 'st-cancelled';
-        if (r.status === 'COMPLETED' || r.status === 'SEATED') statusClass = 'st-completed';
-
-        listHtml.innerHTML += `
-        <div class="booking-item">
-          <div class="b-header">
-            <p class="b-ref">#${r.reservationId}</p>
-            <span class="status-badge ${statusClass}">${r.status}</span>
-          </div>
-          <div class="b-body">
-            <p class="b-detail"><strong>Date:</strong> ${dateStr} at ${timeStr}</p>
-            <p class="b-detail"><strong>Guests:</strong> ${r.guestCount} people</p>
-            ${r.note ? `<p class="b-note">"${r.note}"</p>` : ''}
-          </div>
-          <div class="b-footer">
-            ${canCancel ? `<button class="btn-cancel-small" onclick="cancelMyBooking(${r.reservationId})">Cancel Reservation</button>` : ''}
-            ${r.status === 'RESERVED' && !canCancel ? '<span class="cancel-deadline">Cancellation closed (within 3h)</span>' : ''}
-          </div>
-        </div>
-      `;
-    });
-}
-
-function closeBookingsModal() {
-    document.getElementById('bookings-modal').classList.remove('open');
-}
-
-async function cancelMyBooking(id) {
-    if (!confirm(`Are you sure you want to cancel reservation #${id}?`)) return;
-
-    const { ok, data } = await callApi(`/reservations/${id}`, 'DELETE');
-    if (ok) {
-        alert("Reservation cancelled successfully.");
-        openBookingsModal(); // Refresh list
-    } else {
-        alert(data?.message || "Failed to cancel reservation.");
     }
 }
 
@@ -414,13 +301,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    // 3. Cập nhật giao diện (Header) - Đã được initAuth gọi một phần nhưng ở đây đảm bảo ID trên trang này được map đúng
-    const authGroup = document.getElementById('nav-auth-group');
-    const greeting = document.getElementById('user-greeting');
-    if (authGroup && greeting) {
-        greeting.textContent = `Hi, ${user.name || 'Guest'}`;
-        authGroup.style.display = 'flex';
+    // 3. Quản lý sự kiện cho My Bookings
+    const viewBookingsLink = document.getElementById('view-bookings-link');
+    if (viewBookingsLink) {
+        viewBookingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            openBookingsModal();
+        });
     }
+
+    const tabUpcoming = document.getElementById('tab-upcoming');
+    const tabHistory = document.getElementById('tab-history');
+    if (tabUpcoming) tabUpcoming.onclick = () => switchBookingTab('upcoming');
+    if (tabHistory) tabHistory.onclick = () => switchBookingTab('history');
+
+    const closeBookingsBtn = document.getElementById('close-bookings-btn');
+    if (closeBookingsBtn) closeBookingsBtn.onclick = closeBookingsModal;
 
     // Gắn sự kiện các nút
     const pInput = document.getElementById('party-val');

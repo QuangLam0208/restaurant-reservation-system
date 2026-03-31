@@ -27,22 +27,8 @@ body::after {
 }
 
 /* HEADER */
-header {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-    padding: 0 52px; height: 74px;
-    display: flex; justify-content: space-between; align-items: center;
-    background: rgba(251,248,244,0.85); backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(223, 213, 196, 0.5);
-}
-.logo { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; letter-spacing: 0.35em; color: var(--ink); text-decoration: none; text-transform: uppercase; }
-.nav-links { display: flex; gap: 36px; align-items: center; }
-.nav-auth-group { display: flex; align-items: center; gap: 24px; }
-.nav-link { font-size: 11.5px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color 0.3s var(--ease); white-space: nowrap; }
-.user-hi { color: var(--gold); border-right: 1px solid var(--parchment); padding-right: 24px; margin-right: 0; }
-.nav-link:hover { color: var(--gold); }
-
-/* HERO BAND */
-.hero-band { padding-top: 74px; background: var(--ink); }
+/* Header redundancy removed. Controlled by layout/header.css */
+.hero-band { padding-top: 84px; background: var(--ink); }
 .hero-band-inner { max-width: 1280px; margin: 0 auto; padding: 64px 52px 0; display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: 40px; }
 .hero-text { padding-bottom: 56px; }
 .hero-overline { display: inline-flex; align-items: center; gap: 12px; font-size: 11px; font-weight: 400; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 24px; }
@@ -116,8 +102,8 @@ header {
 .stepper { display: flex; align-items: center; border: 1px solid var(--parchment); border-radius: var(--r-pill); overflow: hidden; background: var(--white); }
 .st-btn { width: 42px; height: 42px; background: transparent; border: none; font-size: 22px; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s var(--ease); }
 .st-btn:hover { background: var(--gold-pale); color: var(--gold); }
-.st-val { width: 56px; height: 42px; border: none; border-left: 1px solid var(--parchment); border-right: 1px solid var(--parchment); font-family: 'DM Sans', sans-serif; font-size: 20px; text-align: center; color: var(--ink); background: var(--white); outline: none; -moz-appearance: textfield; }
-.st-val::-webkit-outer-spin-button, .st-val::-webkit-inner-spin-button { -webkit-appearance: none; }
+.st-val { width: 56px; height: 42px; border: none; border-left: 1px solid var(--parchment); border-right: 1px solid var(--parchment); font-family: 'DM Sans', sans-serif; font-size: 20px; text-align: center; color: var(--ink); background: var(--white); outline: none; appearance: textfield; -moz-appearance: textfield; -webkit-appearance: textfield; }
+.st-val::-webkit-outer-spin-button, .st-val::-webkit-inner-spin-button { appearance: none; -webkit-appearance: none; margin: 0; }
 
 /* CTA BUTTONS */
 .step-cta { margin-top: 24px; width: 100%; padding: 16px 20px; background: var(--ink); color: var(--white); border: none; border-radius: var(--r-pill); font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 400; letter-spacing: 0.25em; text-transform: uppercase; cursor: pointer; transition: all 0.35s var(--ease); display: flex; align-items: center; justify-content: center; gap: 12px; }

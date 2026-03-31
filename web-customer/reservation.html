@@ -11,18 +11,21 @@
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap"
     rel="stylesheet">
 
+  <link rel="stylesheet" href="assets/css/layout/header.css">
   <link rel="stylesheet" href="assets/css/pages/reservation.css">
 </head>
 
 <body>
 
-  <header>
+  <header id="main-header" class="header-solid">
     <a href="index.html" class="logo">San — Lorenzo</a>
     <nav class="nav-links">
       <a href="index.html" class="nav-link">Home</a>
+      <a href="reservation.html" class="nav-link btn-reserve-header">Reserve</a>
+      
       <div id="nav-auth-group" class="nav-auth-group" style="display: none;">
         <span class="nav-link user-hi" id="user-greeting">Hi, Guest</span>
-        <a href="#" class="nav-link" onclick="openBookingsModal(); return false;">My Bookings</a>
+        <a href="#" class="nav-link" id="view-bookings-link">My Bookings</a>
         <a href="#" class="nav-link" id="logout-btn">Sign Out</a>
       </div>
     </nav>
