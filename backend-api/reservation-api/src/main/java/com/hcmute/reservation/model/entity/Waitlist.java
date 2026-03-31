@@ -53,4 +53,8 @@ public class Waitlist {
     public void skip() {
         this.status = WaitlistStatus.SKIPPED;
     }
+
+    public void markAsMissing() {
+        this.status = WaitlistStatus.MISSING;
+    }
 }
