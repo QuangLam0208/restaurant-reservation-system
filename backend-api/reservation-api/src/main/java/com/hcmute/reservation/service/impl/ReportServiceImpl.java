@@ -3,7 +3,6 @@ package com.hcmute.reservation.service.impl;
 import com.hcmute.reservation.model.dto.report.DailyReservationReport;
 import com.hcmute.reservation.model.dto.report.NoShowRateResponse;
 import com.hcmute.reservation.exception.BadRequestException;
-import com.hcmute.reservation.model.enums.ReservationStatus;
 import com.hcmute.reservation.model.enums.ReservationType;
 import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.service.ReportService;
@@ -143,18 +142,17 @@ public class ReportServiceImpl implements ReportService {
         long totalOnline = reservationRepository.countReservations(
                 fromDt, toDt,
                 ReservationType.ONLINE,
-                List.of(ReservationStatus.RESERVED, ReservationStatus.SEATED,
-                        ReservationStatus.COMPLETED, ReservationStatus.NO_SHOW));
+                List.of(RESERVED, SEATED, COMPLETED, NO_SHOW));
 
         long totalWalkIn = reservationRepository.countReservations(
                 fromDt, toDt,
                 ReservationType.WALK_IN,
-                List.of(ReservationStatus.SEATED, ReservationStatus.COMPLETED));
+                List.of(SEATED, COMPLETED));
 
         long noShows = reservationRepository.countReservations(
                 fromDt, toDt,
                 ReservationType.ONLINE,
-                List.of(ReservationStatus.NO_SHOW));
+                List.of(NO_SHOW));
 
         double rate = totalOnline == 0 ? 0.0
                 : Math.round((double) noShows / totalOnline * 10000.0) / 100.0;
