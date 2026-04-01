@@ -72,6 +72,7 @@
             // 
             // pnlSearch
             // 
+            this.pnlSearch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlSearch.BackColor = System.Drawing.Color.White;
             this.pnlSearch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlSearch.Controls.Add(this.btnReload);
@@ -134,6 +135,7 @@
             // 
             // flpReservations
             // 
+            this.flpReservations.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.flpReservations.AutoScroll = true;
             this.flpReservations.BackColor = System.Drawing.Color.White;
             this.flpReservations.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -147,6 +149,7 @@
             // 
             // pnlDetails
             // 
+            this.pnlDetails.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlDetails.BackColor = System.Drawing.Color.White;
             this.pnlDetails.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlDetails.Controls.Add(this.lblValTimeStatus);
@@ -177,6 +180,8 @@
             this.lblDetailTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.lblDetailTitle.Location = new System.Drawing.Point(30, 25);
             this.lblDetailTitle.Name = "lblDetailTitle";
+            this.lblDetailTitle.Size = new System.Drawing.Size(351, 45);
+            this.lblDetailTitle.TabIndex = 0;
             this.lblDetailTitle.Text = "THÔNG TIN ĐẶT BÀN:";
             // 
             // lblTitleName
@@ -185,6 +190,9 @@
             this.lblTitleName.Font = new System.Drawing.Font("Segoe UI", 14F);
             this.lblTitleName.ForeColor = System.Drawing.Color.Gray;
             this.lblTitleName.Location = new System.Drawing.Point(40, 100);
+            this.lblTitleName.Name = "lblTitleName";
+            this.lblTitleName.Size = new System.Drawing.Size(169, 38);
+            this.lblTitleName.TabIndex = 1;
             this.lblTitleName.Text = "Khách hàng:";
             // 
             // lblValName
@@ -192,6 +200,9 @@
             this.lblValName.AutoSize = true;
             this.lblValName.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
             this.lblValName.Location = new System.Drawing.Point(230, 95);
+            this.lblValName.Name = "lblValName";
+            this.lblValName.Size = new System.Drawing.Size(56, 45);
+            this.lblValName.TabIndex = 2;
             this.lblValName.Text = "---";
             // 
             // lblTitlePhone
@@ -200,6 +211,9 @@
             this.lblTitlePhone.Font = new System.Drawing.Font("Segoe UI", 14F);
             this.lblTitlePhone.ForeColor = System.Drawing.Color.Gray;
             this.lblTitlePhone.Location = new System.Drawing.Point(40, 170);
+            this.lblTitlePhone.Name = "lblTitlePhone";
+            this.lblTitlePhone.Size = new System.Drawing.Size(151, 38);
+            this.lblTitlePhone.TabIndex = 3;
             this.lblTitlePhone.Text = "Điện thoại:";
             // 
             // lblValPhone
@@ -207,6 +221,9 @@
             this.lblValPhone.AutoSize = true;
             this.lblValPhone.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.lblValPhone.Location = new System.Drawing.Point(230, 170);
+            this.lblValPhone.Name = "lblValPhone";
+            this.lblValPhone.Size = new System.Drawing.Size(49, 38);
+            this.lblValPhone.TabIndex = 4;
             this.lblValPhone.Text = "---";
             // 
             // lblTitleTime
@@ -215,6 +232,9 @@
             this.lblTitleTime.Font = new System.Drawing.Font("Segoe UI", 14F);
             this.lblTitleTime.ForeColor = System.Drawing.Color.Gray;
             this.lblTitleTime.Location = new System.Drawing.Point(40, 240);
+            this.lblTitleTime.Name = "lblTitleTime";
+            this.lblTitleTime.Size = new System.Drawing.Size(107, 38);
+            this.lblTitleTime.TabIndex = 5;
             this.lblTitleTime.Text = "Giờ tới:";
             // 
             // lblValTime
@@ -223,15 +243,10 @@
             this.lblValTime.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
             this.lblValTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
             this.lblValTime.Location = new System.Drawing.Point(230, 235);
+            this.lblValTime.Name = "lblValTime";
+            this.lblValTime.Size = new System.Drawing.Size(84, 45);
+            this.lblValTime.TabIndex = 6;
             this.lblValTime.Text = "--:--";
-            // 
-            // lblValTimeStatus
-            // 
-            this.lblValTimeStatus.AutoSize = true;
-            this.lblValTimeStatus.Font = new System.Drawing.Font("Segoe UI", 12F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
-            this.lblValTimeStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(156)))), ((int)(((byte)(18)))));
-            this.lblValTimeStatus.Location = new System.Drawing.Point(340, 242);
-            this.lblValTimeStatus.Text = "";
             // 
             // lblTitleGuests
             // 
@@ -239,6 +254,9 @@
             this.lblTitleGuests.Font = new System.Drawing.Font("Segoe UI", 14F);
             this.lblTitleGuests.ForeColor = System.Drawing.Color.Gray;
             this.lblTitleGuests.Location = new System.Drawing.Point(40, 310);
+            this.lblTitleGuests.Name = "lblTitleGuests";
+            this.lblTitleGuests.Size = new System.Drawing.Size(135, 38);
+            this.lblTitleGuests.TabIndex = 7;
             this.lblTitleGuests.Text = "Số lượng:";
             // 
             // lblValGuests
@@ -246,6 +264,9 @@
             this.lblValGuests.AutoSize = true;
             this.lblValGuests.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.lblValGuests.Location = new System.Drawing.Point(230, 310);
+            this.lblValGuests.Name = "lblValGuests";
+            this.lblValGuests.Size = new System.Drawing.Size(49, 38);
+            this.lblValGuests.TabIndex = 8;
             this.lblValGuests.Text = "---";
             // 
             // lblTitleTable
@@ -254,6 +275,9 @@
             this.lblTitleTable.Font = new System.Drawing.Font("Segoe UI", 14F);
             this.lblTitleTable.ForeColor = System.Drawing.Color.Gray;
             this.lblTitleTable.Location = new System.Drawing.Point(40, 380);
+            this.lblTitleTable.Name = "lblTitleTable";
+            this.lblTitleTable.Size = new System.Drawing.Size(162, 38);
+            this.lblTitleTable.TabIndex = 9;
             this.lblTitleTable.Text = "Bàn đã xếp:";
             // 
             // lblValTable
@@ -262,6 +286,9 @@
             this.lblValTable.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
             this.lblValTable.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
             this.lblValTable.Location = new System.Drawing.Point(230, 375);
+            this.lblValTable.Name = "lblValTable";
+            this.lblValTable.Size = new System.Drawing.Size(56, 45);
+            this.lblValTable.TabIndex = 10;
             this.lblValTable.Text = "---";
             // 
             // lblTitleTableStatus
@@ -270,6 +297,9 @@
             this.lblTitleTableStatus.Font = new System.Drawing.Font("Segoe UI", 14F);
             this.lblTitleTableStatus.ForeColor = System.Drawing.Color.Gray;
             this.lblTitleTableStatus.Location = new System.Drawing.Point(40, 450);
+            this.lblTitleTableStatus.Name = "lblTitleTableStatus";
+            this.lblTitleTableStatus.Size = new System.Drawing.Size(150, 38);
+            this.lblTitleTableStatus.TabIndex = 11;
             this.lblTitleTableStatus.Text = "Tình trạng:";
             // 
             // lblValTableStatus
@@ -277,7 +307,20 @@
             this.lblValTableStatus.AutoSize = true;
             this.lblValTableStatus.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.lblValTableStatus.Location = new System.Drawing.Point(230, 450);
+            this.lblValTableStatus.Name = "lblValTableStatus";
+            this.lblValTableStatus.Size = new System.Drawing.Size(49, 38);
+            this.lblValTableStatus.TabIndex = 12;
             this.lblValTableStatus.Text = "---";
+            // 
+            // lblValTimeStatus
+            // 
+            this.lblValTimeStatus.AutoSize = true;
+            this.lblValTimeStatus.Font = new System.Drawing.Font("Segoe UI", 12F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
+            this.lblValTimeStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(156)))), ((int)(((byte)(18)))));
+            this.lblValTimeStatus.Location = new System.Drawing.Point(340, 242);
+            this.lblValTimeStatus.Name = "lblValTimeStatus";
+            this.lblValTimeStatus.Size = new System.Drawing.Size(0, 32);
+            this.lblValTimeStatus.TabIndex = 13;
             // 
             // lblTitleNote
             // 
@@ -286,6 +329,8 @@
             this.lblTitleNote.ForeColor = System.Drawing.Color.Gray;
             this.lblTitleNote.Location = new System.Drawing.Point(40, 520);
             this.lblTitleNote.Name = "lblTitleNote";
+            this.lblTitleNote.Size = new System.Drawing.Size(117, 38);
+            this.lblTitleNote.TabIndex = 14;
             this.lblTitleNote.Text = "Ghi chú:";
             // 
             // lblValNote
@@ -294,11 +339,13 @@
             this.lblValNote.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.lblValNote.Location = new System.Drawing.Point(230, 525);
             this.lblValNote.Name = "lblValNote";
-            this.lblValNote.Size = new System.Drawing.Size(500, 70); // Đủ rộng để hiển thị tối đa 3 dòng ghi chú
+            this.lblValNote.Size = new System.Drawing.Size(500, 70);
+            this.lblValNote.TabIndex = 15;
             this.lblValNote.Text = "---";
             // 
             // btnChangeTable
             // 
+            this.btnChangeTable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnChangeTable.BackColor = System.Drawing.Color.White;
             this.btnChangeTable.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnChangeTable.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
@@ -315,6 +362,7 @@
             // 
             // btnCheckIn
             // 
+            this.btnCheckIn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCheckIn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(204)))), ((int)(((byte)(113)))));
             this.btnCheckIn.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnCheckIn.FlatAppearance.BorderSize = 0;

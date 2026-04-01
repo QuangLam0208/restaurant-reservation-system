@@ -81,6 +81,7 @@ namespace reservation_winforms.Forms
             // 
             // pnlFilter
             // 
+            this.pnlFilter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlFilter.BackColor = System.Drawing.Color.White;
             this.pnlFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlFilter.Controls.Add(this.tabFilter);
@@ -294,6 +295,7 @@ namespace reservation_winforms.Forms
             // 
             // pnlCards
             // 
+            this.pnlCards.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlCards.BackColor = System.Drawing.Color.Transparent;
             this.pnlCards.Controls.Add(this.lblTotalAllTitle);
             this.pnlCards.Controls.Add(this.lblTotalAll);
@@ -437,6 +439,7 @@ namespace reservation_winforms.Forms
             // 
             // chartReservations
             // 
+            this.chartReservations.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             chartArea2.Name = "ChartArea1";
             this.chartReservations.ChartAreas.Add(chartArea2);
             this.chartReservations.Location = new System.Drawing.Point(30, 460);
