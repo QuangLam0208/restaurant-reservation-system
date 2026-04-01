@@ -29,6 +29,7 @@ namespace reservation_winforms.Forms
             btnReports.Click += BtnReports_Click;
             btnSystemLogs.Click += BtnSystemLogs_Click;
             btnRegisterStaff.Click += btnRegisterStaff_Click;
+            btnSystemConfig.Click += BtnSystemConfig_Click;
 
             btnLogout.Click += BtnLogout_Click;
         }
@@ -42,6 +43,7 @@ namespace reservation_winforms.Forms
                 btnReports.Visible = false;
                 btnSystemLogs.Visible = false;
                 btnRegisterStaff.Visible = false;
+                btnSystemConfig.Visible = false;
             }
         }
 
@@ -104,9 +106,13 @@ namespace reservation_winforms.Forms
 
             pnlMainContent.Controls.Add(registerCtrl);
         }
+        private void BtnSystemConfig_Click(object sender, EventArgs e)
+        {
+            LoadUserControl(new UcSystemConfig());
+        }
         private void BtnLogout_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            DialogResult result = MessageBox.Show("Are you sure you want to log out of the system?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {

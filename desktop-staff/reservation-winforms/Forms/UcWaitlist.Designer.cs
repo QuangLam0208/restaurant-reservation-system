@@ -132,7 +132,7 @@ namespace reservation_winforms.Forms
             // 
             // btnAdd
             // 
-            this.btnAdd.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.btnAdd.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAdd.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(156)))), ((int)(((byte)(18)))));
             this.btnAdd.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -161,7 +161,8 @@ namespace reservation_winforms.Forms
             // 
             // nudGuests
             // 
-            this.nudGuests.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
+            this.nudGuests.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.nudGuests.Font = new System.Drawing.Font("Segoe UI", 14F);
             this.nudGuests.Location = new System.Drawing.Point(30, 360);
             this.nudGuests.Name = "nudGuests";
@@ -185,7 +186,7 @@ namespace reservation_winforms.Forms
             // 
             // txtPhone
             // 
-            this.txtPhone.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.txtPhone.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtPhone.Font = new System.Drawing.Font("Segoe UI", 14F);
             this.txtPhone.Location = new System.Drawing.Point(30, 250);
@@ -205,7 +206,7 @@ namespace reservation_winforms.Forms
             // 
             // txtName
             // 
-            this.txtName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.txtName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtName.Font = new System.Drawing.Font("Segoe UI", 14F);
             this.txtName.Location = new System.Drawing.Point(30, 140);
@@ -523,13 +524,14 @@ namespace reservation_winforms.Forms
             // 
             // btnSearchMissing
             // 
+            this.btnSearchMissing.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSearchMissing.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
             this.btnSearchMissing.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnSearchMissing.FlatAppearance.BorderSize = 0;
             this.btnSearchMissing.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSearchMissing.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.btnSearchMissing.ForeColor = System.Drawing.Color.White;
-            this.btnSearchMissing.Location = new System.Drawing.Point(985, 13);
+            this.btnSearchMissing.Location = new System.Drawing.Point(985, 12);
             this.btnSearchMissing.Name = "btnSearchMissing";
             this.btnSearchMissing.Size = new System.Drawing.Size(150, 47);
             this.btnSearchMissing.TabIndex = 2;
@@ -538,10 +540,10 @@ namespace reservation_winforms.Forms
             // 
             // txtSearchMissing
             // 
-            this.txtSearchMissing.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.txtSearchMissing.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtSearchMissing.Font = new System.Drawing.Font("Segoe UI", 14F);
-            this.txtSearchMissing.Location = new System.Drawing.Point(245, 15);
+            this.txtSearchMissing.Location = new System.Drawing.Point(245, 14);
             this.txtSearchMissing.Name = "txtSearchMissing";
             this.txtSearchMissing.Size = new System.Drawing.Size(712, 45);
             this.txtSearchMissing.TabIndex = 0;

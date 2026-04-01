@@ -3,6 +3,8 @@ using reservation_winforms.Services;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -11,6 +13,9 @@ namespace reservation_winforms.Forms
     public partial class UcReports : UserControl
     {
         private readonly ReportService _reportService;
+
+        private List<DailyReservationReport> _currentReportData;
+        private NoShowRateResponse _currentRateData;
 
         public UcReports()
         {
@@ -64,16 +69,20 @@ namespace reservation_winforms.Forms
             tabFilter.SizeMode = TabSizeMode.Fixed;
             tabFilter.ItemSize = new Size((tabFilter.Width / tabFilter.TabCount) - 2, 35);
 
+            // BỔ SUNG: Sự kiện click cho nút xuất Excel
+            if (btnExportExcel != null)
+            {
+                btnExportExcel.Click += BtnExportExcel_Click;
+            }
+
             this.Load += async (s, e) => await ExecuteFilterAsync();
         }
 
         private void DtpFromDate_ValueChanged(object sender, EventArgs e)
         {
             DateTime from = dtpFromDate.Value;
-
             dtpToDate.MinDate = new DateTime(1753, 1, 1);
             dtpToDate.MaxDate = new DateTime(9998, 12, 31);
-
             dtpToDate.MinDate = from;
             dtpToDate.MaxDate = new DateTime(from.Year, from.Month, DateTime.DaysInMonth(from.Year, from.Month));
         }
@@ -81,10 +90,8 @@ namespace reservation_winforms.Forms
         private void DtpFromMonth_ValueChanged(object sender, EventArgs e)
         {
             DateTime from = dtpFromMonth.Value;
-
             dtpToMonth.MinDate = new DateTime(1753, 1, 1);
             dtpToMonth.MaxDate = new DateTime(9998, 12, 31);
-
             dtpToMonth.MinDate = from;
             dtpToMonth.MaxDate = new DateTime(from.Year, 12, 31);
         }
@@ -105,6 +112,9 @@ namespace reservation_winforms.Forms
             {
                 btnFilter.Enabled = false;
                 btnFilter.Text = "ĐANG TẢI...";
+
+                _currentReportData = null;
+                _currentRateData = null;
 
                 (bool IsSuccess, List<DailyReservationReport> Data, string Message) chartRes = (false, null, "");
                 (bool IsSuccess, NoShowRateResponse Data, string Message) rateRes = (false, null, "");
@@ -141,6 +151,7 @@ namespace reservation_winforms.Forms
 
                 if (rateRes.IsSuccess && rateRes.Data != null)
                 {
+                    _currentRateData = rateRes.Data;
                     lblTotalAll.Text = rateRes.Data.TotalAll.ToString();
                     lblTotalOnline.Text = rateRes.Data.TotalOnline.ToString();
                     lblTotalWalkIn.Text = rateRes.Data.TotalWalkIn.ToString();
@@ -153,6 +164,7 @@ namespace reservation_winforms.Forms
 
                 if (chartRes.IsSuccess && chartRes.Data != null)
                 {
+                    _currentReportData = chartRes.Data;
                     chartReservations.Series["Đơn Walk-in"].Points.Clear();
                     chartReservations.Series["Đơn Online (Thành công)"].Points.Clear();
                     chartReservations.Series["Khách No-Show"].Points.Clear();
@@ -183,6 +195,52 @@ namespace reservation_winforms.Forms
             {
                 btnFilter.Enabled = true;
                 btnFilter.Text = "🔍 LỌC DỮ LIỆU";
+            }
+        }
+
+        private void BtnExportExcel_Click(object sender, EventArgs e)
+        {
+            if (_currentReportData == null || _currentReportData.Count == 0 || _currentRateData == null)
+            {
+                MessageBox.Show("Không có dữ liệu báo cáo để xuất!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel CSV File|*.csv", FileName = $"BaoCao_ThongKe_{DateTime.Now:ddMMyyyy}.csv" })
+            {
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.Append('\uFEFF');
+
+                        sb.AppendLine("1. TỔNG QUAN BÁO CÁO");
+                        sb.AppendLine($"Tổng số đơn đã đặt:,\"{_currentRateData.TotalAll}\"");
+                        sb.AppendLine($"Đơn Online:,\"{_currentRateData.TotalOnline}\"");
+                        sb.AppendLine($"Đơn Walk-in:,\"{_currentRateData.TotalWalkIn}\"");
+                        sb.AppendLine($"Số khách bỏ chỗ (No-Show):,\"{_currentRateData.NoShowCount}\"");
+                        sb.AppendLine($"Tỷ lệ No-Show:,\"{_currentRateData.NoShowRate}%\"");
+                        sb.AppendLine();
+                        sb.AppendLine();
+
+                        sb.AppendLine("2. CHI TIẾT THEO THỜI GIAN");
+                        sb.AppendLine("Thời gian,Tổng đơn đặt,Đơn Walk-in,Đơn Online,Khách No-Show");
+
+                        foreach (var item in _currentReportData)
+                        {
+                            long total = item.TotalWalkIn + item.TotalOnline;
+                            sb.AppendLine($"\"{item.Date}\",\"{total}\",\"{item.TotalWalkIn}\",\"{item.TotalOnline}\",\"{item.NoShowCount}\"");
+                        }
+
+                        File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
+                        MessageBox.Show("Xuất báo cáo ra Excel thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Lỗi khi xuất file: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
             }
         }
     }

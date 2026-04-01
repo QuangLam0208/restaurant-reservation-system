@@ -72,6 +72,7 @@
     <Compile Include="DTO\auth\StaffLoginRequest.cs" />
     <Compile Include="DTO\auth\StaffLoginResponse.cs" />
     <Compile Include="DTO\auth\StaffRegisterRequest.cs" />
+    <Compile Include="DTO\config\SystemConfigDTO.cs" />
     <Compile Include="DTO\overrides\OverrideLogResponse.cs" />
     <Compile Include="DTO\overrides\OverrideRequest.cs" />
     <Compile Include="DTO\report\DailyReservationReport.cs" />
@@ -129,6 +130,12 @@
     <Compile Include="Forms\UcReports.Designer.cs">
       <DependentUpon>UcReports.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\UcSystemConfig.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UcSystemConfig.Designer.cs">
+      <DependentUpon>UcSystemConfig.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\UcSystemLogs.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -161,6 +168,7 @@
     <Compile Include="Services\OverrideService.cs" />
     <Compile Include="Services\ReportService.cs" />
     <Compile Include="Services\ReservationService.cs" />
+    <Compile Include="Services\SystemConfigService.cs" />
     <Compile Include="Services\TableService.cs" />
     <Compile Include="Services\WaitlistService.cs" />
     <EmbeddedResource Include="Forms\LoginForm.resx">

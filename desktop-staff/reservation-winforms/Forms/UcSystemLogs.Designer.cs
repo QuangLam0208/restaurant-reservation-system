@@ -71,7 +71,7 @@ namespace reservation_winforms.Forms
             // 
             // pnlFilter
             // 
-            this.pnlFilter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.pnlFilter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlFilter.BackColor = System.Drawing.Color.White;
             this.pnlFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -91,7 +91,7 @@ namespace reservation_winforms.Forms
             // 
             // txtSearch
             // 
-            this.txtSearch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.txtSearch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtSearch.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtSearch.Location = new System.Drawing.Point(276, 115);
@@ -190,8 +190,8 @@ namespace reservation_winforms.Forms
             // 
             // pnlList
             // 
-            this.pnlList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.pnlList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlList.BackColor = System.Drawing.Color.White;
             this.pnlList.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -334,7 +334,6 @@ namespace reservation_winforms.Forms
             this.pnlFilter.ResumeLayout(false);
             this.pnlFilter.PerformLayout();
             this.pnlList.ResumeLayout(false);
-            this.pnlList.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvLogs)).EndInit();
             this.pnlListHeader.ResumeLayout(false);
             this.pnlListHeader.PerformLayout();
