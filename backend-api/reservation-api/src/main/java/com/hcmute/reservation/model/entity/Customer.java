@@ -2,6 +2,7 @@ package com.hcmute.reservation.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -62,7 +63,7 @@ public class Customer {
 
     // Profile Details
     @Column(name = "date_of_birth")
-    private java.time.LocalDate dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @Column(name = "gender", length = 20)
     private String gender;

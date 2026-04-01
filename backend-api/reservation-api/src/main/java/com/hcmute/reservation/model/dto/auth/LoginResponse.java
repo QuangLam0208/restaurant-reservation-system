@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -16,5 +17,5 @@ public class LoginResponse {
     private String email;
     private String phone;
     private String gender;
-    private java.time.LocalDate dateOfBirth;
+    private LocalDate dateOfBirth;
 }

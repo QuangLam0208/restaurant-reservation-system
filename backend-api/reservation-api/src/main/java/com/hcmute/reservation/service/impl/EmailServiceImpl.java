@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -55,10 +57,10 @@ public class EmailServiceImpl implements EmailService{
     }
 
     @Override
-    public void sendReservationConfirmationEmail(String toEmail, String customerName, Long reservationId, java.time.LocalDateTime startTime) {
+    public void sendReservationConfirmationEmail(String toEmail, String customerName, Long reservationId, LocalDateTime startTime) {
         String subject = "Xác nhận đặt bàn thành công - San-Lorenzo Restaurant";
 
-        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
         String startTimeFormatted = startTime.format(formatter);
 
         String body = String.format("Chào %s,\n\nChúc mừng bạn đã đặt bàn thành công tại San-Lorenzo!\n\n" +

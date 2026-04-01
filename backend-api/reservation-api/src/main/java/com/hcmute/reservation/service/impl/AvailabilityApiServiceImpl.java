@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,7 +38,7 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
     @Override
     public Map<String, Boolean> checkSlotsAvailability(LocalDate date, int guests, List<LocalTime> slots) {
         Map<String, Boolean> result = new LinkedHashMap<>();
-        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         for (LocalTime slot : slots) {
             LocalDateTime start = LocalDateTime.of(date, slot);
             String timeStr = slot.format(formatter);

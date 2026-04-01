@@ -3,7 +3,8 @@ package com.hcmute.reservation.config;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
+import java.io.File;
+import java.nio.file.Paths;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -13,7 +14,7 @@ public class WebConfig implements WebMvcConfigurer {
         // Ánh xạ URL /web-customer/** vào thư mục vật lý web-customer của project
         String projectRoot = System.getProperty("user.dir");
         // Nếu user.dir trỏ vào reservation-api, ta cần lên 2 cấp để ra root, nếu backend-api thì lên 1 cấp
-        java.io.File rootDir = new java.io.File(projectRoot);
+        File rootDir = new File(projectRoot);
         if (rootDir.getName().equals("reservation-api")) {
              projectRoot = rootDir.getParentFile().getParentFile().getAbsolutePath();
         } else if (rootDir.getName().equals("backend-api")) {
@@ -21,7 +22,7 @@ public class WebConfig implements WebMvcConfigurer {
         }
         
         // Sử dụng Paths.get(...).toUri().toString() để tạo định dạng file:/// an toàn trên cả Windows/Linux
-        String frontendPath = java.nio.file.Paths.get(projectRoot, "web-customer").toUri().toString();
+        String frontendPath = Paths.get(projectRoot, "web-customer").toUri().toString();
         // Xóa trailing slash nếu có để đồng nhất cấu trúc, sau đó cộng thêm "/"
         if (!frontendPath.endsWith("/")) {
             frontendPath += "/";
