@@ -42,6 +42,12 @@ public class WaitlistController {
         return ResponseEntity.ok(waitlistService.markAsMissing(id));
     }
 
+    /** PATCH /api/waitlist/{id}/re-wait */
+    @PatchMapping("/{id}/re-wait")
+    public ResponseEntity<WaitlistResponse> revertToWaiting(@PathVariable Long id) {
+        return ResponseEntity.ok(waitlistService.revertToWaiting(id));
+    }
+
     /** PATCH /api/waitlist/{id}/skip */
     @PatchMapping("/{id}/skip")
     public ResponseEntity<WaitlistResponse> skipEntry(@PathVariable Long id) {

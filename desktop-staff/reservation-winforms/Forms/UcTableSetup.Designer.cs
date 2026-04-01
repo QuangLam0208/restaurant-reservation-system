@@ -57,6 +57,7 @@ namespace reservation_winforms.Forms
             // 
             this.dgvTables.AllowUserToAddRows = false;
             this.dgvTables.AllowUserToDeleteRows = false;
+            this.dgvTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvTables.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvTables.BackgroundColor = System.Drawing.Color.White;
             this.dgvTables.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -68,11 +69,12 @@ namespace reservation_winforms.Forms
             this.dgvTables.RowHeadersWidth = 62;
             this.dgvTables.RowTemplate.Height = 40;
             this.dgvTables.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvTables.Size = new System.Drawing.Size(900, 850);
+            this.dgvTables.Size = new System.Drawing.Size(900, 960);
             this.dgvTables.TabIndex = 1;
             // 
             // pnlEdit
             // 
+            this.pnlEdit.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlEdit.BackColor = System.Drawing.Color.White;
             this.pnlEdit.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlEdit.Controls.Add(this.lblEditTitle);
@@ -87,7 +89,7 @@ namespace reservation_winforms.Forms
             this.pnlEdit.Controls.Add(this.btnClear);
             this.pnlEdit.Location = new System.Drawing.Point(960, 120);
             this.pnlEdit.Name = "pnlEdit";
-            this.pnlEdit.Size = new System.Drawing.Size(530, 500);
+            this.pnlEdit.Size = new System.Drawing.Size(530, 960);
             this.pnlEdit.TabIndex = 0;
             // 
             // lblEditTitle
@@ -135,19 +137,11 @@ namespace reservation_winforms.Forms
             // 
             this.numCapacity.Font = new System.Drawing.Font("Segoe UI", 14F);
             this.numCapacity.Location = new System.Drawing.Point(180, 185);
-            this.numCapacity.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+            this.numCapacity.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             this.numCapacity.Name = "numCapacity";
             this.numCapacity.Size = new System.Drawing.Size(300, 45);
             this.numCapacity.TabIndex = 4;
-            this.numCapacity.Value = new decimal(new int[] {
-            4,
-            0,
-            0,
-            0});
+            this.numCapacity.Value = new decimal(new int[] { 4, 0, 0, 0 });
             // 
             // chkIsActive
             // 

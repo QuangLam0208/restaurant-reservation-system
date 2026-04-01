@@ -116,6 +116,20 @@ public class WaitlistServiceImpl implements WaitlistService {
         return toResponse(waitlistRepository.save(entry), null);
     }
 
+    @Override
+    @Transactional
+    public WaitlistResponse revertToWaiting(Long id) {
+        Waitlist entry = getWaitlistOrThrow(id);
+
+        if (entry.getStatus() != WaitlistStatus.MISSING) {
+            throw new BadRequestException("Chỉ có thể đưa khách quay lại hàng đợi khi khách đang ở trạng thái MISSING.");
+        }
+
+        entry.revertToWaiting();
+
+        return toResponse(waitlistRepository.save(entry), null);
+    }
+
     private Waitlist getWaitlistOrThrow(Long id) {
         return waitlistRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hàng đợi #" + id + " không tồn tại."));
