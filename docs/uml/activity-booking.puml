@@ -1,87 +1,98 @@
 @startuml
-title Activity Diagram tổng quát - Hệ thống quản lý đặt bàn tích hợp
+title Activity Diagram Tổng quát - Hệ thống Quản lý Đặt bàn Tích hợp
 skinparam conditionStyle inside
 
 start
 
 if (Nguồn yêu cầu?) then (Online Booking)
- :Khách truy cập chức năng Đặt bàn trực tuyến;
+  :Khách truy cập chức năng đặt bàn trực tuyến;
+  if (Đã đăng nhập và is_verified = TRUE?) then (Có)
+    :Nhập guest_count, ngày, giờ, ghi chú;
+    :Tự động lấy name và phone từ tài khoản;
+    :Ưu tiên tìm bàn đơn đủ sức chứa;
 
- if (Đã đăng nhập & is_verified == TRUE?) then (Có)
-   :Khách nhập Số lượng khách, Ngày, Giờ, Ghi chú;
-   :Hệ thống tự động lấy Tên, SĐT từ Tài khoản;
-   :Hệ thống kiểm tra dữ liệu hợp lệ;
+    if (Có bàn đơn nào đủ sức chứa?) then (Có)
+      :Loại các bàn đơn đang bận hoặc soft lock;
+      if (Còn bàn đơn khả dụng?) then (Có)
+        :Chọn bàn đơn nhỏ nhất đủ chỗ;
+      else (Không)
+        :Thông báo không còn bàn đơn khả dụng;\ngợi ý khung giờ khác;
+        stop
+      endif
+    else (Không)
+      :Thử ghép các bàn trống;
+      if (Ghép bàn được?) then (Có)
+        :Chọn tổ hợp bàn tối ưu;
+      else (Không)
+        :Trả thông báo hết bàn và gợi ý khung giờ khác;
+        stop
+      endif
+    endif
 
-   if (Hợp lệ?) then (Có)
-     :Tính start_time, end_time (bao gồm Buffer time);
-     :Tìm bàn trống / Tính toán ghép bàn;
+    :Tạo Reservation(status=CREATED, type=ONLINE);
+    :Tạo Mapping và soft lock 5 phút;
+    :Cập nhật status = PENDING_PAYMENT;
+    :Điều hướng sang cổng thanh toán;
 
-     if (Có bàn phù hợp?) then (Có)
-       :Tạo Reservation (type=ONLINE, status=CREATED);
-       :Kích hoạt Khóa tạm (Soft Lock) trong 5 phút;
-       :Tính phí giữ bàn (guest_count * 50.000 VNĐ);
-       :Cập nhật trạng thái status=PENDING_PAYMENT;
-       :Điều hướng khách sang Cổng thanh toán;
+    if (Thanh toán thành công?) then (Có)
+      :Cập nhật status = RESERVED;
+      :Xóa soft lock;
+      :Gửi xác nhận đặt bàn;
+    else (Không)
+      :Cập nhật status = EXPIRED hoặc CANCELLED;
+      :Service/Scheduler giải phóng soft lock;
+      stop
+    endif
+  else (Không)
+    :Chuyển người dùng về trang đăng nhập hoặc xác minh email;
+    stop
+  endif
 
-       if (Thanh toán thành công trong 5 phút?) then (Thành công)
-         :Cập nhật trạng thái status=RESERVED;
-         :Chốt phân bổ bàn (Mapping Table);
-         :Gửi Email/SMS xác nhận cho khách;
-       else (Hết thời gian / Khách hủy)
-         :Cập nhật trạng thái status=EXPIRED / CANCELLED;
-         :Giải phóng Soft Lock (Bàn trở lại AVAILABLE);
-         stop
-       endif
+else (Walk-in / POS)
+  :Lễ tân nhập guest_count;
+  :Phân tích FULL / PARTIAL / MERGE / PARTIAL_MERGED;
 
-     else (Không)
-       :Trả thông báo hết bàn;
-       :Gợi ý các khung giờ gần nhất;
-       stop
-     endif
+  if (Có phương án xếp bàn ban đầu?) then (Có)
+    :Tạo Reservation draft(status=CREATED, type=WALK_IN);
+    :Lễ tân chọn bàn hoặc dùng gợi ý mặc định;
 
-   else (Không)
-     :Thông báo lỗi dữ liệu đầu vào;
-     stop
-   endif
-
- else (Không)
-   :Chuyển hướng người dùng về trang Đăng nhập / Yêu cầu xác thực Email;
-   stop
- endif
-
-else (Walk-in / Trực tiếp)
- :Lễ tân nhập Số lượng khách;
- :Xác định thời gian: NOW -> end_time;
- :Quét trạng thái bàn (Sức chứa & Available Window);
-
- if (Có bàn FULL AVAILABLE?) then (Có)
-   :Gán bàn & Khóa bàn (Optimistic Locking);
-   :Tạo Reservation (type=WALK_IN, status=SEATED);
- else (Không)
-   if (Có bàn PARTIAL AVAILABLE?) then (Có)
-     :Đề xuất Short Seating (Ngồi tạm);
-     if (Khách đồng ý?) then (Đồng ý)
-       :Gán bàn tạm đến thời điểm available_until;
-       :Tạo Reservation (type=WALK_IN, status=SEATED);
-     else (Từ chối)
-       :Hệ thống quét xét ghép bàn;
-     endif
-   else (Không)
-     :Yêu cầu Tên & SĐT để đưa vào Hàng đợi;
-     :Tạo Waitlist (status=WAITING);
-   endif
- endif
+    if (Phương án là short seating?) then (Có)
+      :Hiển thị available_until và hỏi ý kiến khách;
+      if (Khách đồng ý?) then (Có)
+        :Xác nhận xếp bàn;
+        :Tạo Mapping và cập nhật status = SEATED;
+        :Cập nhật Table_Info.status = OCCUPIED;
+      else (Không)
+        if (Có phương án khác không phải short seating?) then (Có)
+          :Lễ tân chọn phương án mới;
+          :Xác nhận xếp bàn;
+          :Tạo Mapping và cập nhật status = SEATED;
+          :Cập nhật Table_Info.status = OCCUPIED;
+        else (Không)
+          :Yêu cầu name + phone;
+          :Tạo Waitlist(status=WAITING, allow_short_seating?);
+        endif
+      endif
+    else (Không)
+      :Xác nhận xếp bàn;
+      :Tạo Mapping và cập nhật status = SEATED;
+      :Cập nhật Table_Info.status = OCCUPIED;
+    endif
+  else (Không)
+    :Yêu cầu name + phone;
+    :Tạo Waitlist(status=WAITING, allow_short_seating?);
+  endif
 endif
 
-:Hệ thống & Lễ tân theo dõi vận hành;
+:Hệ thống tiếp tục theo dõi vận hành;
 split
-  :Check-in (Chuyển SEATED);
+  :Lễ tân check-in đơn RESERVED -> SEATED;
 split again
-  :Khách trễ > 15p (Chuyển NO_SHOW);
+  :Scheduler quét đơn RESERVED quá 15 phút -> NO_SHOW;
 split again
-  :Ngồi lố giờ (Cảnh báo OVERSTAY);
+  :Scheduler quét đơn SEATED quá end_time -> OVERSTAY;
 split again
-  :Khách rời đi (Chuyển COMPLETED);
+  :Lễ tân check-out -> COMPLETED,\nservice giải phóng bàn sau buffer;
 end split
 
 stop

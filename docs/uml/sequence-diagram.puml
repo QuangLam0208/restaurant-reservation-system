@@ -1,105 +1,142 @@
 @startuml
 title Sequence Diagram - Hệ thống Quản lý Đặt bàn Tích hợp
-skinparam actorStyle awesome
 autonumber
+skinparam actorStyle awesome
+skinparam maxMessageSize 160
 
-actor "Khách hàng" as Customer
-actor "Lễ tân / Quản lý" as Staff
-participant "Web/POS UI" as UI
-participant "Auth/Reservation Controller" as RC
-participant "Table/Waitlist Service" as TS
-participant "Monitoring Service" as MS
+actor "Khách hàng online" as Customer
+actor "Lễ tân" as Receptionist
+actor "Bộ lập lịch" as Scheduler
+boundary "Web/App" as WebUI
+boundary "POS" as POS
+control "Auth Service" as Auth
+control "Reservation Service" as ReservationSvc
+control "Assignment Service" as Assignment
+control "Waitlist Service" as WaitlistSvc
+control "Notification Service" as Notify
+control "Payment Gateway" as Payment
 database "Database" as DB
 
-== Luồng Online: Đặt bàn & Thanh toán ==
-Customer -> UI : Đăng nhập & Đặt bàn
-UI -> RC : validateToken()
-alt Token không hợp lệ
-    RC --> UI : Redirect trang login
-else Token hợp lệ
-    RC -> TS : findAvailableTable(guest_count, time)
-    TS -> DB : Tìm bàn (Capacity, No Overlap)
+== 1. Luồng Online: đăng nhập, đặt bàn và thanh toán ==
+Customer -> WebUI : Chọn đặt bàn online
+WebUI -> Auth : validateCustomerToken(token)
 
-    RC -> DB : lock(table_id, version) // Optimistic Locking
-    alt Lock thành công
-        RC -> DB : create Reservation (status = CREATED)
-        RC -> DB : update status = PENDING_PAYMENT (Soft Lock 5p)
-        RC -> UI : Trả về link thanh toán & Countdown
+alt Chưa đăng nhập hoặc chưa xác minh
+    Auth --> WebUI : Từ chối truy cập
+    WebUI --> Customer : Yêu cầu đăng nhập / xác minh email
+else Hợp lệ
+    Customer -> WebUI : Nhập guest_count, start_time, note
+    WebUI -> ReservationSvc : createOnlineReservation(request)
+    ReservationSvc -> Assignment : findBestFit(guestCount, startTime)
+    Assignment -> DB : Ưu tiên bàn đơn đủ chỗ,\nchỉ ghép bàn khi không có bàn đơn nào đủ sức chứa
+
+    alt Có phương án phù hợp
+        Assignment --> ReservationSvc : selectedTables, endTime
+        ReservationSvc -> DB : Tạo Reservation(CREATED) + Mapping
+        ReservationSvc -> DB : Soft lock bàn 5 phút
+        ReservationSvc -> DB : Cập nhật status = PENDING_PAYMENT
+        ReservationSvc --> WebUI : Trả link thanh toán
 
         alt Thanh toán thành công
-            Customer -> UI : Hoàn tất thanh toán
-            UI -> DB : update status = RESERVED
-        else Thất bại / Quá hạn (Expired)
-            UI -> DB : update status = CANCELLED / EXPIRED
-            Note right of DB: Giải phóng Soft Lock & Bàn ngay lập tức
+            Customer -> Payment : Thanh toán phí giữ bàn
+            Payment -> ReservationSvc : Xác nhận thành công
+            ReservationSvc -> DB : Cập nhật status = RESERVED
+            ReservationSvc -> DB : Xóa soft lock
+            ReservationSvc -> Notify : Gửi xác nhận đặt bàn
+            Notify --> Customer : Nhận thông tin đặt bàn
+        else Khách hủy hoặc hết hạn
+            Payment -> ReservationSvc : Failed / timeout
+            ReservationSvc -> DB : Cập nhật status = CANCELLED / EXPIRED
+            ReservationSvc -> DB : Giải phóng soft lock
         end
-    else Lock thất bại (Xung đột đồng thời)
-        RC --> UI : Thông báo bàn đã bị chọn, mời thử lại
+    else Không có phương án phù hợp
+        ReservationSvc --> WebUI : Gợi ý khung giờ khác
+        WebUI --> Customer : Chọn thời gian khác
     end
 end
 
-== Luồng Check-in & Grace Period ==
-Staff -> UI : Check-in (reservation_id)
-UI -> RC : processCheckIn()
+== 2. Luồng Walk-in và Waitlist ==
+Receptionist -> POS : Nhập guest_count, name?, phone?
+POS -> ReservationSvc : suggestWalkIn(guestCount, optionalInfo, now)
+ReservationSvc -> Assignment : analyzeWalkInOptions(guestCount, now)
+Assignment -> DB : Phân tích FULL / PARTIAL / MERGE / PARTIAL_MERGED
+Assignment --> ReservationSvc : walkInOptions
 
-alt Khách đến sớm
-    RC -> TS : Kiểm tra trạng thái bàn gốc
-    alt Bàn gốc trống (AVAILABLE)
-        RC -> DB : status = SEATED, Table_Info.status = OCCUPIED
-    else Bàn gốc chưa trống
-        RC -> TS : findAlternativeTable(capacity)
-        alt Có bàn thay thế
-            RC -> DB : Cập nhật Mapping mới & status = SEATED
-            RC -> DB : Table_Info.status = OCCUPIED
-        else Không có bàn thay thế
-            RC --> UI : Mời khách chờ đến giờ đặt hoặc có bàn trống
+alt Có phương án xếp bàn
+    ReservationSvc -> DB : Tạo Reservation(status=CREATED, type=WALK_IN)
+    ReservationSvc --> POS : Danh sách bàn gợi ý
+
+    alt Phương án có short seating
+        Receptionist -> POS : Xin ý kiến khách
+        alt Khách đồng ý
+            POS -> ReservationSvc : confirmWalkIn(reservationId, selectedTables)
+            ReservationSvc -> DB : Cập nhật Mapping + SEATED + OCCUPIED
+            ReservationSvc --> POS : Xếp bàn thành công
+        else Khách từ chối
+            ReservationSvc --> POS : Chọn phương án khác hoặc chuyển waitlist
         end
+    else Phương án thông thường
+        POS -> ReservationSvc : confirmWalkIn(reservationId, selectedTables)
+        ReservationSvc -> DB : Cập nhật Mapping + SEATED + OCCUPIED
+        ReservationSvc --> POS : Xếp bàn thành công
     end
-else Đúng giờ / Trong 15p Grace Period
-    RC -> DB : status = SEATED, Table_Info.status = OCCUPIED
-else Trễ > 15p (No-show)
-    RC -> DB : status = NO_SHOW, Table_Info.status = AVAILABLE
+else Hết bàn
+    POS -> WaitlistSvc : addToWaitlist(name, phone, guestCount, allowShortSeating)
+    WaitlistSvc -> DB : Tạo hoặc tìm Customer
+    WaitlistSvc -> DB : Insert Waitlist(status=WAITING, joined_at=now)
+    WaitlistSvc --> POS : Đã thêm khách vào waitlist
 end
 
-== Luồng Walk-in & Waitlist ==
-Staff -> UI : Nhập số khách (Walk-in)
-UI -> TS : analyzeAvailableWindow()
+WaitlistSvc -> Assignment : analyzeWalkInOptions(waitingGuestCount, now)
+Assignment --> WaitlistSvc : full/merge hoặc partial options
 
-alt FULL AVAILABLE (Trống hoàn toàn)
-    RC -> DB : status = SEATED, end_time = now + 120p
-    RC -> DB : Table_Info.status = OCCUPIED
-else PARTIAL AVAILABLE (Short Seating)
-    UI --> Staff : Gợi ý trống đến available_until
-    Staff -> UI : Xác nhận khách đồng ý ngồi tạm
-    RC -> DB : status = SEATED, end_time = available_until
-    RC -> DB : Table_Info.status = OCCUPIED
-else Hết bàn đơn (Kiểm tra ghép bàn)
-    RC -> TS : checkMergeTables(guest_count)
-    TS -> DB : Tìm các bàn trống lân cận
-    alt Ghép bàn thành công
-        RC -> DB : status = SEATED, create Multi-mapping
-        RC -> DB : update multiple Table_Info.status = OCCUPIED
-    else Không thể ghép bàn
-        UI -> Staff : Thông báo hết bàn, đề nghị Waitlist
-        Staff -> UI : Nhập Tên + SĐT (Bắt buộc)
-        UI -> DB : insert Waitlist (status = WAITING, joined_at = now)
-    end
+alt Có FULL/MERGE phù hợp cho khách đầu hàng đợi
+    WaitlistSvc --> POS : Notify Waitlist
+    POS -> ReservationSvc : seatWaitlist(waitlistId)
+    ReservationSvc -> DB : Cập nhật Waitlist.status = SEATED
+    ReservationSvc -> DB : Hoàn tất Reservation + Mapping
+else allow_short_seating = TRUE và chỉ có PARTIAL/PARTIAL_MERGED
+    WaitlistSvc --> POS : Notify Waitlist với short seating
+    POS -> ReservationSvc : seatWaitlist(waitlistId)
+    ReservationSvc -> DB : Cập nhật Waitlist.status = SEATED
+    ReservationSvc -> DB : Hoàn tất Reservation + Mapping theo short seating
+else Khách từ chối hoặc không liên lạc được
+    POS -> WaitlistSvc : skipWaitlist(waitlistId)
+    WaitlistSvc -> DB : Update Waitlist.status = SKIPPED
 end
 
-== Giám sát Overstay & Override ==
-loop Quét định kỳ mỗi phút
-    MS -> DB : Check đơn SEATED có current_time > end_time
-    MS -> UI : Cảnh báo trạng thái OVERSTAY trên sơ đồ bàn
+== 3. Vận hành: check-in, no-show, overstay, check-out ==
+Receptionist -> POS : Check-in reservation RESERVED
+POS -> ReservationSvc : checkIn(reservationId, now)
+ReservationSvc -> DB : Lấy Reservation + Reservation_Table_Mapping
+
+alt Bàn gốc còn trống hoặc có bàn thay thế
+    ReservationSvc -> DB : Update Reservation.status = SEATED, start_time = now
+    ReservationSvc -> DB : Update Table_Info.status = OCCUPIED
+    ReservationSvc --> POS : Check-in thành công
+else Không có bàn phù hợp
+    ReservationSvc --> POS : Báo lỗi và yêu cầu lễ tân xử lý tiếp
 end
 
-alt Xử lý xung đột (Override)
-    Staff -> UI : Thực hiện ghi đè (tình huống bất khả kháng)
-    UI -> DB : Lưu Override_Log (reservation_id, account_id, reason)
-    UI -> DB : Table_Info.status = AVAILABLE (Giải phóng cưỡng chế)
-end
+Scheduler -> ReservationSvc : autoMarkNoShow(now)
+ReservationSvc -> DB : Tìm đơn RESERVED quá start_time + 15 phút
+ReservationSvc -> DB : Update Reservation.status = NO_SHOW
+ReservationSvc -> DB : Giải phóng bàn / soft lock ở tầng service
 
-== Hoàn tất phục vụ ==
-Staff -> UI : Check-out khách
-UI -> DB : update status = COMPLETED, end_time = current_time
-Note right of DB: Bàn chuyển sang AVAILABLE khi: \n(COMPLETED AND now >= end_time + 10p buffer) \nOR (CANCELLED / EXPIRED)
+Scheduler -> ReservationSvc : monitorOverstay(now)
+ReservationSvc -> DB : Tìm đơn SEATED có now > end_time
+ReservationSvc -> DB : Update Table_Info.status = OVERSTAY
+ReservationSvc --> POS : Cảnh báo xung đột vận hành
+
+Receptionist -> POS : Yêu cầu khách overstay rời bàn
+alt Khách chấp hành
+    POS -> ReservationSvc : checkOut(reservationId, now)
+    ReservationSvc -> DB : Update Reservation.status = COMPLETED, end_time = now
+    Scheduler -> ReservationSvc : releaseAfterBuffer(reservationId)
+    ReservationSvc -> DB : Update Table_Info.status = AVAILABLE
+else Tình huống bất khả kháng
+    POS -> ReservationSvc : overrideConflict(reservationId, accountId, reason)
+    ReservationSvc -> DB : Insert Override_Log(...)
+    ReservationSvc -> DB : Áp dụng phương án xử lý thủ công
+end
 @enduml

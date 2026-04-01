@@ -1,23 +1,23 @@
 @startuml
-title Class Diagram - Restaurant Reservation System
+title Class Diagram - Hệ thống Quản lý Đặt bàn Tích hợp
 
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
+skinparam shadowing false
 
-package "Domain Entities" {
+package "Thực thể lõi" {
 
     class Customer {
         - customerId: Long {PK}
         - name: String
         - phone: String
         - email: String {UNIQUE}
-        - passwordHash: String
-        - isVerified: Boolean
-        --
-        + register(name, phone, email, password): void
-        + verifyEmail(token): void
-        + login(email, password): String
-        + resetPassword(token, newPassword): void
+        - passwordHash: String {NULLABLE}
+        - isVerified: Boolean = FALSE
+        - verificationToken: String {NULLABLE}
+        - verificationTokenExpiresAt: DateTime {NULLABLE}
+        - resetToken: String {NULLABLE}
+        - resetTokenExpiresAt: DateTime {NULLABLE}
     }
 
     class Table_Info {
@@ -25,9 +25,9 @@ package "Domain Entities" {
         - capacity: int
         - status: TableStatus
         - version: int {Optimistic Lock}
-        --
-        + isAvailable(startTime, endTime): Boolean
-        + getAvailableWindow(): TimeRange
+        - isActive: Boolean = TRUE
+        - softLockUntil: DateTime {NULLABLE}
+        - lockedByReservationId: Long {NULLABLE}
     }
 
     class Reservation {
@@ -39,15 +39,8 @@ package "Domain Entities" {
         - startTime: DateTime
         - endTime: DateTime
         - status: ReservationStatus
-        - note: String
+        - note: String {NULLABLE}
         - createdAt: DateTime
-        --
-        + checkIn(): void
-        + checkOut(): void
-        + cancel(): void
-        + markNoShow(): void
-        + markExpired(): void
-        + isOverstay(): Boolean
     }
 
     class Reservation_Table_Mapping {
@@ -62,20 +55,16 @@ package "Domain Entities" {
         - guestCount: int
         - joinedAt: DateTime
         - status: WaitlistStatus
-        --
-        + seat(): void
-        + skip(): void
+        - allowShortSeating: Boolean = FALSE
     }
 
     class Account {
         - accountId: Long {PK}
-        - username: String
+        - username: String {UNIQUE}
         - passwordHash: String
         - role: UserRole
-        --
-        + login(username, password): String
-        + handleWalkIn(guestCount): Reservation
-        + override(reservationId, reason): void
+        - sessionToken: String {NULLABLE}
+        - sessionExpiresAt: DateTime {NULLABLE}
     }
 
     class Override_Log {
@@ -122,30 +111,45 @@ package "Enums" {
     }
 }
 
-' ==========================================
-' RELATIONSHIPS
-' ==========================================
+Customer "0..1" -- "0..*" Reservation : đặt >
+Customer "1" -- "0..*" Waitlist : liên hệ >
 
-' Customer
-Customer "1" -- "0..*" Reservation : makes >
-Customer "1" -- "0..*" Waitlist : joins >
+Reservation "1" -- "0..*" Reservation_Table_Mapping : có >
+Table_Info "1" -- "0..*" Reservation_Table_Mapping : được gán bởi >
+Reservation "0..1" <-- "0..*" Table_Info : soft lock >
 
-' Reservation ↔ Table_Info (Many-to-Many qua bảng trung gian)
-Reservation "1" -- "1..*" Reservation_Table_Mapping : contains >
-Table_Info "1" -- "0..*" Reservation_Table_Mapping : mapped by >
+Account "0..1" -- "0..*" Reservation : xử lý >
+Account "1" -- "0..*" Override_Log : ghi >
+Reservation "1" -- "0..1" Override_Log : phát sinh >
 
-' Account
-Account "1" -- "0..*" Reservation : handles >
-Account "1" -- "0..*" Override_Log : records >
-
-' Override_Log
-Reservation "1" -- "0..1" Override_Log : triggers >
-
-' Enum dependencies
 Table_Info ..> TableStatus : <<use>>
 Reservation ..> ReservationStatus : <<use>>
 Reservation ..> ReservationType : <<use>>
 Waitlist ..> WaitlistStatus : <<use>>
 Account ..> UserRole : <<use>>
+
+note bottom of Reservation
+  Buffer time, giải phóng soft lock,
+  giải phóng bàn sau check-out và
+  xử lý NO_SHOW/EXPIRED/CANCELLED
+  được thực hiện ở tầng service/scheduler.
+end note
+
+note right of Reservation_Table_Mapping
+  Walk-in draft ở trạng thái CREATED
+  có thể chưa có mapping cho đến khi
+  lễ tân xác nhận xếp bàn.
+end note
+
+note right of Waitlist
+  Name và phone là bắt buộc khi đưa khách vào waitlist.
+  allowShortSeating cho phép ưu tiên xếp khách vào
+  các slot PARTIAL_AVAILABLE nếu khách đã đồng ý trước.
+end note
+
+note right of Customer
+  passwordHash có thể NULL với khách vãng lai
+  chỉ dùng cho waitlist hoặc lưu thông tin liên hệ.
+end note
 
 @enduml

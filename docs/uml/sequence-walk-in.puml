@@ -1,146 +1,113 @@
 @startuml
-title Sequence Diagram - Tiếp nhận khách Walk-in
+title Sequence Diagram - Tiếp nhận khách Walk-in và Waitlist
 autonumber
 skinparam actorStyle awesome
+skinparam maxMessageSize 160
 
 actor "Lễ tân" as Receptionist
 actor "Khách Walk-in" as WalkIn
 boundary "POS UI" as UI
-control "Walk-in Controller" as WC
-control "Assignment Service" as AS
-control "Lock Manager" as LM
-database "Database (3NF)" as DB
-
-!procedure handleWaitlist()
-    group Xử lý Waitlist
-        Receptionist -> UI : Nhập name + phone (bắt buộc)
-        UI -> WC : addToWaitlist(name, phone, guest_count)
-        WC -> DB : insert Customer(name, phone)
-        DB --> WC : customer_id
-        WC -> DB : insert Waitlist(customer_id, guest_count, joined_at=now, status=WAITING)
-        WC --> UI : Đã thêm vào Waitlist
-    end group
-!endprocedure
+control "Walk-in Service" as WalkInService
+control "Assignment Service" as AssignmentService
+control "Waitlist Service" as WaitlistService
+database "Database" as DB
 
 Receptionist -> UI : Nhập guest_count, name?, phone?
 note right of Receptionist
-guest_count: bắt buộc
-name/phone: tùy chọn nếu được xếp bàn ngay
-name/phone: bắt buộc nếu vào Waitlist
+guest_count là bắt buộc.
+name/phone có thể bỏ trống nếu xếp bàn ngay.
+name/phone là bắt buộc nếu chuyển sang waitlist.
 end note
 
-UI -> WC : createWalkIn(guest_count, optional_info, now)
-WC -> AS : analyzeAvailableWindow(guest_count, now)
+UI -> WalkInService : suggestWalkIn(guestCount, optionalInfo, now)
+WalkInService -> AssignmentService : analyzeWalkInOptions(guestCount, now)
 
 group Phân tích real-time availability
-    AS -> DB : Lấy Table_Info còn hoạt động
-    AS -> DB : Kiểm tra booking online kế tiếp của từng bàn
-    AS -> DB : Loại các khoảng thời gian bị overlap
-    AS --> WC : fullTables, partialTables(available_until), mergeCandidates
+    AssignmentService -> DB : Kiểm tra bàn trống và booking hiện có
+    AssignmentService --> WalkInService : FULL / PARTIAL / MERGE / PARTIAL_MERGED
 end
 
-alt Có FULL AVAILABLE
-    WC -> AS : selectSmallestFit(fullTables, guest_count)
-    AS --> WC : selected_table
+alt Có phương án xếp bàn
+    WalkInService -> DB : Tạo Reservation(status=CREATED, type=WALK_IN)
+    WalkInService --> UI : Danh sách bàn gợi ý + available_until
 
-    WC -> LM : lock(selected_table.version)
-    LM --> WC : lock_ok / lock_fail
+    alt PARTIAL hoặc PARTIAL_MERGED
+        UI --> Receptionist : Hiển thị lựa chọn short seating
+        Receptionist -> WalkIn : Hỏi khách có đồng ý ngồi tạm không?
 
-    alt lock_ok
-        WC -> DB : insert Reservation(type=WALK_IN,\nstatus=SEATED,\nguest_count,\nstart_time=now,\nend_time=min(now+120p, closing_time))
-        DB --> WC : reservation_id
+        alt Khách đồng ý
+            Receptionist -> UI : Xác nhận short seating
+            UI -> WalkInService : confirmWalkIn(reservationId, selectedTables)
+            WalkInService -> DB : Cập nhật Mapping + Reservation.status = SEATED
+            WalkInService -> DB : Update Table_Info.status = OCCUPIED
+            WalkInService --> UI : Xếp bàn thành công
 
-        WC -> DB : insert Reservation_Table_Mapping(reservation_id, selected_table)
-        WC -> DB : update Table_Info status=OCCUPIED
-        WC --> UI : Xếp bàn thành công
-    else lock_fail
-        WC --> UI : Bàn vừa bị người khác giữ, tải lại danh sách bàn
+        else Khách không đồng ý
+            UI -> WalkInService : rejectShortSeating(reservationId)
+            WalkInService -> AssignmentService : Tìm phương án khác hoặc chuyển waitlist
+            AssignmentService --> WalkInService : nextOption / none
+
+            alt Có phương án mới
+                WalkInService --> UI : Cập nhật gợi ý bàn mới
+                Receptionist -> UI : Chọn lại bàn
+                UI -> WalkInService : confirmWalkIn(reservationId, selectedTables)
+                WalkInService -> DB : Cập nhật Mapping + Reservation.status = SEATED
+                WalkInService -> DB : Update Table_Info.status = OCCUPIED
+                WalkInService --> UI : Xếp bàn thành công
+
+            else Không còn phương án
+                UI -> Receptionist : Yêu cầu name + phone + allow_short_seating
+                Receptionist -> UI : Nhập thông tin waitlist
+                UI -> WaitlistService : addToWaitlist(name, phone, guestCount, allowShortSeating)
+                WaitlistService -> DB : Tạo hoặc tìm Customer
+                WaitlistService -> DB : Tạo Waitlist(status=WAITING, joined_at=now)
+                WaitlistService --> UI : Đã thêm vào waitlist
+            end
+        end
+
+    else FULL hoặc MERGE_AVAILABLE
+        Receptionist -> UI : Chọn bàn hoặc dùng gợi ý mặc định
+        UI -> WalkInService : confirmWalkIn(reservationId, selectedTables)
+        WalkInService -> DB : Cập nhật Mapping + Reservation.status = SEATED
+        WalkInService -> DB : Update Table_Info.status = OCCUPIED
+        WalkInService --> UI : Xếp bàn thành công
     end
 
-else Không có FULL AVAILABLE nhưng có PARTIAL AVAILABLE
-    WC -> AS : selectBestShortSeating(partialTables, guest_count)
-    AS --> WC : short_table, available_until
+else Hết bàn
+    UI -> Receptionist : Yêu cầu name + phone + allow_short_seating
+    Receptionist -> UI : Nhập thông tin waitlist
+    UI -> WaitlistService : addToWaitlist(name, phone, guestCount, allowShortSeating)
+    WaitlistService -> DB : Tạo hoặc tìm Customer
+    WaitlistService -> DB : Tạo Waitlist(status=WAITING, joined_at=now)
+    WaitlistService --> UI : Đã thêm vào waitlist
+end
 
-    WC --> UI : Gợi ý Short Seating (trống đến available_until)
-    Receptionist -> WalkIn : Hỏi khách có đồng ý ngồi tạm không?
+== Khi có bàn trống ==
+WaitlistService -> DB : Lấy Waitlist đầu hàng đợi + allowShortSeating
+WaitlistService -> AssignmentService : analyzeWalkInOptions(guestCount, now)
+AssignmentService --> WaitlistService : full/merge hoặc partial options
 
-    alt Khách đồng ý
-        note over WC
-        end_time của Walk-in phải = available_until
-        để không lấn giờ booking online kế tiếp
-        end note
-
-        WC -> LM : lock(short_table.version)
-        LM --> WC : lock_ok / lock_fail
-
-        alt lock_ok
-            WC -> DB : insert Reservation(type=WALK_IN,\nstatus=SEATED,\nguest_count,\nstart_time=now,\nend_time=available_until)
-            DB --> WC : reservation_id
-
-            WC -> DB : insert Reservation_Table_Mapping(reservation_id, short_table)
-            WC -> DB : update Table_Info status=OCCUPIED
-            WC --> UI : Xếp Short Seating thành công
-        else lock_fail
-            WC --> UI : Bàn vừa thay đổi trạng thái, cần phân tích lại
-        end
-
-    else Khách không đồng ý
-        WC -> AS : tryMergeTables(mergeCandidates.exclude(short_table), guest_count, now)
-
-        alt Ghép bàn thành công
-            AS --> WC : merged_tables[], merged_end_time
-            note over WC
-            merged_end_time không được vượt qua
-            booking online gần nhất của bất kỳ bàn nào trong nhóm ghép
-            end note
-
-            WC -> LM : lock(all merged_tables.version)
-            LM --> WC : lock_ok / lock_fail
-
-            alt lock_ok
-                WC -> DB : insert Reservation(type=WALK_IN,\nstatus=SEATED,\nguest_count,\nstart_time=now,\nend_time=merged_end_time)
-                DB --> WC : reservation_id
-
-                loop với từng bàn trong merged_tables
-                    WC -> DB : insert Reservation_Table_Mapping(reservation_id, table_id)
-                    WC -> DB : update Table_Info status=OCCUPIED
-                end
-
-                WC --> UI : Ghép bàn thành công
-            else lock_fail
-                WC --> UI : Có bàn trong nhóm ghép vừa bị giữ, cần phân tích lại
-            end
-
-        else Không thể ghép bàn
-            handleWaitlist()
-        end
+alt Có FULL/MERGE phù hợp
+    WaitlistService --> UI : Notify Waitlist
+    alt Liên lạc được và khách nhận bàn
+        UI -> WalkInService : seatWaitlist(waitlistId)
+        WalkInService -> DB : Cập nhật Waitlist.status = SEATED
+        WalkInService -> DB : Hoàn tất Reservation + Mapping
+    else Không liên lạc được hoặc khách từ chối
+        UI -> WaitlistService : skipWaitlist(waitlistId)
+        WaitlistService -> DB : Update Waitlist.status = SKIPPED
     end
 
-else Không có FULL AVAILABLE và cũng không có PARTIAL AVAILABLE phù hợp
-    WC -> AS : tryMergeTables(mergeCandidates, guest_count, now)
-
-    alt Ghép bàn thành công
-        AS --> WC : merged_tables[], merged_end_time
-
-        WC -> LM : lock(all merged_tables.version)
-        LM --> WC : lock_ok / lock_fail
-
-        alt lock_ok
-            WC -> DB : insert Reservation(type=WALK_IN,\nstatus=SEATED,\nguest_count,\nstart_time=now,\nend_time=merged_end_time)
-            DB --> WC : reservation_id
-
-            loop với từng bàn trong merged_tables
-                WC -> DB : insert Reservation_Table_Mapping(reservation_id, table_id)
-                WC -> DB : update Table_Info status=OCCUPIED
-            end
-
-            WC --> UI : Ghép bàn thành công
-        else lock_fail
-            WC --> UI : Có bàn trong nhóm ghép vừa bị giữ, cần phân tích lại
-        end
-
-    else Không thể ghép bàn
-        handleWaitlist()
+else allowShortSeating = TRUE và chỉ có PARTIAL/PARTIAL_MERGED
+    WaitlistService --> UI : Notify Waitlist với short seating
+    alt Khách đồng ý nhận bàn
+        UI -> WalkInService : seatWaitlist(waitlistId)
+        WalkInService -> DB : Cập nhật Waitlist.status = SEATED
+        WalkInService -> DB : Hoàn tất Reservation + Mapping theo short seating
+    else Không liên lạc được hoặc khách từ chối
+        UI -> WaitlistService : skipWaitlist(waitlistId)
+        WaitlistService -> DB : Update Waitlist.status = SKIPPED
     end
 end
+
 @enduml

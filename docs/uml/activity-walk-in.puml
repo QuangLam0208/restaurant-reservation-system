@@ -1,75 +1,79 @@
 @startuml
+title Activity Diagram - Tiếp nhận khách Walk-in
+skinparam conditionStyle inside
+
 start
+:Lễ tân nhập guest_count;
 
-:Nhân viên nhập guest_count;
+if (guest_count > 0?) then (Có)
+  :Phân tích available window theo NOW,\ngiờ đóng cửa và booking online gần nhất;
+  :Phân loại bàn theo FULL_AVAILABLE,\nPARTIAL_AVAILABLE,\nMERGE_AVAILABLE,\nPARTIAL_MERGED_AVAILABLE;
 
-if (guest_count > 0?) then (Yes)
+  if (Có phương án xếp bàn?) then (Có)
+    :Tạo Reservation draft(type=WALK_IN, status=CREATED);
+    :Lễ tân chọn bàn hoặc dùng gợi ý mặc định;
 
-  :Tính start_time = NOW;
-  :Tính service_end_time = min(NOW + Duration, closing_time);
-  :Tính occupied_until = service_end_time + buffer_time;
-
-  :Tìm danh sách bàn phù hợp;
-  :Lọc bàn capacity >= guest_count;
-  :Loại các bàn xung đột với booking ONLINE (ưu tiên online);
-
-  if (Có bàn FULL AVAILABLE?) then (Yes)
-    :Chọn bàn nhỏ nhất đủ chỗ;
-    :Tạo Reservation (WALK_IN, SEATED);
-    :Tạo Reservation_Table_Mapping;
-    :Lock bàn (transaction / version check);
-    stop
-
-  else (No)
-
-    :Thử tìm phương án GHÉP BÀN (FULL);
-
-    if (Có thể ghép bàn?) then (Yes)
-      :Chọn tổ hợp bàn tối ưu;
-      :Tạo Reservation;
-      :Tạo nhiều Reservation_Table_Mapping;
-      :Lock tất cả bàn;
-      stop
-
-    else (No)
-
-      :Xét bàn PARTIAL AVAILABLE;
-
-      if (Có bàn PARTIAL?) then (Yes)
-
-        :Tính available_until (trước booking tiếp theo);
-
-        if (available_until > NOW?) then (Yes)
-          :Gợi ý Short Seating cho khách;
-
-          if (Khách đồng ý?) then (Yes)
-            :Tạo Reservation (end_time = available_until);
-            :Tạo Reservation_Table_Mapping;
-            :Lock bàn;
-            stop
-          else (No)
-            :Tiếp tục tìm phương án khác;
-          endif
-
-        endif
-
-      endif
-
-      :Thử lại ghép bàn (nếu có short window);
-
-      if (Vẫn không có bàn?) then (Yes)
-        :Nhập name + phone;
-        :Tạo hoặc tìm Customer;
-        :Tạo Waitlist (WAITING);
+    if (Phương án là PARTIAL hoặc PARTIAL_MERGED?) then (Có)
+      :Hiển thị available_until;
+      :Xin ý kiến khách về short seating;
+      if (Khách đồng ý?) then (Có)
+        :Giữ end_time = available_until;
+        :Lễ tân xác nhận xếp bàn;
+        :Tạo Reservation_Table_Mapping;
+        :Cập nhật Reservation.status = SEATED;
+        :Cập nhật Table_Info.status = OCCUPIED;
         stop
+      else (Không)
+        if (Còn phương án khác?) then (Có)
+          :Lễ tân chọn phương án mới;
+          :Lễ tân xác nhận xếp bàn;
+          :Tạo Reservation_Table_Mapping;
+          :Cập nhật Reservation.status = SEATED;
+          :Cập nhật Table_Info.status = OCCUPIED;
+          stop
+        else (Không)
+          :Yêu cầu name + phone để vào waitlist;
+          :Chọn allow_short_seating = TRUE/FALSE;
+          :Tạo hoặc tìm Customer;
+          :Tạo Waitlist(status=WAITING);
+        endif
       endif
-
+    else (Không)
+      :Lễ tân xác nhận xếp bàn;
+      :Tạo Reservation_Table_Mapping;
+      :Cập nhật Reservation.status = SEATED;
+      :Cập nhật Table_Info.status = OCCUPIED;
+      stop
     endif
 
+  else (Không)
+    :Yêu cầu name + phone;
+    :Chọn allow_short_seating = TRUE/FALSE;
+    :Tạo hoặc tìm Customer;
+    :Tạo Waitlist(status=WAITING);
   endif
 
-else (No)
+  :Khi có bàn phù hợp, ưu tiên khách joined_at sớm nhất;
+  if (Chỉ còn PARTIAL/PARTIAL_MERGED\nvà allow_short_seating = TRUE?) then (Có)
+    :Notify Waitlist với phương án short seating;
+    if (Khách nhận bàn?) then (Có)
+      :Seat Waitlist với end_time = available_until;
+      :Cập nhật Waitlist.status = SEATED;
+    else (Không)
+      :Skip Waitlist và cập nhật status = SKIPPED;
+    endif
+  else (Có FULL/MERGE phù hợp)
+    :Notify Waitlist với bàn phù hợp;
+    if (Khách nhận bàn?) then (Có)
+      :Seat Waitlist và cập nhật status = SEATED;
+    else (Không)
+      :Skip Waitlist và cập nhật status = SKIPPED;
+    endif
+  endif
+
+else (Không)
   :Hiển thị lỗi "Số lượng khách không hợp lệ";
 endif
 
+stop
 @enduml
