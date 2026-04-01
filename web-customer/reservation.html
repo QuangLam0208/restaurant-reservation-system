@@ -22,7 +22,7 @@
     <nav class="nav-links">
       <a href="index.html" class="nav-link">Home</a>
       <a href="reservation.html" class="nav-link btn-reserve-header">Reserve</a>
-      
+
       <div id="nav-auth-group" class="nav-auth-group" style="display: none;">
         <span class="nav-link user-hi" id="user-greeting">Hi, Guest</span>
         <a href="#" class="nav-link" id="view-bookings-link">My Bookings</a>
@@ -35,7 +35,7 @@
     <div class="modal-card">
       <button class="close-modal" onclick="closeBookingsModal()">✕</button>
       <h3 class="modal-title">Your Reservations</h3>
-      
+
       <div class="modal-tabs">
         <button class="tab-btn active" id="tab-upcoming" onclick="switchBookingTab('upcoming')">Upcoming</button>
         <button class="tab-btn" id="tab-history" onclick="switchBookingTab('history')">History</button>
@@ -64,11 +64,38 @@
       </div>
       <div class="facts-strip">
         <div class="facts-inner">
-          <div class="fact-item"><span class="fact-val">Est. 1961</span><span class="fact-lbl">Heritage</span></div>
-          <div class="fact-item"><span class="fact-val">1 Vo Van Ngan St</span><span class="fact-lbl">Linh Chieu Ward,
-              Thu Duc City, Ho Chi Minh City</span></div>
-          <div class="fact-item"><span class="fact-val">11am – 11pm</span><span class="fact-lbl">Open Daily</span></div>
-          <div class="fact-item"><span class="fact-val">€15 / Guest</span><span class="fact-lbl">Deposit</span></div>
+          <div class="fact-card">
+            <span class="card-num">01</span>
+            <div class="card-body">
+              <span class="card-val">Est. 1961</span>
+              <span class="card-lbl">Heritage</span>
+              <div class="card-line"></div>
+            </div>
+          </div>
+          <div class="fact-card">
+            <span class="card-num">02</span>
+            <div class="card-body">
+              <span class="card-val">1 Vo Van Ngan St</span>
+              <span class="card-lbl">HCMC</span>
+              <div class="card-line"></div>
+            </div>
+          </div>
+          <div class="fact-card">
+            <span class="card-num">03</span>
+            <div class="card-body">
+              <span class="card-val">11am – 11pm</span>
+              <span class="card-lbl">Open Daily</span>
+              <div class="card-line"></div>
+            </div>
+          </div>
+          <div class="fact-card">
+            <span class="card-num">04</span>
+            <div class="card-body">
+              <span class="card-val">€15 / Guest</span>
+              <span class="card-lbl">Deposit</span>
+              <div class="card-line"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
