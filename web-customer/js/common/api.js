@@ -46,6 +46,8 @@ export function getStoredUser() {
         name: localStorage.getItem("userName"),
         email: localStorage.getItem("userEmail"),
         phone: localStorage.getItem("userPhone"),
+        gender: localStorage.getItem("userGender"),
+        dateOfBirth: localStorage.getItem("userDOB"),
     };
 }
 
@@ -59,6 +61,8 @@ export function saveUser(loginResponse) {
     localStorage.setItem("userName", loginResponse.name);
     localStorage.setItem("userEmail", loginResponse.email);
     localStorage.setItem("userPhone", loginResponse.phone);
+    localStorage.setItem("userGender", loginResponse.gender || "");
+    localStorage.setItem("userDOB", loginResponse.dateOfBirth || "");
 }
 
 /**
@@ -71,4 +75,6 @@ export function clearUser() {
     localStorage.removeItem("userName");
     localStorage.removeItem("userEmail");
     localStorage.removeItem("userPhone");
+    localStorage.removeItem("userGender");
+    localStorage.removeItem("userDOB");
 }

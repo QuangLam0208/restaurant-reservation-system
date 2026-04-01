@@ -46,8 +46,7 @@ public class TableAvailabilityServiceImpl implements TableAvailabilityService {
         // 2. Tìm danh sách ID các bàn đã bị đặt (Occupied) trong khoảng thời gian này
         Set<Long> occupiedIds = new HashSet<>(reservationRepository.findOccupiedTableIds(startTime, endWithBuffer));
 
-        // 3. Lấy tất cả bàn đang hoạt động. Bỏ qua status AVAILABLE/OCCUPIED hiện thời 
-        // vì chúng chỉ đại diện cho trạng thái thực tế tại quán, không ảnh hưởng đến đặt bàn tương lai.
+        // 3. Lấy tất cả bàn đang hoạt động 
         return tableInfoRepository.findByIsActiveTrue()
                 .stream()
                 .filter(t -> !t.isSoftLocked() && !occupiedIds.contains(t.getTableId()))
