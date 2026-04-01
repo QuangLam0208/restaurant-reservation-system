@@ -14,6 +14,7 @@ import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.repository.ReservationTableMappingRepository;
 import com.hcmute.reservation.repository.TableInfoRepository;
 import com.hcmute.reservation.service.AssignmentService;
+import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.InHouseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,19 +40,14 @@ public class InHouseServiceImpl implements InHouseService {
     private final ReservationTableMappingRepository mappingRepository;
     private final AssignmentService assignmentService;
     private final ReservationMapper mapper;
-
-    @Value("${reservation.grace-period-minutes:15}")
-    private int gracePeriodMinutes;
-
-    @Value("${reservation.duration-minutes:120}")
-    private int durationMinutes;
-
-    @Value("${reservation.buffer-minutes:10}")
-    private int bufferMinutes;
+    private final ConfigProviderService configProvider;
 
     @Override
     @Transactional
     public ReservationResponse checkIn(Long id) {
+        int durationMinutes = configProvider.getDurationMinutes();
+        int gracePeriodMinutes = configProvider.getGracePeriodMinutes();
+
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn đặt bàn #" + id + " không tồn tại."));
 
@@ -137,6 +133,8 @@ public class InHouseServiceImpl implements InHouseService {
     @Override
     @Transactional
     public ReservationResponse changeTable(Long reservationId, ChangeTableRequest req) {
+        int bufferMinutes = configProvider.getBufferMinutes();
+
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new ResourceNotFoundException("Đơn #" + reservationId + " không tồn tại."));
 
         if (reservation.getStatus() != SEATED && reservation.getStatus() != RESERVED) {

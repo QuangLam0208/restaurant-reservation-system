@@ -5,6 +5,7 @@ import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.repository.TableInfoRepository;
+import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.TableAvailabilityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,9 +23,7 @@ public class TableAvailabilityServiceImpl implements TableAvailabilityService {
 
     private final TableInfoRepository tableInfoRepository;
     private final ReservationRepository reservationRepository;
-
-    @Value("${reservation.buffer-minutes:10}")
-    private int bufferMinutes;
+    private final ConfigProviderService configProvider;
 
     @Override
     public List<TableInfo> getFreeTables(Reservation reservation) {
@@ -39,6 +38,8 @@ public class TableAvailabilityServiceImpl implements TableAvailabilityService {
 
     @Override
     public List<TableInfo> getFreeTables(LocalDateTime startTime, LocalDateTime endTime) {
+        int bufferMinutes = configProvider.getBufferMinutes();
+
         // 1. Cộng thêm buffer time cho mọi truy vấn tìm bàn trống
         LocalDateTime endWithBuffer = endTime.plusMinutes(bufferMinutes);
 

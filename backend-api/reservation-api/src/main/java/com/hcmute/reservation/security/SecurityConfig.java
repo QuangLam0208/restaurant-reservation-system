@@ -75,6 +75,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/override-logs").hasRole("MANAGER")
                 // System scheduler endpoints — MANAGER hoặc internal cron
                 .requestMatchers("/api/system/**").hasRole("MANAGER")
+                .requestMatchers("/api/configs", "/api/configs/**").hasRole("MANAGER")
 
                 // ── STAFF or MANAGER ──────────────────────────────────────────────
                 .requestMatchers(HttpMethod.POST, "/api/reservations/walk-in").hasAnyRole("RECEPTIONIST", "MANAGER")
