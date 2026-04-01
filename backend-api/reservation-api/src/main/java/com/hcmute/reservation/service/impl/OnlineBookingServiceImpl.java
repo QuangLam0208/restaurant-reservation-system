@@ -9,6 +9,7 @@ import com.hcmute.reservation.model.dto.reservation.ReservationResponse;
 import com.hcmute.reservation.model.entity.*;
 import com.hcmute.reservation.model.enums.*;
 import com.hcmute.reservation.repository.*;
+import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.OnlineBookingService;
 import com.hcmute.reservation.strategy.TableCombinationAlgorithm;
 import lombok.RequiredArgsConstructor;
@@ -37,17 +38,18 @@ public class OnlineBookingServiceImpl implements OnlineBookingService {
     private final ApplicationEventPublisher eventPublisher;
     private final TableCombinationAlgorithm algorithm;
     private final ReservationMapper mapper;
-
-    @Value("${reservation.duration-minutes:120}") private int durationMinutes;
-    @Value("${reservation.buffer-minutes:10}") private int bufferMinutes;
-    @Value("${reservation.soft-lock-minutes:5}") private int softLockMinutes;
-    @Value("${restaurant.opening-time:10:00}") private String openingTimeStr;
-    @Value("${restaurant.closing-time:22:30}") private String closingTimeStr;
-    @Value("${reservation.deposit-per-guest:50000}") private Double depositPerGuest;
+    private final ConfigProviderService configProvider;
 
     @Override
     @Transactional
     public ReservationResponse createOnlineReservation(OnlineReservationRequest req, Long customerId) {
+        int durationMinutes = configProvider.getDurationMinutes();
+        int bufferMinutes = configProvider.getBufferMinutes();
+        int softLockMinutes = configProvider.getSoftLockMinutes();
+        String openingTimeStr = configProvider.getOpeningTime();
+        String closingTimeStr = configProvider.getClosingTime();
+        Double depositPerGuest = configProvider.getDepositPerGuest();
+
         Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khách hàng."));
         LocalDateTime start = req.getStartTime();
         LocalTime openingTime = LocalTime.parse(openingTimeStr);
