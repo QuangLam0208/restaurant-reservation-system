@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Profile — San-Lorenzo</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/layout/header.css">
+  <link rel="stylesheet" href="assets/css/profile.css">
+</head>
+
+<body>
+  <!-- Global Header -->
+  <header id="main-header" class="header-solid">
+    <a href="index.html" class="logo">San — Lorenzo</a>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="reservation.html" class="nav-link btn-reserve-header">Reserve</a>
+      <div id="nav-auth-group" class="nav-auth-group">
+        <span class="nav-link user-hi" id="user-greeting" style="color: var(--gold);">Hi, Guest</span>
+        <a href="profile.html" class="nav-link active" id="profile-link">Profile</a>
+        <a href="#" class="nav-link" id="view-bookings-link">My Bookings</a>
+        <a href="#" class="nav-link" id="logout-btn">Sign Out</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Editorial Hero Section -->
+  <section class="profile-hero">
+    <div class="hero-grid">
+      <!-- Left Heading -->
+      <div class="hero-left anim-fade-up">
+        <span class="hero-overline">— SAN-LORENZO · ROME</span>
+        <h1 class="hero-heading">
+          <span class="hero-title-main">Your</span>
+          <span class="hero-title-accent">Profile</span>
+        </h1>
+        <p class="hero-subtitle">Manage your personal details and preferences.</p>
+      </div>
+
+    </div>
+
+    <hr class="hero-divider">
+
+    <!-- Organic Stats Strip -->
+
+  </section>
+
+  <!-- Body Content -->
+  <section class="profile-body">
+
+    <!-- Tabs UI -->
+    <div class="profile-tabs anim-fade-up">
+      <div class="profile-tab active" data-tab="tab-edit">Personal Information</div>
+      <div class="profile-tab" data-tab="tab-password">Security & Password</div>
+    </div>
+
+    <!-- Luxury Soft Container -->
+    <div class="profile-card-soft anim-fade-up" style="animation-delay: 0.1s;">
+
+      <!-- Block 1: Edit Profile (Tab 1) -->
+      <div id="tab-edit" class="tab-pane active profile-section">
+        <div class="section-label">
+          <div class="section-label-line"></div>
+          <span class="section-label-text">01</span>
+        </div>
+        <h2 class="section-heading">
+          <span class="section-heading-part-1">Edit</span>
+          <span class="section-heading-part-2">Profile</span>
+        </h2>
+
+        <form id="edit-profile-form" class="form-grid">
+          <!-- NAME -->
+          <div class="form-field">
+            <label class="field-label" for="fullName">Name</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <input type="text" id="fullName" class="flat-input" value="Marco Rossi" placeholder="Your Name">
+            </div>
+          </div>
+
+          <!-- PHONE -->
+          <div class="form-field">
+            <label class="field-label" for="phone">Phone</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                </path>
+              </svg>
+              <input type="tel" id="phone" class="flat-input" value="+84 09 1234 5678" placeholder="Phone">
+            </div>
+          </div>
+
+          <!-- EMAIL -->
+          <div class="form-field">
+            <label class="field-label" for="email">Email</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <input type="email" id="email" class="flat-input" value="marco@email.com" placeholder="Email Address">
+            </div>
+            <span class="field-hint">Used for booking confirmations</span>
+          </div>
+
+          <!-- DOB -->
+          <div class="form-field">
+            <label class="field-label" for="dob">Date of Birth</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <input type="date" id="dob" class="flat-input" value="1980-01-01">
+            </div>
+          </div>
+
+          <!-- GENDER -->
+          <div class="form-field form-field-full">
+            <label class="field-label">Gender</label>
+            <div class="gender-pill-row" id="gender-pills-new">
+              <button type="button" class="pill-flat active">Male</button>
+              <button type="button" class="pill-flat">Female</button>
+              <button type="button" class="pill-flat">Prefer not to say</button>
+            </div>
+          </div>
+
+          <!-- SAVE -->
+          <div class="form-field-full">
+            <button type="submit" id="btn-save" class="btn-submit-profile">SAVE CHANGES</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Block 2: Change Password (Tab 2) -->
+      <div id="tab-password" class="tab-pane profile-section password-section">
+        <div class="section-label">
+          <div class="section-label-line"></div>
+          <span class="section-label-text">02</span>
+        </div>
+        <h2 class="section-heading">
+          <span class="section-heading-part-1">Change</span>
+          <span class="section-heading-part-2">Password</span>
+        </h2>
+
+        <form id="change-password-form" class="password-form">
+
+          <!-- CURRENT -->
+          <div class="form-field">
+            <label class="field-label" for="currentPassword">Current Password</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <input type="password" id="currentPassword" class="flat-input" placeholder="Enter current password">
+              <svg class="password-toggle-icon toggle-pwd" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </div>
+          </div>
+
+          <!-- NEW -->
+          <div class="form-field">
+            <label class="field-label" for="newPassword">New Password</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <input type="password" id="newPassword" class="flat-input" placeholder="Enter new password">
+              <svg class="password-toggle-icon toggle-pwd" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </div>
+            <div id="pwdStrength" class="pwd-strength-container strength-weak">
+              <div class="pwd-bars">
+                <div class="strength-bar bar-1"></div>
+                <div class="strength-bar bar-2"></div>
+                <div class="strength-bar bar-3"></div>
+              </div>
+              <span class="strength-label" id="pwdStrengthLabel">Weak</span>
+            </div>
+          </div>
+
+          <!-- CONFIRM NEW -->
+          <div class="form-field">
+            <label class="field-label" for="confirmPassword">Confirm New Password</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <input type="password" id="confirmPassword" class="flat-input" placeholder="Confirm new password">
+              <svg class="password-toggle-icon toggle-pwd" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </div>
+            <span id="confirmHint" class="validation-hint"></span>
+          </div>
+
+          <button type="submit" id="btn-update-pwd" class="btn-submit-profile disabled" disabled>UPDATE
+            PASSWORD</button>
+        </form>
+      </div>
+
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 0. Tabs Logic
+      const tabs = document.querySelectorAll('.profile-tab');
+      const tabPanes = document.querySelectorAll('.tab-pane');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const target = tab.getAttribute('data-tab');
+
+          tabs.forEach(t => t.classList.remove('active'));
+          tabPanes.forEach(p => p.classList.remove('active'));
+
+          tab.classList.add('active');
+          document.getElementById(target).classList.add('active');
+        });
+      });
+
+      // 1. Gender Pills Logic
+      const genderPills = document.querySelectorAll('#gender-pills-new .pill-flat');
+      genderPills.forEach(pill => {
+        pill.addEventListener('click', (e) => {
+          e.preventDefault();
+          genderPills.forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+        });
+      });
+
+      // 2. Save Profile Mock Loading State
+      const editProfileForm = document.getElementById('edit-profile-form');
+      const btnSave = document.getElementById('btn-save');
+      editProfileForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        btnSave.classList.add('loading');
+        btnSave.textContent = 'SAVING...';
+
+        // Mock API call
+        setTimeout(() => {
+          btnSave.classList.remove('loading');
+          btnSave.textContent = 'SAVED ✓';
+
+          // Reset text after 3 seconds
+          setTimeout(() => {
+            btnSave.textContent = 'SAVE CHANGES';
+          }, 3000);
+        }, 1500);
+      });
+
+      // 3. Password Show/Hide Toggle
+      const toggleIcons = document.querySelectorAll('.toggle-pwd');
+      toggleIcons.forEach(icon => {
+        icon.addEventListener('click', () => {
+          const input = icon.previousElementSibling.previousElementSibling; // relative to the input line
+          if (input.type === 'password') {
+            input.type = 'text';
+          } else {
+            input.type = 'password';
+          }
+        });
+      });
+
+      // 4. Password Strength Logic
+      const newPwdInput = document.getElementById('newPassword');
+      const pwdStrengthContainer = document.getElementById('pwdStrength');
+      const pwdStrengthLabel = document.getElementById('pwdStrengthLabel');
+
+      newPwdInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (val.length > 0) {
+          pwdStrengthContainer.classList.add('visible');
+          pwdStrengthContainer.className = 'pwd-strength-container visible'; // reset
+          if (val.length < 6) {
+            pwdStrengthContainer.classList.add('strength-weak');
+            pwdStrengthLabel.textContent = 'Weak';
+          } else if (val.length < 10 && !/[A-Z]/.test(val)) {
+            pwdStrengthContainer.classList.add('strength-medium');
+            pwdStrengthLabel.textContent = 'Good';
+          } else {
+            pwdStrengthContainer.classList.add('strength-strong');
+            pwdStrengthLabel.textContent = 'Strong';
+          }
+        } else {
+          pwdStrengthContainer.classList.remove('visible');
+        }
+        checkPwdFormValid();
+      });
+
+      // 5. Confirm Password Validation
+      const confirmPwdInput = document.getElementById('confirmPassword');
+      const currentPwdInput = document.getElementById('currentPassword');
+      const confirmHint = document.getElementById('confirmHint');
+
+      confirmPwdInput.addEventListener('input', () => {
+        validateConfirmPwd();
+        checkPwdFormValid();
+      });
+
+      newPwdInput.addEventListener('input', () => {
+        if (confirmPwdInput.value.length > 0) {
+          validateConfirmPwd();
+        }
+      });
+
+      currentPwdInput.addEventListener('input', checkPwdFormValid);
+
+      function validateConfirmPwd() {
+        const val1 = newPwdInput.value;
+        const val2 = confirmPwdInput.value;
+
+        confirmPwdInput.classList.remove('is-valid', 'is-invalid');
+        confirmHint.className = 'validation-hint';
+        confirmHint.textContent = '';
+
+        if (val2.length === 0) return false;
+
+        if (val1 !== val2) {
+          confirmPwdInput.classList.add('is-invalid');
+          confirmHint.classList.add('error');
+          confirmHint.textContent = 'Passwords do not match';
+          return false;
+        } else {
+          confirmPwdInput.classList.add('is-valid');
+          confirmHint.classList.add('success');
+          confirmHint.textContent = 'Passwords match ✓';
+          return true;
+        }
+      }
+
+      // 6. Disable/Enable Update Button
+      const btnUpdatePwd = document.getElementById('btn-update-pwd');
+      function checkPwdFormValid() {
+        const v1 = currentPwdInput.value.trim();
+        const v2 = newPwdInput.value.trim();
+        const v3 = confirmPwdInput.value.trim();
+        if (v1 && v2 && v3 && v2 === v3) {
+          btnUpdatePwd.disabled = false;
+          btnUpdatePwd.classList.remove('disabled');
+        } else {
+          btnUpdatePwd.disabled = true;
+          btnUpdatePwd.classList.add('disabled');
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
