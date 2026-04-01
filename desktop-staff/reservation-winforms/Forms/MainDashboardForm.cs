@@ -10,6 +10,8 @@ namespace reservation_winforms.Forms
         {
             InitializeComponent();
 
+            this.WindowState = FormWindowState.Maximized;
+
             clockTimer.Tick += (s, e) => {
                 lblRealTime.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
             };

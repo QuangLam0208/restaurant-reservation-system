@@ -60,7 +60,7 @@
             this.pnlSidebar.Location = new System.Drawing.Point(0, 0);
             this.pnlSidebar.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlSidebar.Name = "pnlSidebar";
-            this.pnlSidebar.Size = new System.Drawing.Size(800, 1200);
+            this.pnlSidebar.Size = new System.Drawing.Size(390, 1200);
             this.pnlSidebar.TabIndex = 0;
             // 
             // btnRegisterStaff
