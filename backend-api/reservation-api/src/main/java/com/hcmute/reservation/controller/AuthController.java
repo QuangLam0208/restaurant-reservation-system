@@ -159,4 +159,30 @@ public class AuthController {
         LoginResponse response = authService.getCustomerInfo(customerId);
         return ResponseEntity.ok(response);
     }
+
+    /** PUT /api/auth/profile — Cập nhật thông tin cá nhân */
+    @PutMapping("/profile")
+    public ResponseEntity<LoginResponse> updateProfile(
+            @Valid @RequestBody CustomerProfileUpdateRequest req,
+            HttpSession session) {
+        Long customerId = sessionManager.getCustomerId(session);
+        if (customerId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        LoginResponse response = authService.updateProfile(customerId, req);
+        return ResponseEntity.ok(response);
+    }
+
+    /** PUT /api/auth/password — Đổi mật khẩu */
+    @PutMapping("/password")
+    public ResponseEntity<Map<String, String>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest req,
+            HttpSession session) {
+        Long customerId = sessionManager.getCustomerId(session);
+        if (customerId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        authService.changePassword(customerId, req);
+        return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công."));
+    }
 }

@@ -6,6 +6,7 @@ import com.hcmute.reservation.model.enums.ReservationStatus;
 import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.repository.TableInfoRepository;
+import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.SystemSchedulerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,19 +30,13 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
     private final ReservationRepository reservationRepository;
     private final TableInfoRepository tableInfoRepository;
     private final TransactionTemplate transactionTemplate;
-
-    @Value("${reservation.soft-lock-minutes:5}")
-    private int softLockMinutes;
-
-    @Value("${reservation.grace-period-minutes:15}")
-    private int gracePeriodMinutes;
-
-    @Value("${reservation.buffer-minutes:10}")
-    private int bufferMinutes;
+    private final ConfigProviderService configProvider;
 
     @Override
     @Scheduled(fixedDelay = 60_000)
     public Map<String, Object> expireReservations() {
+        int softLockMinutes = configProvider.getSoftLockMinutes();
+
         List<Reservation> toExpire = reservationRepository
                 .findExpiredPendingPayments(LocalDateTime.now().minusMinutes(softLockMinutes));
 
@@ -58,6 +53,8 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
     @Override
     @Scheduled(fixedDelay = 60_000)
     public Map<String, Object> releaseNoShow() {
+        int gracePeriodMinutes = configProvider.getGracePeriodMinutes();
+
         List<Reservation> toNoShow = reservationRepository
                 .findNoShows(LocalDateTime.now().minusMinutes(gracePeriodMinutes));
 
@@ -97,6 +94,8 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
     @Override
     @Scheduled(fixedDelay = 60_000)
     public Map<String, Object> releaseCompletedTables() {
+        int bufferMinutes = configProvider.getBufferMinutes();
+
         // Chỉ lấy COMPLETED mà bàn vẫn còn OCCUPIED/OVERSTAY (tránh memory leak)
         List<Reservation> completed = reservationRepository
                 .findCompletedWithReleasableTables(LocalDateTime.now().minusMinutes(bufferMinutes));

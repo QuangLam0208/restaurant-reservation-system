@@ -18,6 +18,7 @@ import com.hcmute.reservation.repository.CustomerRepository;
 import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.repository.ReservationTableMappingRepository;
 import com.hcmute.reservation.repository.TableInfoRepository;
+import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.WalkInService;
 import com.hcmute.reservation.strategy.TableCombinationAlgorithm;
 import lombok.RequiredArgsConstructor;
@@ -44,22 +45,15 @@ public class WalkInServiceImpl implements WalkInService {
     private final CustomerRepository customerRepository;
     private final TableCombinationAlgorithm algorithm;
     private final ReservationMapper mapper;
-
-    @Value("${reservation.duration-minutes:120}")
-    private int durationMinutes;
-
-    @Value("${reservation.buffer-minutes:10}")
-    private int bufferMinutes;
-
-    @Value("${reservation.soft-lock-minutes:5}")
-    private int softLockMinutes;
-
-    @Value("${reservation.max-capacity-overflow:2}")
-    private int maxCapacityOverflow;
+    private final ConfigProviderService configProvider;
 
     @Override
     @Transactional(readOnly = true)
     public WalkInOptionResponse getWalkInOptions(int guestCount) {
+        int durationMinutes = configProvider.getDurationMinutes();
+        int bufferMinutes = configProvider.getBufferMinutes();
+        int maxCapacityOverflow = configProvider.getMaxCapacityOverflow();
+
         if (guestCount <= 0) throw new BadRequestException("So luong khach phai lon hon 0.");
 
         LocalDateTime now = LocalDateTime.now();
@@ -161,6 +155,10 @@ public class WalkInServiceImpl implements WalkInService {
 
     @Transactional
     public WalkInSuggestionResponse suggestWalkIn(WalkInRequest req) {
+        int durationMinutes = configProvider.getDurationMinutes();
+        int bufferMinutes = configProvider.getBufferMinutes();
+        int softLockMinutes = configProvider.getSoftLockMinutes();
+
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime defaultEnd = now.plusMinutes(durationMinutes);
         LocalDateTime checkEnd = req.getEndTime() != null ? req.getEndTime() : defaultEnd;
@@ -341,6 +339,8 @@ public class WalkInServiceImpl implements WalkInService {
 
     @Transactional
     public ReservationResponse confirmWalkIn(Long suggestionId) {
+        int softLockMinutes = configProvider.getSoftLockMinutes();
+
         Reservation reservation = reservationRepository.findById(suggestionId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Goi y #" + suggestionId + " khong ton tai hoac da het han."));

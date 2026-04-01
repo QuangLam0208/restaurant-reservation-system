@@ -20,13 +20,31 @@
   <header id="main-header" class="header-solid">
     <a href="index.html" class="logo">San — Lorenzo</a>
     <nav class="nav-links">
-      <a href="index.html" class="nav-link">Home</a>
       <a href="reservation.html" class="nav-link btn-reserve-header">Reserve</a>
-      
+      <a href="#" class="nav-link" id="view-bookings-link" style="display:none;">My Bookings</a>
+
+      <!-- Chưa đăng nhập -->
+      <a href="#" class="nav-link auth-action-btn" id="header-auth-btn" style="display:none;">Sign In</a>
+
+      <!-- Đã đăng nhập -->
       <div id="nav-auth-group" class="nav-auth-group" style="display: none;">
         <span class="nav-link user-hi" id="user-greeting">Hi, Guest</span>
-        <a href="#" class="nav-link" id="view-bookings-link">My Bookings</a>
-        <a href="#" class="nav-link" id="logout-btn">Sign Out</a>
+        <div class="gear-dropdown" id="gear-dropdown">
+          <button class="gear-btn" id="gear-btn">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+          <div class="gear-menu">
+            <a href="profile.html" class="gear-menu-item">
+              <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Profile
+            </a>
+            <div class="gear-menu-divider"></div>
+            <button class="gear-menu-item danger" id="logout-btn">
+              <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sign Out
+            </button>
+          </div>
+        </div>
       </div>
     </nav>
   </header>
@@ -35,7 +53,7 @@
     <div class="modal-card">
       <button class="close-modal" onclick="closeBookingsModal()">✕</button>
       <h3 class="modal-title">Your Reservations</h3>
-      
+
       <div class="modal-tabs">
         <button class="tab-btn active" id="tab-upcoming" onclick="switchBookingTab('upcoming')">Upcoming</button>
         <button class="tab-btn" id="tab-history" onclick="switchBookingTab('history')">History</button>
@@ -52,7 +70,7 @@
     <div class="hero-band">
       <div class="hero-band-inner">
         <div class="hero-text">
-          <p class="hero-overline">San-Lorenzo · Rome</p>
+          <p class="hero-overline">San-Lorenzo</p>
           <h1 class="hero-title">Reserve<br><em>Your Table</em></h1>
           <p class="hero-desc">A four-step journey to your perfect evening. Takes less than a minute.</p>
         </div>
@@ -64,11 +82,38 @@
       </div>
       <div class="facts-strip">
         <div class="facts-inner">
-          <div class="fact-item"><span class="fact-val">Est. 1961</span><span class="fact-lbl">Heritage</span></div>
-          <div class="fact-item"><span class="fact-val">1 Vo Van Ngan St</span><span class="fact-lbl">Linh Chieu Ward,
-              Thu Duc City, Ho Chi Minh City</span></div>
-          <div class="fact-item"><span class="fact-val">11am – 11pm</span><span class="fact-lbl">Open Daily</span></div>
-          <div class="fact-item"><span class="fact-val">€15 / Guest</span><span class="fact-lbl">Deposit</span></div>
+          <div class="fact-card">
+            <span class="card-num">01</span>
+            <div class="card-body">
+              <span class="card-val">Est. 1961</span>
+              <span class="card-lbl">Heritage</span>
+              <div class="card-line"></div>
+            </div>
+          </div>
+          <div class="fact-card">
+            <span class="card-num">02</span>
+            <div class="card-body">
+              <span class="card-val">1 Vo Van Ngan St</span>
+              <span class="card-lbl">HCMC</span>
+              <div class="card-line"></div>
+            </div>
+          </div>
+          <div class="fact-card">
+            <span class="card-num">03</span>
+            <div class="card-body">
+              <span class="card-val">11am – 11pm</span>
+              <span class="card-lbl">Open Daily</span>
+              <div class="card-line"></div>
+            </div>
+          </div>
+          <div class="fact-card">
+            <span class="card-num">04</span>
+            <div class="card-body">
+              <span class="card-val">50.000VNĐ / Guest</span>
+              <span class="card-lbl">Deposit</span>
+              <div class="card-line"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -236,7 +281,7 @@
               alt="">
             <div class="sum-img-overlay"></div>
             <div class="sum-img-caption">
-              <p>Fine Dining · Rome, Italy</p>
+              <p>Fine Dining</p>
               <h3>San-Lorenzo</h3>
             </div>
           </div>
@@ -252,8 +297,7 @@
                   class="empty">—</span></span></div>
             <div class="sum-info">
               <p class="sum-info-title">Cancellation Policy</p>
-              <p class="sum-info-text">Free cancellation up to 24 hours before your visit. Deposit refunded in full
-                within 3–5 business days.</p>
+              <p class="sum-info-text">Free cancellation up to 3 hours before your scheduled booking. Your deposit will be fully refunded within 3-5 business days.</p>
             </div>
             <div class="sum-addr">
               <div class="sum-addr-icon">
@@ -295,7 +339,7 @@
             </div>
           </div>
 
-          <div class="deposit-callout">A deposit of <strong>€15 per guest</strong> is required to confirm your table —
+          <div class="deposit-callout">A deposit of <strong>50.000VNĐ per guest</strong> is required to confirm your table —
             this amount will be deducted from your final bill on the evening.</div>
           <div class="card-methods">
             <span class="card-badge">VISA</span><span class="card-badge">Mastercard</span><span
