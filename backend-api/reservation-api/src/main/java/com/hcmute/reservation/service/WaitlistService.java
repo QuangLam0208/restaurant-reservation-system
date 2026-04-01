@@ -16,4 +16,6 @@ public interface WaitlistService {
     WaitlistResponse markAsMissing(Long id);
 
     WaitlistResponse skipWaitlistEntry(Long id);
+
+    WaitlistResponse revertToWaiting(Long id);
 }
