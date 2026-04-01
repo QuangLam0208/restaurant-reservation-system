@@ -72,7 +72,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                         @Param("to") LocalDateTime to);
 
         @Query("SELECT DISTINCT m.tableInfo.tableId FROM ReservationTableMapping m " +
-                        "WHERE m.reservation.status IN ('CREATED','PENDING_PAYMENT','RESERVED','SEATED') " +
+                        "WHERE m.reservation.status IN ('CREATED','PENDING_PAYMENT','RESERVED','SE      ATED') " +
                         "AND m.reservation.startTime < :endTime AND m.reservation.endTime > :startTime")
         List<Long> findOccupiedTableIds(@Param("startTime") LocalDateTime startTime,
                         @Param("endTime") LocalDateTime endTime);
