@@ -70,7 +70,13 @@ public class AuthServiceImpl implements AuthService {
 
         if (customer.getVerificationTokenExpiresAt() != null &&
                 customer.getVerificationTokenExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Liên kết xác minh đã hết hạn (30 phút). Vui lòng yêu cầu mã mới.");
+            throw new BadRequestException("Liên kết xác minh đã hết hạn. Vui lòng yêu cầu mã mới.");
+        }
+
+        // Handle Email Change Flow
+        if (customer.getPendingEmail() != null) {
+            customer.setEmail(customer.getPendingEmail());
+            customer.setPendingEmail(null);
         }
 
         customer.setIsVerified(true);
@@ -90,13 +96,54 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordHasher.matches(req.getPassword(), customer.getPasswordHash())) {
             throw new UnauthorizedException("Email hoặc mật khẩu không đúng.");
         }
-        return LoginResponse.builder()
-                .token("SESSION_MANAGED")
-                .customerId(customer.getCustomerId())
-                .name(customer.getName())
-                .email(customer.getEmail())
-                .phone(customer.getPhone())
-                .build();
+        return mapToLoginResponse(customer);
+    }
+
+    @Override
+    @Transactional
+    public LoginResponse updateProfile(Long customerId, CustomerProfileUpdateRequest req) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng."));
+
+        // Handle Email Change
+        if (!req.getEmail().equalsIgnoreCase(customer.getEmail())) {
+            // Check if email already taken
+            if (customerRepository.findByEmail(req.getEmail()).isPresent()) {
+                throw new ConflictException("Email này đã được sử dụng bởi tài khoản khác.");
+            }
+            
+            String verificationToken = UUID.randomUUID().toString();
+            customer.setPendingEmail(req.getEmail());
+            customer.setVerificationToken(verificationToken);
+            customer.setVerificationTokenExpiresAt(LocalDateTime.now().plusMinutes(30));
+            
+            // Send Verification to NEW email
+            emailService.sendVerificationEmail(req.getEmail(), verificationToken);
+            // Send Alert to OLD email
+            emailService.sendEmailChangeAlert(customer.getEmail(), req.getEmail());
+        }
+
+        customer.setName(req.getName());
+        customer.setPhone(req.getPhone());
+        customer.setGender(req.getGender());
+        customer.setDateOfBirth(req.getDateOfBirth());
+
+        customerRepository.save(customer);
+        return mapToLoginResponse(customer);
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(Long customerId, ChangePasswordRequest req) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng."));
+
+        if (!passwordHasher.matches(req.getCurrentPassword(), customer.getPasswordHash())) {
+            throw new UnauthorizedException("Mật khẩu hiện tại không chính xác.");
+        }
+
+        customer.setPasswordHash(passwordHasher.hash(req.getNewPassword()));
+        customerRepository.save(customer);
     }
 
     @Override
@@ -154,11 +201,18 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse getCustomerInfo(Long customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng."));
+        return mapToLoginResponse(customer);
+    }
+
+    private LoginResponse mapToLoginResponse(Customer customer) {
         return LoginResponse.builder()
                 .customerId(customer.getCustomerId())
                 .name(customer.getName())
                 .email(customer.getEmail())
                 .phone(customer.getPhone())
+                .gender(customer.getGender())
+                .dateOfBirth(customer.getDateOfBirth())
+                .token("SESSION_MANAGED")
                 .build();
     }
 

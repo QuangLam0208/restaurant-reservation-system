@@ -57,4 +57,15 @@ export function showToast(message, type = 'info', duration = 4000) {
     
     toast.querySelector('.toast-close').onclick = closeToast;
     if (duration > 0) setTimeout(closeToast, duration);
+
+    return {
+        element: toast,
+        close: closeToast,
+        update: (newMessage, newType) => {
+            if (newMessage) toast.querySelector('.toast-content').innerHTML = newMessage;
+            if (newType) {
+                toast.className = `toast toast-${newType}`;
+            }
+        }
+    };
 }

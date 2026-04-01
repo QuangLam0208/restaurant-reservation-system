@@ -69,6 +69,17 @@ public class EmailServiceImpl implements EmailService{
         sendCustomEmail(toEmail, subject, body);
     }
 
+    @Override
+    public void sendEmailChangeAlert(String oldEmail, String newEmail) {
+        String subject = "Cảnh báo bảo mật: Thay đổi địa chỉ email";
+        String body = String.format(
+                "Chào bạn,\n\nTài khoản của bạn vừa yêu cầu đổi địa chỉ email sang: %s.\n" +
+                "Nếu bạn không thực hiện yêu cầu này, vui lòng liên hệ ngay với bộ phận hỗ trợ của chúng tôi để bảo mật tài khoản.\n\n" +
+                "Trân trọng,\nSan-Lorenzo Restaurant", newEmail
+        );
+        sendCustomEmail(oldEmail, subject, body);
+    }
+
     // --- CÁC HÀM PRIVATE PHỤ TRỢ ---
 
     /**

@@ -24,4 +24,8 @@ public interface AuthService {
     String getLatestVerificationToken(String email);
     String getBaseUrl();
     LoginResponse getCustomerInfo(Long customerId);
+
+    LoginResponse updateProfile(Long customerId, CustomerProfileUpdateRequest req);
+
+    void changePassword(Long customerId, ChangePasswordRequest req);
 }

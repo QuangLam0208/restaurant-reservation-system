@@ -9,12 +9,43 @@ const CATEGORIES = {
 };
 
 /**
+ * Đảm bảo modal HTML tồn tại trong DOM.
+ * Nếu trang hiện tại không có (vd: profile.html), tự inject đúng cấu trúc của reservation.
+ * → Một nguồn duy nhất, không copy-paste HTML.
+ */
+function ensureModalExists() {
+    if (document.getElementById('bookings-modal')) return;
+
+    const html = `
+    <div id="bookings-modal" class="modal-overlay">
+      <div class="modal-card">
+        <button class="close-modal" id="close-bookings-btn" onclick="closeBookingsModal()">✕</button>
+        <h3 class="modal-title">Your Reservations</h3>
+        <div class="modal-tabs">
+          <button class="tab-btn active" id="tab-upcoming" onclick="switchBookingTab('upcoming')">Upcoming</button>
+          <button class="tab-btn" id="tab-history" onclick="switchBookingTab('history')">History</button>
+        </div>
+        <div id="bookings-list" class="booking-list"></div>
+      </div>
+    </div>`;
+
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    // Gán global functions cho onclick attributes
+    window.closeBookingsModal = closeBookingsModal;
+    window.switchBookingTab = switchBookingTab;
+    window.cancelMyBooking = cancelMyBooking;
+}
+
+/**
  * Mở Modal danh sách đặt bàn
  */
 export async function openBookingsModal() {
+    ensureModalExists();
+
     const modal = document.getElementById('bookings-modal');
     const listHtml = document.getElementById('bookings-list');
-    
+
     if (!modal || !listHtml) return;
 
     modal.classList.add('open');
@@ -26,7 +57,7 @@ export async function openBookingsModal() {
 
     try {
         const { ok, status, data } = await callApi('/reservations/my', 'GET');
-        
+
         if (status === 401 || status === 403) {
             alert("Session expired. Please log in again.");
             clearUser();
@@ -104,7 +135,7 @@ export function renderBookings() {
         const start = new Date(r.startTime);
         const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
         const timeStr = r.startTime.split('T')[1].substring(0, 5);
-        
+
         // Chỉ cho hủy nếu trạng thái là RESERVED và cách giờ ăn ít nhất 3 tiếng
         const canCancel = r.status === 'RESERVED' && (start.getTime() - now.getTime() > 3 * 60 * 60 * 1000);
 

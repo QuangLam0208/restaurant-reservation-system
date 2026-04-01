@@ -59,4 +59,15 @@ public class Customer {
     // Quan hệ 1-N với Waitlist
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     private List<Waitlist> waitlistEntries;
+
+    // Profile Details
+    @Column(name = "date_of_birth")
+    private java.time.LocalDate dateOfBirth;
+
+    @Column(name = "gender", length = 20)
+    private String gender;
+
+    // Email Change Flow
+    @Column(name = "pending_email", unique = true)
+    private String pendingEmail;
 }

@@ -28,4 +28,9 @@ public interface EmailService {
      * Gửi email thông báo xác nhận đặt bàn thành công.
      */
     void sendReservationConfirmationEmail(String toEmail, String customerName, Long reservationId, java.time.LocalDateTime startTime);
+
+    /**
+     * Gửi email cảnh báo bảo mật khi người dùng yêu cầu thay đổi email.
+     */
+    void sendEmailChangeAlert(String oldEmail, String newEmail);
 }
