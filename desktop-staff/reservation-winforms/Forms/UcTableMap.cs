@@ -19,11 +19,17 @@ namespace reservation_winforms.Forms
         private List<FloorMapTableResponse> _allTables = new List<FloorMapTableResponse>();
         private List<FloorMapTableResponse> _selectedTables = new List<FloorMapTableResponse>();
 
+        private Timer _blinkTimer;
+        private bool _blinkToggle = false;
+        private List<Button> _blinkingButtons = new List<Button>();
+
         public UcTableMap()
         {
             InitializeComponent();
             _tableService = new TableService();
             _reservationService = new ReservationService();
+
+            InitializeBlinkTimer();
 
             this.Load += UcTableMap_Load;
             
@@ -34,6 +40,37 @@ namespace reservation_winforms.Forms
             btnFilterOverstay.Click += (s, e) => ApplyFilter("OVERSTAY");
             
             btnSeatWalkIn.Click += BtnSeatWalkIn_Click;
+        }
+
+        private void InitializeBlinkTimer()
+        {
+            _blinkTimer = new Timer();
+            _blinkTimer.Interval = 800; // Nhấp nháy mỗi 0.8 giây
+            _blinkTimer.Tick += BlinkTimer_Tick;
+        }
+
+        private void BlinkTimer_Tick(object sender, EventArgs e)
+        {
+            _blinkToggle = !_blinkToggle; // Đảo trạng thái true/false
+
+            foreach (var btn in _blinkingButtons)
+            {
+                var table = btn.Tag as FloorMapTableResponse;
+                if (table == null) continue;
+
+                if (_blinkToggle)
+                {
+                    // Đổi sang màu Cam để cảnh báo
+                    btn.BackColor = Color.Orange;
+                    btn.ForeColor = Color.White;
+                }
+                else
+                {
+                    // Trả về màu gốc (Occupied thì Xám, Overstay thì Đỏ)
+                    btn.BackColor = table.Status == "OCCUPIED" ? Color.Gray : Color.IndianRed;
+                    btn.ForeColor = Color.White;
+                }
+            }
         }
 
         private async void UcTableMap_Load(object sender, EventArgs e)
@@ -120,6 +157,10 @@ namespace reservation_winforms.Forms
 
         private void DrawTables(List<FloorMapTableResponse> tables)
         {
+            _blinkTimer.Stop();
+            _blinkingButtons.Clear();
+            bool hasBlinkingTables = false;
+
             foreach (var table in tables)
             {
                 if (!table.IsActive) continue;
@@ -137,6 +178,20 @@ namespace reservation_winforms.Forms
 
                 btnTable.FlatAppearance.BorderSize = 0;
                 string tableText = $"Bàn {table.TableId}\n({table.Capacity} chỗ)";
+
+                bool shouldBlink = false;
+
+                if ((table.Status == "OCCUPIED" || table.Status == "OVERSTAY") && table.NextReservationTime.HasValue)
+                {
+                    TimeSpan timeUntilNext = table.NextReservationTime.Value - DateTime.Now;
+
+                    if (timeUntilNext.TotalMinutes > 0 && timeUntilNext.TotalMinutes <= 15)
+                    {
+                        shouldBlink = true;
+                        hasBlinkingTables = true;
+                        tableText += $"\n\n⏰ Khách mới: {table.NextReservationTime.Value:HH:mm}";
+                    }
+                }
 
                 switch (table.Status)
                 {
@@ -165,13 +220,13 @@ namespace reservation_winforms.Forms
                     case "OCCUPIED":
                         btnTable.BackColor = Color.Gray;
                         btnTable.ForeColor = Color.White;
-                        tableText += $"\n\nKhách: {table.CurrentCustomerName}";
+                        if (!shouldBlink) tableText += $"\n\nKhách: {table.CurrentCustomerName}";
                         break;
 
                     case "OVERSTAY":
                         btnTable.BackColor = Color.IndianRed;
                         btnTable.ForeColor = Color.White;
-                        tableText += $"\n\n⚠️ QUÁ GIỜ";
+                        if (!shouldBlink) tableText += $"\n\n⚠️ QUÁ GIỜ";
                         break;
 
                     default:
@@ -183,7 +238,17 @@ namespace reservation_winforms.Forms
                 btnTable.Text = tableText;
                 btnTable.Click += BtnTable_Click;
 
+                if (shouldBlink)
+                {
+                    _blinkingButtons.Add(btnTable);
+                }
+
                 flpTableMap.Controls.Add(btnTable);
+            }
+
+            if (hasBlinkingTables)
+            {
+                _blinkTimer.Start();
             }
         }
 

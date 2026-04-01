@@ -36,11 +36,14 @@ namespace reservation_winforms.Forms
             this.colStaff = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colReservation = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colReason = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.pnlListHeader = new System.Windows.Forms.Panel();
+            this.btnExportExcel = new System.Windows.Forms.Button();
             this.lblListTitle = new System.Windows.Forms.Label();
             this.pnlHeader.SuspendLayout();
             this.pnlFilter.SuspendLayout();
             this.pnlList.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvLogs)).BeginInit();
+            this.pnlListHeader.SuspendLayout();
             this.SuspendLayout();
             // 
             // pnlHeader
@@ -68,7 +71,7 @@ namespace reservation_winforms.Forms
             // 
             // pnlFilter
             // 
-            this.pnlFilter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.pnlFilter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlFilter.BackColor = System.Drawing.Color.White;
             this.pnlFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -88,7 +91,7 @@ namespace reservation_winforms.Forms
             // 
             // txtSearch
             // 
-            this.txtSearch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.txtSearch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtSearch.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtSearch.Location = new System.Drawing.Point(276, 115);
@@ -187,13 +190,13 @@ namespace reservation_winforms.Forms
             // 
             // pnlList
             // 
-            this.pnlList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.pnlList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlList.BackColor = System.Drawing.Color.White;
             this.pnlList.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlList.Controls.Add(this.dgvLogs);
-            this.pnlList.Controls.Add(this.lblListTitle);
+            this.pnlList.Controls.Add(this.pnlListHeader);
             this.pnlList.Location = new System.Drawing.Point(30, 354);
             this.pnlList.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlList.Name = "pnlList";
@@ -232,7 +235,7 @@ namespace reservation_winforms.Forms
             this.dgvLogs.DefaultCellStyle = dataGridViewCellStyle2;
             this.dgvLogs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvLogs.EnableHeadersVisualStyles = false;
-            this.dgvLogs.Location = new System.Drawing.Point(30, 92);
+            this.dgvLogs.Location = new System.Drawing.Point(30, 100);
             this.dgvLogs.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.dgvLogs.Name = "dgvLogs";
             this.dgvLogs.ReadOnly = true;
@@ -240,7 +243,7 @@ namespace reservation_winforms.Forms
             this.dgvLogs.RowHeadersWidth = 62;
             this.dgvLogs.RowTemplate.Height = 55;
             this.dgvLogs.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvLogs.Size = new System.Drawing.Size(1407, 612);
+            this.dgvLogs.Size = new System.Drawing.Size(1407, 604);
             this.dgvLogs.TabIndex = 2;
             // 
             // colTime
@@ -275,17 +278,43 @@ namespace reservation_winforms.Forms
             this.colReason.Name = "colReason";
             this.colReason.ReadOnly = true;
             // 
+            // pnlListHeader
+            // 
+            this.pnlListHeader.BackColor = System.Drawing.Color.White;
+            this.pnlListHeader.Controls.Add(this.btnExportExcel);
+            this.pnlListHeader.Controls.Add(this.lblListTitle);
+            this.pnlListHeader.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlListHeader.Location = new System.Drawing.Point(30, 31);
+            this.pnlListHeader.Name = "pnlListHeader";
+            this.pnlListHeader.Size = new System.Drawing.Size(1407, 69);
+            this.pnlListHeader.TabIndex = 3;
+            // 
+            // btnExportExcel
+            // 
+            this.btnExportExcel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnExportExcel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(39)))), ((int)(((byte)(174)))), ((int)(((byte)(96)))));
+            this.btnExportExcel.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnExportExcel.FlatAppearance.BorderSize = 0;
+            this.btnExportExcel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnExportExcel.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnExportExcel.ForeColor = System.Drawing.Color.White;
+            this.btnExportExcel.Location = new System.Drawing.Point(1207, 0);
+            this.btnExportExcel.Name = "btnExportExcel";
+            this.btnExportExcel.Size = new System.Drawing.Size(200, 48);
+            this.btnExportExcel.TabIndex = 2;
+            this.btnExportExcel.Text = "XUẤT EXCEL";
+            this.btnExportExcel.UseVisualStyleBackColor = false;
+            // 
             // lblListTitle
             // 
             this.lblListTitle.AutoSize = true;
-            this.lblListTitle.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblListTitle.Dock = System.Windows.Forms.DockStyle.Left;
             this.lblListTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblListTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
-            this.lblListTitle.Location = new System.Drawing.Point(30, 31);
+            this.lblListTitle.Location = new System.Drawing.Point(0, 0);
             this.lblListTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblListTitle.Name = "lblListTitle";
-            this.lblListTitle.Padding = new System.Windows.Forms.Padding(0, 0, 0, 23);
-            this.lblListTitle.Size = new System.Drawing.Size(376, 61);
+            this.lblListTitle.Size = new System.Drawing.Size(376, 38);
             this.lblListTitle.TabIndex = 1;
             this.lblListTitle.Text = "DANH SÁCH LỊCH SỬ LOGS";
             // 
@@ -307,6 +336,8 @@ namespace reservation_winforms.Forms
             this.pnlList.ResumeLayout(false);
             this.pnlList.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvLogs)).EndInit();
+            this.pnlListHeader.ResumeLayout(false);
+            this.pnlListHeader.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -330,6 +361,8 @@ namespace reservation_winforms.Forms
         private System.Windows.Forms.DataGridViewTextBoxColumn colStaff;
         private System.Windows.Forms.DataGridViewTextBoxColumn colReservation;
         private System.Windows.Forms.DataGridViewTextBoxColumn colReason;
+        private System.Windows.Forms.Panel pnlListHeader;
+        private System.Windows.Forms.Button btnExportExcel;
         private System.Windows.Forms.Label lblListTitle;
     }
 }

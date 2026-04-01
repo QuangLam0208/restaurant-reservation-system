@@ -25,6 +25,7 @@ namespace reservation_winforms.Forms
             btnCheckOut.Click += BtnCheckOut_Click;
 
             this.Load += async (s, e) => await LoadActiveTablesAsync();
+            btnChangeTable.Click += async (s, e) => await HandleChangeTableAsync();
 
             ResetDetailsPanel();
         }
@@ -75,10 +76,9 @@ namespace reservation_winforms.Forms
             foreach (var r in activeReservations)
             {
                 string tableStr = (r.TableIds != null && r.TableIds.Count > 0) ? string.Join(", ", r.TableIds) : "N/A";
-                TimeSpan duration = DateTime.Now - r.StartTime; // Tính thời gian khách đã ngồi
+                TimeSpan duration = DateTime.Now - r.StartTime;
                 int durationMins = (int)duration.TotalMinutes;
 
-                // Nếu khách ngồi lố 2 tiếng (120 phút), hiện cảnh báo đỏ
                 string durationText = durationMins > 120 ? $"⚠️ Quá giờ ({durationMins}p)" : $"{durationMins} phút";
 
                 Button btnCard = new Button
@@ -118,8 +118,7 @@ namespace reservation_winforms.Forms
         {
             pnlDetails.Visible = true;
             btnCheckOut.Visible = true;
-            chkOverride.Visible = true;
-            chkOverride.Checked = false;
+            btnChangeTable.Visible = true;
 
             lblValTable.Text = (r.TableIds != null && r.TableIds.Count > 0) ? string.Join(", ", r.TableIds) : "N/A";
             lblValName.Text = r.CustomerName ?? "Khách vãng lai";
@@ -131,15 +130,10 @@ namespace reservation_winforms.Forms
             lblValDuration.ForeColor = mins > 120 ? Color.Red : Color.FromArgb(243, 156, 18);
 
             lblValDeposit.Text = (r.DepositAmount != null && r.DepositAmount > 0) ? $"{r.DepositAmount:N0}đ" : "0đ";
+
+            // Hiện checkbox override nếu quá giờ
             chkOverride.Checked = false;
-            if (mins > 120)
-            {
-                chkOverride.Visible = true;
-            }
-            else
-            {
-                chkOverride.Visible = false;
-            }
+            chkOverride.Visible = (mins > 120);
         }
 
         private async void BtnCheckOut_Click(object sender, EventArgs e)
@@ -164,7 +158,7 @@ namespace reservation_winforms.Forms
                             if (res.IsSuccess)
                             {
                                 MessageBox.Show("Đã thanh toán cưỡng chế, lưu log và giải phóng bàn thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                await LoadActiveTablesAsync(); // Tải lại danh sách
+                                await LoadActiveTablesAsync();
                             }
                             else
                             {
@@ -178,7 +172,6 @@ namespace reservation_winforms.Forms
                         }
                     }
                 }
-
                 return;
             }
 
@@ -215,10 +208,157 @@ namespace reservation_winforms.Forms
             }
         }
 
+        private async Task HandleChangeTableAsync()
+        {
+            if (_currentSelectedRes == null)
+            {
+                MessageBox.Show("Vui lòng chọn một bàn đang có khách để thực hiện đổi bàn!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                btnChangeTable.Enabled = false;
+                btnChangeTable.Text = "ĐANG TẢI...";
+
+                int guestCount = _currentSelectedRes.GuestCount;
+
+                var optionsRes = await _reservationService.GetWalkInOptionsAsync(guestCount);
+
+                if (!optionsRes.IsSuccess || optionsRes.Data == null || optionsRes.Data.Groups == null || optionsRes.Data.Groups.Count == 0)
+                {
+                    MessageBox.Show("Nhà hàng hiện không có tổ hợp bàn nào trống phù hợp cho số lượng khách này!", "Hết bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var selectedIds = ShowOptionsDialog(optionsRes.Data, guestCount);
+                if (selectedIds == null || selectedIds.Count == 0) return;
+
+                var changeReq = new ChangeTableRequest
+                {
+                    TableIds = selectedIds
+                };
+
+                btnChangeTable.Text = "ĐANG CHUYỂN...";
+                var res = await _reservationService.ChangeTableAsync(_currentSelectedRes.ReservationId, changeReq);
+
+                if (res.IsSuccess)
+                {
+                    MessageBox.Show("Đã chuyển bàn thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    long savedResId = _currentSelectedRes.ReservationId;
+                    await LoadActiveTablesAsync();
+
+                    foreach (Control c in flpActiveTables.Controls)
+                    {
+                        if (c is Button btnCard && btnCard.Tag is ReservationResponse rObj && rObj.ReservationId == savedResId)
+                        {
+                            btnCard.PerformClick();
+                            flpActiveTables.ScrollControlIntoView(btnCard);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(res.Message, "Không thể chuyển bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            finally
+            {
+                btnChangeTable.Enabled = true;
+                btnChangeTable.Text = "ĐỔI BÀN";
+            }
+        }
+
+        private List<long> ShowOptionsDialog(WalkInOptionResponse data, int guestCount)
+        {
+            List<long> selectedIds = null;
+
+            Form popup = new Form
+            {
+                Text = $"Gợi ý đổi bàn cho nhóm {guestCount} khách",
+                Size = new Size(550, 500),
+                StartPosition = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                BackColor = Color.White
+            };
+
+            FlowLayoutPanel flp = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                Padding = new Padding(10)
+            };
+            popup.Controls.Add(flp);
+
+            foreach (var group in data.Groups)
+            {
+                Label lblGroup = new Label
+                {
+                    Text = group.GroupName,
+                    Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                    AutoSize = true,
+                    Margin = new Padding(0, 10, 0, 5),
+                    ForeColor = group.GroupName.Contains("Ưu tiên") ? Color.MediumSeaGreen : Color.Orange
+                };
+                flp.Controls.Add(lblGroup);
+
+                foreach (var opt in group.Options)
+                {
+                    string tableStr = string.Join(", ", opt.TableIds);
+                    string typeStr = opt.TableIds.Count > 1 ? "Ghép bàn" : "Bàn đơn";
+                    string limitStr = opt.AvailableUntil.HasValue ? $" | Phải trả bàn lúc: {opt.AvailableUntil.Value:HH:mm}" : "";
+
+                    string btnText = $"Bàn {tableStr} ({opt.TotalCapacity} chỗ) - {typeStr}{limitStr}";
+
+                    Button btnOpt = new Button
+                    {
+                        Text = btnText,
+                        Width = 490,
+                        Height = 45,
+                        Margin = new Padding(5),
+                        TextAlign = ContentAlignment.MiddleLeft,
+                        FlatStyle = FlatStyle.Flat,
+                        Cursor = Cursors.Hand,
+                        Font = new Font("Segoe UI", 10, FontStyle.Regular)
+                    };
+
+                    btnOpt.FlatAppearance.BorderColor = opt.AvailableUntil.HasValue ? Color.Orange : Color.LightGray;
+
+                    btnOpt.Click += (s, e) =>
+                    {
+                        var confirmResult = MessageBox.Show(
+                            $"Bạn có chắc chắn muốn đổi sang Bàn {tableStr} không?",
+                            "Xác nhận đổi bàn",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Question);
+
+                        if (confirmResult == DialogResult.Yes)
+                        {
+                            selectedIds = opt.TableIds;
+                            popup.DialogResult = DialogResult.OK;
+                            popup.Close();
+                        }
+                    };
+
+                    flp.Controls.Add(btnOpt);
+                }
+            }
+
+            popup.ShowDialog();
+            return selectedIds;
+        }
+
         private void ResetDetailsPanel()
         {
             pnlDetails.Visible = false;
             btnCheckOut.Visible = false;
+            btnChangeTable.Visible = false;
             _currentSelectedRes = null;
             chkOverride.Visible = false;
             chkOverride.Checked = false;

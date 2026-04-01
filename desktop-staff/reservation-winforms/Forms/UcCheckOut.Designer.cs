@@ -32,6 +32,7 @@
             this.lblTitleDeposit = new System.Windows.Forms.Label();
             this.lblValDeposit = new System.Windows.Forms.Label();
             this.btnCheckOut = new System.Windows.Forms.Button();
+            this.btnChangeTable = new System.Windows.Forms.Button();
             this.chkOverride = new System.Windows.Forms.CheckBox();
             this.pnlHeader.SuspendLayout();
             this.pnlDetails.SuspendLayout();
@@ -227,6 +228,23 @@
             this.lblValDeposit.TabIndex = 10;
             this.lblValDeposit.Text = "0đ";
             // 
+            // btnChangeTable
+            // 
+            this.btnChangeTable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnChangeTable.BackColor = System.Drawing.Color.White;
+            this.btnChangeTable.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnChangeTable.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
+            this.btnChangeTable.FlatAppearance.BorderSize = 2;
+            this.btnChangeTable.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnChangeTable.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            this.btnChangeTable.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
+            this.btnChangeTable.Location = new System.Drawing.Point(920, 700);
+            this.btnChangeTable.Name = "btnChangeTable";
+            this.btnChangeTable.Size = new System.Drawing.Size(280, 100);
+            this.btnChangeTable.TabIndex = 6;
+            this.btnChangeTable.Text = "ĐỔI BÀN";
+            this.btnChangeTable.UseVisualStyleBackColor = false;
+            // 
             // btnCheckOut
             // 
             this.btnCheckOut.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -236,11 +254,11 @@
             this.btnCheckOut.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCheckOut.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
             this.btnCheckOut.ForeColor = System.Drawing.Color.White;
-            this.btnCheckOut.Location = new System.Drawing.Point(920, 700);
+            this.btnCheckOut.Location = new System.Drawing.Point(1220, 700);
             this.btnCheckOut.Name = "btnCheckOut";
-            this.btnCheckOut.Size = new System.Drawing.Size(580, 100);
+            this.btnCheckOut.Size = new System.Drawing.Size(280, 100);
             this.btnCheckOut.TabIndex = 5;
-            this.btnCheckOut.Text = "XÁC NHẬN TRẢ BÀN";
+            this.btnCheckOut.Text = "TRẢ BÀN";
             this.btnCheckOut.UseVisualStyleBackColor = false;
             // 
             // chkOverride
@@ -265,6 +283,7 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(246)))), ((int)(((byte)(250)))));
             this.Controls.Add(this.chkOverride);
             this.Controls.Add(this.btnCheckOut);
+            this.Controls.Add(this.btnChangeTable);
             this.Controls.Add(this.pnlDetails);
             this.Controls.Add(this.flpActiveTables);
             this.Controls.Add(this.pnlHeader);
@@ -296,6 +315,7 @@
         private System.Windows.Forms.Label lblTitleDeposit;
         private System.Windows.Forms.Label lblValDeposit;
         private System.Windows.Forms.CheckBox chkOverride;
+        private System.Windows.Forms.Button btnChangeTable;
         private System.Windows.Forms.Button btnCheckOut;
     }
 }

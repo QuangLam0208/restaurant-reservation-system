@@ -25,7 +25,7 @@ namespace reservation_winforms.Forms
             this.Load += async (s, e) => await LoadDataAsync();
             btnReload.Click += async (s, e) => await LoadDataAsync();
             btnAdd.Click += async (s, e) => await AddNewWaitlistAsync();
-
+                
             btnSearchMissing.Click += (s, e) => RenderMissingGrid();
             txtSearchMissing.KeyDown += (s, e) => {
                 if (e.KeyCode == Keys.Enter) RenderMissingGrid();
@@ -151,6 +151,7 @@ namespace reservation_winforms.Forms
             string name = txtName.Text.Trim();
             string phone = txtPhone.Text.Trim();
             int guests = (int)nudGuests.Value;
+            bool allowShort = chkAllowShortSeating.Checked;
 
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(phone))
             {
@@ -166,13 +167,17 @@ namespace reservation_winforms.Forms
             }
 
             btnAdd.Enabled = false;
-            var req = new WaitlistRequest { Name = name, Phone = phone, GuestCount = guests, AllowShortSeating = false };
+            var req = new WaitlistRequest { Name = name, Phone = phone, GuestCount = guests, AllowShortSeating = allowShort };
 
             var res = await _waitlistService.AddToWaitlistAsync(req);
 
             if (res.IsSuccess)
             {
-                txtName.Clear(); txtPhone.Clear(); nudGuests.Value = 2;
+                txtName.Clear(); 
+                txtPhone.Clear(); 
+                nudGuests.Value = 2;
+                chkAllowShortSeating.Checked = false;
+
                 await LoadDataAsync();
             }
             else

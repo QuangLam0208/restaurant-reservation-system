@@ -3,7 +3,9 @@ using reservation_winforms.Services;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -32,6 +34,8 @@ namespace reservation_winforms.Forms
             txtSearch.TextChanged += TxtSearch_TextChanged;
 
             dgvLogs.RowTemplate.Height = 50;
+
+            btnExportExcel.Click += BtnExportExcel_Click;
 
             this.Load += async (s, e) => await LoadLogsAsync();
         }
@@ -127,6 +131,48 @@ namespace reservation_winforms.Forms
             ).ToList();
 
             RenderLogs(filteredList);
+        }
+        private void BtnExportExcel_Click(object sender, EventArgs e)
+        {
+            if (dgvLogs.Rows.Count == 0 || (dgvLogs.Rows.Count == 1 && dgvLogs.Rows[0].IsNewRow))
+            {
+                MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel CSV File|*.csv", FileName = $"SystemLogs_{DateTime.Now:ddMMyyyy}.csv" })
+            {
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.Append('\uFEFF'); // BOM giúp Excel đọc tiếng Việt có dấu
+
+                        sb.AppendLine("Thời gian,Tên nhân viên,Mã đơn,Lý do");
+
+                        foreach (DataGridViewRow row in dgvLogs.Rows)
+                        {
+                            if (row.IsNewRow) continue;
+
+                            string time = row.Cells[0].Value?.ToString() ?? "";
+                            string staff = row.Cells[1].Value?.ToString() ?? "";
+                            string id = row.Cells[2].Value?.ToString() ?? "";
+                            string reason = row.Cells[3].Value?.ToString() ?? "";
+
+                            reason = reason.Replace("\"", "\"\"").Replace("\r", " ").Replace("\n", " ");
+                            sb.AppendLine($"\"{time}\",\"{staff}\",\"{id}\",\"{reason}\"");
+                        }
+
+                        File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
+                        MessageBox.Show("Xuất file Excel thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Lỗi khi xuất file: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
         }
     }
 }

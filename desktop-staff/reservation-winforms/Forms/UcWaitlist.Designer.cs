@@ -26,6 +26,7 @@ namespace reservation_winforms.Forms
             this.lblTitle = new System.Windows.Forms.Label();
             this.pnlAddWaitlist = new System.Windows.Forms.Panel();
             this.btnAdd = new System.Windows.Forms.Button();
+            this.chkAllowShortSeating = new System.Windows.Forms.CheckBox();
             this.nudGuests = new System.Windows.Forms.NumericUpDown();
             this.lblGuests = new System.Windows.Forms.Label();
             this.txtPhone = new System.Windows.Forms.TextBox();
@@ -114,6 +115,7 @@ namespace reservation_winforms.Forms
             this.pnlAddWaitlist.BackColor = System.Drawing.Color.White;
             this.pnlAddWaitlist.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlAddWaitlist.Controls.Add(this.btnAdd);
+            this.pnlAddWaitlist.Controls.Add(this.chkAllowShortSeating);
             this.pnlAddWaitlist.Controls.Add(this.nudGuests);
             this.pnlAddWaitlist.Controls.Add(this.lblGuests);
             this.pnlAddWaitlist.Controls.Add(this.txtPhone);
@@ -138,17 +140,28 @@ namespace reservation_winforms.Forms
             this.btnAdd.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAdd.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.btnAdd.ForeColor = System.Drawing.Color.White;
-            this.btnAdd.Location = new System.Drawing.Point(30, 440);
+            this.btnAdd.Location = new System.Drawing.Point(30, 462);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(286, 60);
             this.btnAdd.TabIndex = 0;
             this.btnAdd.Text = "THÊM HÀNG ĐỢI";
             this.btnAdd.UseVisualStyleBackColor = false;
             // 
+            // chkAllowShortSeating
+            // 
+            this.chkAllowShortSeating.AutoSize = true;
+            this.chkAllowShortSeating.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.chkAllowShortSeating.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
+            this.chkAllowShortSeating.Location = new System.Drawing.Point(30, 420);
+            this.chkAllowShortSeating.Name = "chkAllowShortSeating";
+            this.chkAllowShortSeating.Size = new System.Drawing.Size(367, 36);
+            this.chkAllowShortSeating.TabIndex = 8;
+            this.chkAllowShortSeating.Text = "Khách chịu ngồi bàn ngắn hạn";
+            this.chkAllowShortSeating.UseVisualStyleBackColor = true;
+            // 
             // nudGuests
             // 
-            this.nudGuests.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.nudGuests.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.nudGuests.Font = new System.Drawing.Font("Segoe UI", 14F);
             this.nudGuests.Location = new System.Drawing.Point(30, 360);
             this.nudGuests.Name = "nudGuests";
@@ -585,6 +598,7 @@ namespace reservation_winforms.Forms
         private System.Windows.Forms.NumericUpDown nudGuests;
         private System.Windows.Forms.Label lblGuests;
         private System.Windows.Forms.Button btnAdd;
+        private System.Windows.Forms.CheckBox chkAllowShortSeating;
 
         private System.Windows.Forms.Panel pnlList;
         private System.Windows.Forms.TabControl tabControlWaitlist;
