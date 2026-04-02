@@ -1,7 +1,5 @@
 package com.hcmute.reservation.service;
 
-import java.time.LocalTime;
-
 public interface ConfigProviderService {
     int getDurationMinutes();
     int getBufferMinutes();
