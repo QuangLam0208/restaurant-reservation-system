@@ -29,6 +29,7 @@
 html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
+    zoom: 0.8;
 }
 
 body {
@@ -374,8 +375,14 @@ body::after {
 .step-icon svg {
     width: 18px;
     height: 18px;
-    stroke: var(--muted-2);
-    transition: stroke 0.4s;
+    stroke: var(--text-muted);
+    opacity: 0.8;
+    transition: stroke 0.4s, opacity 0.4s;
+}
+
+body.light-mode .step-icon svg {
+    stroke: #8B6840 !important;
+    opacity: 1 !important;
 }
 
 .step.active .step-icon {
@@ -542,10 +549,8 @@ body::after {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 16px 0;
     background: transparent;
-    border: 1px solid var(--parchment);
-    border-radius: var(--r-sm);
 }
 
 .stepper-text {
@@ -591,8 +596,6 @@ body::after {
     width: 56px;
     height: 42px;
     border: none;
-    border-left: 1px solid var(--parchment);
-    border-right: 1px solid var(--parchment);
     font-family: 'DM Sans', sans-serif;
     font-size: 20px;
     text-align: center;
@@ -1105,7 +1108,7 @@ textarea.finput {
 }
 
 .proceed-btn::after {
-    content: '→';
+    content: 'â†’';
     position: absolute;
     right: 24px;
     top: 50%;
@@ -1219,7 +1222,7 @@ textarea.finput {
     color: var(--ink);
 }
 
-/* Vòng tròn đếm ngược */
+/* VÃ²ng trÃ²n Ä‘áº¿m ngÆ°á»£c */
 .timer-pill {
     display: flex;
     align-items: center;
@@ -1982,4 +1985,280 @@ textarea.finput {
 
 .error-state {
     color: #E76B6B;
+}
+/* ============================================
+   LIGHT MODE REFINEMENTS
+   ============================================ */
+
+/* 1. INFO BAR */
+body.light-mode .facts-strip,
+body.light-mode .info-bar,
+body.light-mode [class*="hero-facts"],
+body.light-mode [class*="reservation-stats"] {
+  background: #EDE3D4;
+  border: 1px solid #D4C5AD;
+  border-radius: 10px;
+}
+
+body.light-mode .hero-desc {
+  color: #5C3D1E !important;
+  opacity: 1 !important;
+}
+
+body.light-mode .facts-inner {
+  background: #EDE3D4;
+}
+
+body.light-mode .card-num,
+body.light-mode .fact-number,
+body.light-mode [class*="fact-index"],
+body.light-mode [class*="info-num"],
+body.light-mode [class*="strip-number"] {
+  color: #C4A472 !important;
+  opacity: 1 !important;
+  font-weight: 300;
+}
+
+body.light-mode .card-lbl,
+body.light-mode .fact-label,
+body.light-mode [class*="fact-category"],
+body.light-mode [class*="info-label"] {
+  color: #9A856A;
+  letter-spacing: 0.12em;
+}
+
+body.light-mode .card-val,
+body.light-mode .fact-value,
+body.light-mode [class*="fact-title"],
+body.light-mode [class*="info-value"] {
+  color: #1C1410;
+}
+
+body.light-mode .fact-card + .fact-card,
+body.light-mode .fact-item + .fact-item,
+body.light-mode [class*="fact-col"] + [class*="fact-col"] {
+  border-left: 1px solid #D4C5AD;
+}
+
+/* 2. STEP PROGRESS BAR */
+body.light-mode .prog-dot.active,
+body.light-mode .step-circle.active,
+body.light-mode .progress-step.active [class*="circle"],
+body.light-mode [class*="step-num"].active {
+  background: #7A5C35 !important;
+  color: #F5ECD8 !important;
+  border: none !important;
+}
+
+body.light-mode .prog-dot:not(.active),
+body.light-mode .step-circle:not(.active),
+body.light-mode .progress-step:not(.active) [class*="circle"],
+body.light-mode [class*="step-num"]:not(.active) {
+  background: transparent !important;
+  border: 1.5px solid #C4A472 !important;
+  color: #9A856A !important;
+}
+
+body.light-mode .prog-name.active,
+body.light-mode .step-label.active,
+body.light-mode .progress-step.active [class*="label"] {
+  color: #1C1410;
+  font-weight: 600;
+}
+
+body.light-mode .prog-name:not(.active),
+body.light-mode .step-label:not(.active),
+body.light-mode .progress-step:not(.active) [class*="label"] {
+  color: #9A856A;
+}
+
+body.light-mode .prog-line,
+body.light-mode .step-connector,
+body.light-mode [class*="step-line"] {
+  background: #D4C5AD;
+  height: 1px;
+  opacity: 1;
+}
+
+/* 3. STEP CONTENT CARDS */
+body.light-mode .step.active,
+body.light-mode .step-card.active,
+body.light-mode .booking-step.active,
+body.light-mode [class*="step-panel"].active {
+  background: #FFFFFF;
+  border: 1px solid #C4A472;
+  box-shadow: 0 2px 12px rgba(122, 92, 53, 0.1);
+}
+
+body.light-mode .step:not(.active),
+body.light-mode .step-card:not(.active),
+body.light-mode .booking-step:not(.active),
+body.light-mode [class*="step-panel"]:not(.active) {
+  background: #FAF6EF;
+  border: 1px solid #E0D5C5;
+  opacity: 1 !important;
+}
+
+body.light-mode .step-label,
+body.light-mode .step-tag,
+body.light-mode [class*="step-number-label"],
+body.light-mode [class*="step-meta"] {
+  color: #9A856A;
+  letter-spacing: 0.15em;
+}
+
+body.light-mode .step-value.active,
+body.light-mode .step.active .step-value,
+body.light-mode .step-name.active,
+body.light-mode .step-card.active .step-name,
+body.light-mode .booking-step.active [class*="step-title"] {
+  color: #8B6840;
+  font-style: italic;
+}
+
+body.light-mode .step-value:not(.active),
+body.light-mode .step:not(.active) .step-value,
+body.light-mode .step-name:not(.active),
+body.light-mode .step-card:not(.active) .step-name,
+body.light-mode .booking-step:not(.active) [class*="step-title"] {
+  color: #9A856A;
+  font-style: italic;
+}
+
+/* Step icon — light bg, visible stroke */
+body.light-mode .step-icon {
+  background: #EDE3D4 !important;
+  border-color: #D4C5AD !important;
+}
+
+body.light-mode .step-icon svg {
+  stroke: #8B6840 !important;
+  opacity: 1 !important;
+}
+
+body.light-mode .step.active .step-icon {
+  background: #D4C5AD !important;
+  border-color: #8B6840 !important;
+}
+
+body.light-mode .step.active .step-icon svg {
+  stroke: #7A5C35 !important;
+}
+
+body.light-mode .section-sublabel,
+body.light-mode .quick-select-label,
+body.light-mode [class*="section-label"],
+body.light-mode [class*="quick-label"] {
+  color: #7A5C35;
+  letter-spacing: 0.12em;
+}
+
+/* 4. GUEST BUTTONS */
+body.light-mode .party-chip,
+body.light-mode .guest-btn,
+body.light-mode .quick-select-btn,
+body.light-mode [class*="guest-option"]:not(.sel):not(.selected):not(.active) {
+  background: #F5F0E8;
+  border: 1px solid #D4C5AD;
+  color: #2C1F14;
+}
+
+body.light-mode .party-chip.sel,
+body.light-mode .guest-btn.selected,
+body.light-mode .quick-select-btn.selected,
+body.light-mode [class*="guest-option"].sel,
+body.light-mode [class*="guest-option"].selected,
+body.light-mode [class*="guest-option"].active {
+  background: #7A5C35;
+  border-color: #7A5C35;
+  color: #F5ECD8;
+}
+
+body.light-mode .party-chip:hover:not(.sel),
+body.light-mode .guest-btn:hover:not(.selected) {
+  border-color: #8B6840;
+  background: #EDE3D4;
+}
+
+body.light-mode .plbl,
+body.light-mode .guest-sublabel,
+body.light-mode .guest-btn [class*="label"],
+body.light-mode .quick-select-btn span:last-child {
+  color: inherit;
+  opacity: 0.75;
+}
+
+body.light-mode .pnum {
+  color: inherit;
+}
+
+/* 5. STEPPER — no outer frame, no side lines */
+body.light-mode .stepper-row {
+  border: none !important;
+  padding: 16px 0 !important;
+  background: transparent !important;
+}
+
+body.light-mode .stepper {
+  background: transparent !important;
+  border: 1px solid #D4C5AD;
+  color: #2C1F14;
+}
+
+body.light-mode .st-val {
+  border-left: none !important;
+  border-right: none !important;
+}
+
+body.light-mode .st-btn,
+body.light-mode .stepper-btn,
+body.light-mode [class*="stepper"] button {
+  background: #EDE3D4;
+  color: #7A5C35;
+  border: none;
+  border-radius: 50%;
+}
+
+body.light-mode .st-val,
+body.light-mode .stepper-value,
+body.light-mode [class*="stepper"] span,
+body.light-mode [class*="stepper"] input {
+  color: #1C1410;
+  font-weight: 600;
+  background: transparent;
+  border: none !important;
+}
+
+body.light-mode .stepper-text,
+body.light-mode [class*="stepper-hint"],
+body.light-mode [class*="custom-label"] {
+  color: #9A856A;
+}
+
+/* 6. CONTINUE BUTTON */
+body.light-mode .step-cta,
+body.light-mode .btn-continue,
+body.light-mode button[class*="continue"],
+body.light-mode [class*="step-cta"] {
+  background: #1C1410 !important;
+  color: #F2E8D9 !important;
+  border: none !important;
+  border-radius: 40px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.light-mode .step-cta:hover {
+  background: #261E17 !important;
+  box-shadow: 0 4px 16px rgba(28, 20, 16, 0.25) !important;
+}
+
+/* 7. BODY / PAGE BACKGROUND */
+body.light-mode .booking-layout,
+body.light-mode .booking-section,
+body.light-mode .reservation-form-section,
+body.light-mode [class*="booking-wrap"],
+body.light-mode [class*="steps-section"] {
+  background: #F5F0E8;
 }
