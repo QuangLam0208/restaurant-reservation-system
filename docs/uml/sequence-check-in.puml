@@ -1,74 +1,40 @@
 @startuml
-title Sequence Diagram - Check-in khách
+title Sơ đồ tuần tự - Check-in
+autonumber
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam maxMessageSize 160
 
-actor "Receptionist" as Receptionist
-boundary "Reception UI" as POS
-control CheckInController
-control AssignmentService
-database Database
+actor "Lễ tân" as Receptionist
+boundary "POS" as POS
+control "Hệ thống" as System
+database "Cơ sở dữ liệu" as DB
 
-Receptionist -> POS : Yêu cầu Check-in (reservation_id)
-activate POS
-POS -> CheckInController : checkIn(reservation_id)
-activate CheckInController
+Receptionist -> POS : Chọn reservation cần check-in
+POS -> System : Gửi yêu cầu check-in
+System -> DB : Lấy reservation, bàn đã gán\nvà cấu hình vận hành
 
-CheckInController -> Database : getReservation(reservation_id)
-Database --> CheckInController : reservationData
+alt Quá grace period
+    System -> DB : Cập nhật reservation = NO_SHOW\nGiải phóng bàn
+    System --> POS : Thông báo no-show
 
-alt Validate: reservation.status != RESERVED
-    CheckInController --> POS : Trả lỗi "Invalid check-in state"
-    POS --> Receptionist : Hiển thị thông báo lỗi
-else Validate: reservation.status == RESERVED
+else Bàn gốc sẵn sàng
+    System -> DB : Cập nhật reservation = SEATED\nCập nhật thời gian thực tế\nCập nhật bàn = OCCUPIED
+    System --> POS : Check-in thành công
 
-    alt Khách đến sớm (current_time < start_time)
-        CheckInController -> Database : Lấy danh sách bàn gốc & kiểm tra
-        Database --> CheckInController : available / unavailable
+else Bàn gốc chưa sẵn sàng
+    System -> DB : Tìm bàn thay thế phù hợp
 
-        alt Các bàn gốc đều trống
-            CheckInController -> Database : update Reservation.status = SEATED, start_time = current_time
-            CheckInController -> Database : update Table_Info.status = OCCUPIED cho TOÀN BỘ bàn gốc
-            CheckInController --> POS : Cho ngồi ngay
-        else Bàn gốc chưa trống
-            CheckInController -> AssignmentService : findAlternativeTables(reservationData)
-            activate AssignmentService
-            note right of AssignmentService
-              Validate: No-overlap priority online
-            end note
-            AssignmentService -> Database : Truy vấn các bàn trống hợp lệ
-            Database --> AssignmentService : alternative_tables
-            AssignmentService --> CheckInController : found / not found
-            deactivate AssignmentService
+    alt Có bàn thay thế
+        System -> DB : Cập nhật mapping mới\nCập nhật reservation = SEATED\nCập nhật bàn = OCCUPIED
+        System --> POS : Check-in vào bàn mới
 
-            alt Có bàn thay thế hợp lệ
-                CheckInController -> Database : update Reservation_Table_Mapping (assign tạm)
-                CheckInController -> Database : update Reservation.status = SEATED, start_time = current_time
-                CheckInController -> Database : update Table_Info.status = OCCUPIED cho các bàn thay thế
-                CheckInController --> POS : Xếp bàn tạm thành công
-            else Không có bàn thay thế hợp lệ
-                CheckInController --> POS : Báo khách chờ đến đúng giờ
-            end
-        end
+    else Khách đến sớm
+        System --> POS : Gợi ý chờ thêm hoặc đưa vào waitlist
 
-    else Khách đến đúng giờ / trong grace period
-        CheckInController -> Database : update Reservation.status = SEATED, start_time = current_time
-        CheckInController -> Database : Lấy danh sách bàn từ Reservation_Table_Mapping
-        CheckInController -> Database : update Table_Info.status = OCCUPIED cho TOÀN BỘ bàn
-        CheckInController --> POS : Check-in thành công
-
-    else Quá grace period
-        CheckInController -> Database : update Reservation.status = NO_SHOW
-        CheckInController -> Database : Lấy danh sách bàn từ Reservation_Table_Mapping
-        note right of CheckInController
-          Giữ nguyên Mapping để truy vết lịch sử,
-          không xóa khỏi Reservation_Table_Mapping
-        end note
-        CheckInController -> Database : update Table_Info.status = AVAILABLE cho TOÀN BỘ bàn
-        CheckInController --> POS : Reservation bị NO_SHOW, giải phóng bàn
+    else Xung đột do overstay
+        System --> POS : Trả lỗi OVERSTAY_CONFLICT
     end
 end
 
-deactivate CheckInController
-deactivate POS
 @enduml
-
-
