@@ -15,6 +15,7 @@ if (Loại yêu cầu?) then (Online)
       :Chuyển sang CANCELLED hoặc EXPIRED;
     endif
   else (Không)
+  stop
   endif
 else (Walk-in)
   :Tiếp nhận khách walk-in;
@@ -24,7 +25,6 @@ else (Walk-in)
     if (Lễ tân xác nhận?) then (Có)
       :Chuyển sang SEATED;
     else (Không)
-      :Chuyển sang CANCELLED hoặc EXPIRED;
     endif
   else (Không)
     :Chuyển khách sang waitlist;

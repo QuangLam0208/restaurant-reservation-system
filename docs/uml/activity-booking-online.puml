@@ -17,22 +17,16 @@ if (Đã đăng nhập và xác minh?) then (Có)
     if (Có phương án xếp bàn?) then (Có)
       :Tạo reservation = CREATED;
       :Soft lock bàn và tạo mapping;
-      if (Có xung đột đồng thời?) then (Có)
-        :Thông báo bàn vừa được giao dịch khác sử dụng;
-        stop
-      endif
+
 
       :Chuyển reservation sang PENDING_PAYMENT;
       :Khách thực hiện thanh toán;
 
       if (Thanh toán thành công?) then (Có)
-        if (Soft lock còn hiệu lực?) then (Có)
+
           :Chuyển reservation sang RESERVED;
           :Giải phóng soft lock;
           :Gửi xác nhận đặt bàn;
-        else (Không)
-          :Thông báo giữ bàn đã hết hạn;
-        endif
       else (Không)
         if (Khách hủy thanh toán?) then (Có)
           :Chuyển reservation sang CANCELLED;
@@ -43,7 +37,7 @@ if (Đã đăng nhập và xác minh?) then (Có)
         endif
       endif
     else (Không)
-      :Thông báo hết bàn\nvà gợi ý khung giờ khác;
+    stop
     endif
   else (Không)
     :Thông báo dữ liệu không hợp lệ\nhoặc vi phạm quy tắc nghiệp vụ;

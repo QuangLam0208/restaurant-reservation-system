@@ -1,23 +1,34 @@
 @startuml
-title Sơ đồ hoạt động - Override khẩn cấp
+title Sơ đồ hoạt động - Override khẩn cấp (Xử lý Overstay)
 skinparam conditionStyle inside
 
 start
-:Hệ thống phát hiện bàn OVERSTAY;
-:Lễ tân chọn reservation cần override;
-:Nhập lý do override;
+:Lễ tân chọn Reservation đang bị quá giờ;
+:Nhập lý do giải quyết (Lý do Override);
 
-if (Reservation đang ở SEATED\nvà có bàn OVERSTAY?) then (Có)
-  :Forced check-out;
-  :Chuyển reservation sang COMPLETED;
-  :Giải phóng các bàn đã mapping;
-  if (Có xung đột đồng thời?) then (Có)
-    :Thông báo giao dịch đang bị xử lý bởi tiến trình khác;
+:Kiểm tra trạng thái hệ thống;
+if (Reservation đang ở trạng thái SEATED\nvà có ít nhất 1 bàn đang OVERSTAY?) then (Đúng)
+
+  :Tiến hành ép trả bàn (Forced Check-out);
+  :Cập nhật end_time thực tế = Thời gian hiện tại;
+  :Chuyển trạng thái Reservation sang COMPLETED;
+
+  :Giải phóng ngay lập tức các bàn đã mapping\n(Chuyển sang AVAILABLE, bỏ qua buffer time);
+  :Tạo và lưu thông tin vào lịch sử Override_Log;
+
+  :Lưu các thay đổi vào Cơ sở dữ liệu;
+  if (Xảy ra xung đột đồng thời\n(Optimistic Locking Exception)?) then (Có)
+    :Hủy bỏ toàn bộ thay đổi (Rollback Transaction);
+    :Báo lỗi "Giao dịch đang được xử lý bởi tiến trình khác";
+    stop
   else (Không)
-    :Tạo Override_Log;
+    :Lưu thành công;
+    :Gửi sự kiện WebSocket (TableStatusChangedEvent)\nđể ngay lập tức làm mới sơ đồ bàn;
   endif
+
 else (Không)
-  :Từ chối override vì không đủ điều kiện;
+  :Từ chối thực hiện;
+  :Báo lỗi "Đơn đặt bàn không đủ điều kiện để Override";
 endif
 
 stop
