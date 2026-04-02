@@ -19,7 +19,7 @@
   --card-border: var(--border);
   --card-text: var(--text-primary);
   --card-label: var(--text-secondary);
-  
+
   --input-bg: var(--bg-tertiary);
   --input-border: var(--border-light);
   --input-text: var(--text-primary);
@@ -28,8 +28,9 @@
 
 body.light-mode {
   --card-bg: #FFFFFF;
-  --card-border: rgba(0,0,0,0.05);
+  --card-border: rgba(0, 0, 0, 0.05);
   --input-bg: #FFFFFF;
+  --text-light: #2C1F14;
 }
 
 body {
@@ -472,7 +473,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .pill-flat.active {
   background-color: var(--accent);
   border-color: var(--accent);
-  color: #F5ECD8; /* Cream text on Dark Wood */
+  color: #F5ECD8;
+  /* Cream text on Dark Wood */
   opacity: 1;
 }
 
