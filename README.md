@@ -284,6 +284,10 @@ Các sơ đồ UML được lưu trong thư mục `docs/uml`, gồm:
 - `activity-login.puml`
 - `activity-register.puml`
 - `activity-override.puml`
+- `object-booking-online.puml`
+- `object-walk-in.puml`
+- `object-check-in.puml`
+- `object-check-out.puml`
 
 ---
 
