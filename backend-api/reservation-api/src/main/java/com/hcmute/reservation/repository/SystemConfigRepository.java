@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SystemConfigRepository extends JpaRepository<SystemConfig, String> {
-    // Kế thừa sẵn findById (chính là find by configKey)
 }
