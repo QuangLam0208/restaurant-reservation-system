@@ -1,5 +1,6 @@
 package com.hcmute.reservation.security.impl;
 
+import com.hcmute.reservation.exception.UnauthorizedException;
 import com.hcmute.reservation.security.AppSessionManager;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Component;
@@ -46,5 +47,14 @@ public class AppSessionManagerImpl implements AppSessionManager {
     @Override
     public boolean isAuthenticated(HttpSession session) {
         return session != null && session.getAttribute(ATTR_CUSTOMER_ID) != null;
+    }
+
+    @Override
+    public Long getRequiredCustomerId(HttpSession session) {
+        Long id = getCustomerId(session);
+        if (id == null) {
+            throw new UnauthorizedException("Phiên làm việc hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.");
+        }
+        return id;
     }
 }
