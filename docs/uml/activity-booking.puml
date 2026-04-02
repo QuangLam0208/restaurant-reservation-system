@@ -1,5 +1,5 @@
 @startuml
-title Sơ đồ hoạt động - Tổng quan đặt bàn
+title Activity Diagram tổng quát - Hệ thống quản lý đặt bàn tích hợp
 skinparam conditionStyle inside
 
 start
@@ -15,7 +15,7 @@ if (Loại yêu cầu?) then (Online)
       :Chuyển sang CANCELLED hoặc EXPIRED;
     endif
   else (Không)
-    :Gợi ý khung giờ khác;
+  stop
   endif
 else (Walk-in)
   :Tiếp nhận khách walk-in;
@@ -25,11 +25,22 @@ else (Walk-in)
     if (Lễ tân xác nhận?) then (Có)
       :Chuyển sang SEATED;
     else (Không)
-      :Chuyển sang CANCELLED hoặc EXPIRED;
     endif
   else (Không)
     :Chuyển khách sang waitlist;
   endif
 endif
+
+:Hệ thống & Lễ tân theo dõi vận hành;
+split
+  :Check-in (Chuyển SEATED);
+split again
+  :Khách trễ > 15p (Chuyển NO_SHOW);
+split again
+  :Ngồi lố giờ (Cảnh báo OVERSTAY);
+split again
+  :Khách rời đi (Chuyển COMPLETED);
+end split
+
 stop
 @enduml

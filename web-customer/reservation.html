@@ -3,14 +3,14 @@
 
 <head>
   <script>
-    (function(){
+    (function () {
       var s = localStorage.getItem('sl-theme');
       var p = window.matchMedia('(prefers-color-scheme: light)').matches;
-      if(s==='light'||(!s&&p)){
-        document.documentElement.style.backgroundColor='#F5F0E8';
+      if (s === 'light' || (!s && p)) {
+        document.documentElement.style.backgroundColor = '#F5F0E8';
         document.body && document.body.classList.add('light-mode');
       } else {
-        document.documentElement.style.backgroundColor='#1C1410';
+        document.documentElement.style.backgroundColor = '#1C1410';
       }
     })();
   </script>
@@ -37,7 +37,8 @@
       <!-- Chưa đăng nhập -->
       <a href="#" class="nav-link auth-action-btn" id="header-auth-btn" style="display:none;">Sign In</a>
 
-      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Switch to Light Mode" title="Switch to Light Mode">🌙</button>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Switch to Light Mode"
+        title="Switch to Light Mode">🌙</button>
 
       <!-- Đã đăng nhập -->
       <div id="nav-auth-group" class="nav-auth-group" style="display: none;">
@@ -195,7 +196,7 @@
                 <button class="st-btn" id="plus-btn">+</button>
               </div>
             </div>
-            <button class="step-cta" onclick="confirmParty()">Continue <span class="arr">→</span></button>
+            <button class="step-cta" onclick="confirmParty()">Continue <span class="arr">&rarr;</span></button>
           </div>
         </div>
 
@@ -218,13 +219,13 @@
           <div class="step-body">
             <div class="divider"></div>
             <div class="date-nav">
-              <button class="nav-arr" id="prev-week">&#8592;</button>
+              <button class="nav-arr" id="prev-week">&larr;</button>
               <span class="date-nav-lbl" id="date-nav-lbl">This Week</span>
-              <button class="nav-arr" id="next-week">&#8594;</button>
+              <button class="nav-arr" id="next-week">&rarr;</button>
             </div>
             <div class="date-grid" id="date-grid"></div>
             <button class="step-cta" id="date-cta" onclick="confirmDate()" disabled>Select a date <span
-                class="arr">→</span></button>
+                class="arr">&rarr;</span></button>
           </div>
         </div>
 
@@ -249,7 +250,7 @@
             <p class="time-period">Dinner — 18:00 to 22:30</p>
             <div class="time-grid" id="tg-dinner"></div>
             <button class="step-cta" id="time-cta" onclick="confirmTime()" disabled>Select a time <span
-                class="arr">→</span></button>
+                class="arr">&rarr;</span></button>
           </div>
         </div>
 
@@ -384,7 +385,17 @@
           <button class="pay-btn" onclick="confirmReservation()">Confirm &amp; Pay Deposit</button>
           <p class="secure-note">🔒 Secured with 256-bit SSL encryption</p>
         </div>
-        <button class="back-link" onclick="backToBooking()">← Back to reservation details</button>
+        <div class="pay-actions-revamp">
+          <button class="pay-secondary-btn" onclick="backToBooking()">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Edit Reservation
+          </button>
+          <div class="pay-actions-divider"></div>
+          <button class="pay-danger-btn" onclick="cancelPayment()">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Release Table
+          </button>
+        </div>
       </div>
       <div>
         <div class="order-card">
@@ -412,7 +423,23 @@
     </div>
   </div>
 
-  <div id="success-page">
+  </div>
+
+  <!-- CUSTOM MODAL ROOT -->
+  <div id="modal-root" class="modal-root-wrapper">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog">
+      <div class="modal-icon" id="modal-icon"></div>
+      <h3 class="modal-title-custom" id="modal-title">Notification</h3>
+      <p class="modal-text" id="modal-message">Your message here...</p>
+      <div class="modal-footer-custom">
+        <button id="modal-btn-no" class="modal-btn danger">Cancel</button>
+        <button id="modal-btn-yes" class="modal-btn gold">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="success-page" class="success-page" style="display: none;">
     <div class="success-ring">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="20 6 9 17 4 12" />

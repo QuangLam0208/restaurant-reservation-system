@@ -1,9 +1,8 @@
 @startuml
-title Sơ đồ tuần tự - Đặt bàn online
+title Sequence Diagram - Đặt bàn Online (Từ Đăng nhập đến Thanh toán)
 autonumber
 skinparam actorStyle awesome
-skinparam shadowing false
-skinparam maxMessageSize 160
+skinparam maxMessageSize 150
 
 actor "Khách hàng" as Customer
 boundary "Web khách hàng" as WebUI

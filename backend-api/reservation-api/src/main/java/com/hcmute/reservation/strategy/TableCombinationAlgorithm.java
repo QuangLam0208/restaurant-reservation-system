@@ -1,7 +1,8 @@
 package com.hcmute.reservation.strategy;
 
 import com.hcmute.reservation.model.entity.TableInfo;
-import org.springframework.beans.factory.annotation.Value;
+import com.hcmute.reservation.service.ConfigProviderService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -10,13 +11,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class TableCombinationAlgorithm {
 
-    @Value("${reservation.max-capacity-overflow:2}")
-    private int maxCapacityOverflow;
-
-    @Value("${reservation.max-merge-tables:4}")
-    private int maxMergeTables;
+    private final ConfigProviderService configProvider;
 
     // Trả về tổ hợp 1 mảng bàn tốt nhất
     public List<TableInfo> findBestTableCombination(List<TableInfo> availableTables, int targetGuests) {
@@ -46,6 +44,8 @@ public class TableCombinationAlgorithm {
     private void backtrack(List<TableInfo> tables, int target, int start,
                            List<TableInfo> currentCombo, int currentSum,
                            List<TableInfo> bestCombo, int[] bestDiff, int[] minTables) {
+        int maxMergeTables = configProvider.getMaxMergeTables();
+        int maxCapacityOverflow = configProvider.getMaxCapacityOverflow();
         if (currentSum >= target) {
             int diff = currentSum - target;
             if (diff <= maxCapacityOverflow) {
@@ -70,6 +70,7 @@ public class TableCombinationAlgorithm {
     private void backtrackWalkInOptionCombinations(List<TableInfo> tables, int target, int start,
                                                    List<TableInfo> currentCombo, int currentSum,
                                                    List<List<TableInfo>> combinations) {
+        int maxCapacityOverflow = configProvider.getMaxCapacityOverflow();
         if (combinations.size() >= 20) return;
         if (currentSum >= target) {
             int diff = currentSum - target;

@@ -1,33 +1,52 @@
 @startuml
-title Sơ đồ hoạt động - Đăng ký tài khoản
+title Activity Diagram - Quy trình Đăng ký tài khoản (Registration)
 skinparam conditionStyle inside
 
+|Khách hàng|
 start
-:Nhập họ tên, số điện thoại,\nemail và mật khẩu;
-:Gửi yêu cầu đăng ký;
+:Mở trang Đăng ký;
+:Nhập Name, Phone, Email, Password;
+:Bấm nút "Đăng ký";
 
-if (Dữ liệu hợp lệ?) then (Có)
-  :Kiểm tra email trong hệ thống;
-  if (Email đã được xác minh?) then (Có)
-    :Thông báo email đã tồn tại;
-  else (Không)
-    :Tạo mới hoặc cập nhật tài khoản\nchưa xác minh;
-    :Mã hóa mật khẩu;
-    :Tạo verification token;
-    :Lưu tài khoản với is_verified = FALSE;
-    :Gửi email xác minh;
-
-    :Người dùng mở liên kết xác minh;
-    if (Token hợp lệ?) then (Có)
-      :Kích hoạt tài khoản;
-      :Xóa verification token;
-    else (Không)
-      :Thông báo token không hợp lệ\nhoặc đã hết hạn;
-    endif
-  endif
-else (Không)
-  :Thông báo lỗi dữ liệu đầu vào;
+|Hệ thống|
+:Validate dữ liệu đầu vào (Format, Độ dài);
+if (Dữ liệu hợp lệ?) then (Không)
+  :Báo lỗi định dạng;
+  stop
+else (Có)
 endif
 
-stop
+:Truy vấn Email trong Database;
+if (Email đã tồn tại?) then (Có)
+  if (is_verified == FALSE?) then (Đúng)
+    :Cho phép ghi đè (Cập nhật tài khoản hiện tại);
+  else (Sai - User đã tồn tại)
+    :Báo lỗi "Email đã được sử dụng";
+    stop
+  endif
+else (Không)
+  :Khởi tạo đối tượng Customer mới;
+endif
+
+:Mã hóa mật khẩu (Bcrypt / Hash);
+:Lưu Database với trạng thái is_verified = FALSE;
+:Tạo Token xác thực (Email Token);
+:Gửi Email chứa Link xác thực;
+
+|Khách hàng|
+:Kiểm tra Hộp thư Email;
+:Click vào Link xác thực;
+
+|Hệ thống|
+:Kiểm tra tính hợp lệ của Token;
+if (Token hợp lệ & Chưa hết hạn?) then (Có)
+  :Cập nhật is_verified = TRUE;
+  :Thông báo "Kích hoạt tài khoản thành công";
+  stop
+else (Không)
+  :Báo lỗi "Link không hợp lệ hoặc đã hết hạn";
+  :Đề xuất gửi lại Email;
+  stop
+endif
+
 @enduml
