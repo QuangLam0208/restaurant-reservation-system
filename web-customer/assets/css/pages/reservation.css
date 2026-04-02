@@ -929,6 +929,7 @@ textarea.finput {
     top: 94px;
     height: fit-content;
     align-self: start;
+    margin-right: 20px; /* Safety gap from screen edge */
 }
 
 .summary-card {
@@ -1107,7 +1108,7 @@ textarea.finput {
 }
 
 .proceed-btn::after {
-    content: 'â†’';
+    content: '\2192';
     position: absolute;
     right: 24px;
     top: 50%;
@@ -1125,6 +1126,10 @@ textarea.finput {
 
 .proceed-btn:hover::after {
     right: 18px;
+}
+
+.proceed-btn:not(.ready) {
+    display: none;
 }
 
 .proceed-btn.ready {
@@ -2270,4 +2275,209 @@ body.light-mode .reservation-form-section,
 body.light-mode [class*="booking-wrap"],
 body.light-mode [class*="steps-section"] {
   background: #F5F0E8;
+}
+
+/* 9. PAYMENT ACTIONS REVAMP */
+.pay-actions-revamp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 12px;
+  padding: 20px;
+  background: rgba(205, 177, 122, 0.05);
+  border-radius: var(--r);
+  border: 1px solid var(--parchment-2);
+}
+
+.pay-secondary-btn {
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s var(--ease);
+}
+
+.pay-secondary-btn:hover {
+  color: var(--ink);
+}
+
+.pay-actions-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--parchment-2);
+}
+
+.pay-danger-btn {
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #E76B6B;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s var(--ease);
+}
+
+.pay-danger-btn:hover {
+  color: #FF8585;
+  transform: translateY(-1px);
+}
+
+body.light-mode .pay-actions-revamp {
+  background: #FFFFFF;
+  border-color: #D4C5AD;
+}
+
+body.light-mode .pay-danger-btn {
+  color: #C24D4D;
+}
+
+/* 10. CUSTOM MODAL (PREMIUM) */
+.modal-root-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease);
+}
+
+.modal-root-wrapper.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 24, 20, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.modal-dialog {
+  position: relative;
+  width: 90%;
+  max-width: 420px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-gold);
+  border-radius: 24px;
+  padding: 48px 40px 40px;
+  text-align: center;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.4s var(--ease);
+}
+
+.modal-root-wrapper.open .modal-dialog {
+  transform: scale(1) translateY(0);
+}
+
+.modal-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-gold);
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(205, 177, 122, 0.1);
+}
+
+.modal-title-custom {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.modal-text {
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.modal-footer-custom {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 14px 10px;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+}
+
+.modal-btn.danger {
+  background: transparent;
+  border: 1px solid #E76B6B;
+  color: #E76B6B;
+}
+
+.modal-btn.danger:hover {
+  background: rgba(231, 107, 107, 0.1);
+}
+
+.modal-btn.gold {
+  background: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+  color: #1C1410;
+}
+
+.modal-btn.gold:hover {
+  background: #D4C5AD;
+  border-color: #D4C5AD;
+}
+
+body.light-mode .modal-dialog {
+  background: #FDFBF8;
+  border-color: #D4C5AD;
+  box-shadow: 0 40px 80px rgba(122, 92, 53, 0.15);
+}
+
+body.light-mode .modal-title-custom {
+  color: #1C1410;
+}
+
+body.light-mode .modal-text {
+  color: #5D4D3D;
+}
+
+body.light-mode .modal-btn.gold {
+  background: #2C1F14;
+  border-color: #2C1F14;
+  color: #FDFBF8;
+}
+
+body.light-mode .modal-btn.gold:hover {
+  background: #1C1410;
 }
