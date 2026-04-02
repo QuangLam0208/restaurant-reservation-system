@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -63,15 +63,29 @@ namespace reservation_winforms.Services
 
             try
             {
-                var sb = new StringBuilder();
-                while (true)
+                while (_webSocket.State == WebSocketState.Open)
                 {
-                    var result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), _cancellationTokenSource.Token);
-                    sb.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
-                    if (result.EndOfMessage) break;
+                    var sb = new StringBuilder();
+                    while (true)
+                    {
+                        var result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), _cancellationTokenSource.Token);
+
+                        if (result.MessageType == WebSocketMessageType.Close)
+                        {
+                            Console.WriteLine("WebSocket server sent Close frame.");
+                            return;
+                        }
+
+                        sb.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
+                        if (result.EndOfMessage) break;
+                    }
+                    string message = sb.ToString();
+                    HandleStompFrame(message);
                 }
-                string message = sb.ToString();
-                HandleStompFrame(message);
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("WebSocket receive cancelled.");
             }
             catch (Exception ex)
             {
