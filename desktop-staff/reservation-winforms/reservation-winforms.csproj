@@ -84,8 +84,10 @@
     <Compile Include="DTO\reservation\WalkInSuggestionResponse.cs" />
     <Compile Include="DTO\table\AvailableWindowResponse.cs" />
     <Compile Include="DTO\table\FloorMapTableResponse.cs" />
+    <Compile Include="DTO\table\TableAlert.cs" />
     <Compile Include="DTO\table\TableRequest.cs" />
     <Compile Include="DTO\table\TableResponse.cs" />
+    <Compile Include="DTO\table\TableUpdate.cs" />
     <Compile Include="DTO\waitList\WaitlistRequest.cs" />
     <Compile Include="DTO\waitList\WaitlistResponse.cs" />
     <Compile Include="Forms\LoginForm.cs">
@@ -171,6 +173,7 @@
     <Compile Include="Services\SystemConfigService.cs" />
     <Compile Include="Services\TableService.cs" />
     <Compile Include="Services\WaitlistService.cs" />
+    <Compile Include="Services\WebSocketService.cs" />
     <EmbeddedResource Include="Forms\LoginForm.resx">
       <DependentUpon>LoginForm.cs</DependentUpon>
     </EmbeddedResource>

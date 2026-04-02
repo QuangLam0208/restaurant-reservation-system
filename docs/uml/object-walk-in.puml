@@ -1,0 +1,34 @@
+@startuml
+title So do doi tuong - Use case Xu ly khach walk-in
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam objectAttributeIconSize 0
+
+object "receptionist01:Account" as receptionist01 {
+  accountId = 2
+  role = RECEPTIONIST
+}
+
+object "walkInReservation01:Reservation" as walkInReservation01 {
+  reservationId = 202
+  type = WALK_IN
+  guestCount = 3
+  status = SEATED
+}
+
+object "tableB2:TableInfo" as tableB2 {
+  tableId = 7
+  capacity = 4
+  status = OCCUPIED
+}
+
+object "mapping02:ReservationTableMapping" as mapping02 {
+  mappingId = 602
+}
+
+receptionist01 -- walkInReservation01 : account
+walkInReservation01 -- mapping02 : tableMappings
+mapping02 -- tableB2 : tableInfo
+
+@enduml
