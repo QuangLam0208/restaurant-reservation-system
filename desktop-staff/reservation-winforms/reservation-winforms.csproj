@@ -72,6 +72,7 @@
     <Compile Include="DTO\auth\StaffLoginRequest.cs" />
     <Compile Include="DTO\auth\StaffLoginResponse.cs" />
     <Compile Include="DTO\auth\StaffRegisterRequest.cs" />
+    <Compile Include="DTO\config\SystemConfigDTO.cs" />
     <Compile Include="DTO\overrides\OverrideLogResponse.cs" />
     <Compile Include="DTO\overrides\OverrideRequest.cs" />
     <Compile Include="DTO\report\DailyReservationReport.cs" />
@@ -83,8 +84,10 @@
     <Compile Include="DTO\reservation\WalkInSuggestionResponse.cs" />
     <Compile Include="DTO\table\AvailableWindowResponse.cs" />
     <Compile Include="DTO\table\FloorMapTableResponse.cs" />
+    <Compile Include="DTO\table\TableAlert.cs" />
     <Compile Include="DTO\table\TableRequest.cs" />
     <Compile Include="DTO\table\TableResponse.cs" />
+    <Compile Include="DTO\table\TableUpdate.cs" />
     <Compile Include="DTO\waitList\WaitlistRequest.cs" />
     <Compile Include="DTO\waitList\WaitlistResponse.cs" />
     <Compile Include="Forms\LoginForm.cs">
@@ -129,6 +132,12 @@
     <Compile Include="Forms\UcReports.Designer.cs">
       <DependentUpon>UcReports.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\UcSystemConfig.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UcSystemConfig.Designer.cs">
+      <DependentUpon>UcSystemConfig.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\UcSystemLogs.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -161,8 +170,10 @@
     <Compile Include="Services\OverrideService.cs" />
     <Compile Include="Services\ReportService.cs" />
     <Compile Include="Services\ReservationService.cs" />
+    <Compile Include="Services\SystemConfigService.cs" />
     <Compile Include="Services\TableService.cs" />
     <Compile Include="Services\WaitlistService.cs" />
+    <Compile Include="Services\WebSocketService.cs" />
     <EmbeddedResource Include="Forms\LoginForm.resx">
       <DependentUpon>LoginForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -186,6 +197,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\UcSystemLogs.resx">
       <DependentUpon>UcSystemLogs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UcTableMap.resx">
+      <DependentUpon>UcTableMap.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\UcTableSetup.resx">
       <DependentUpon>UcTableSetup.cs</DependentUpon>

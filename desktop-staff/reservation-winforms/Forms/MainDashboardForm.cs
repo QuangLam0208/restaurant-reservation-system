@@ -18,6 +18,9 @@ namespace reservation_winforms.Forms
 
             ApplyRolePermissions();
 
+            this.Load += MainDashboardForm_Load;
+            this.FormClosing += MainDashboardForm_FormClosing;
+
             LoadUserControl(new UcTableMap());
 
             btnTableMap.Click += BtnTableMap_Click;
@@ -29,8 +32,20 @@ namespace reservation_winforms.Forms
             btnReports.Click += BtnReports_Click;
             btnSystemLogs.Click += BtnSystemLogs_Click;
             btnRegisterStaff.Click += btnRegisterStaff_Click;
+            btnSystemConfig.Click += BtnSystemConfig_Click;
 
             btnLogout.Click += BtnLogout_Click;
+        }
+
+        private async void MainDashboardForm_Load(object sender, EventArgs e)
+        {
+            LoadUserControl(new UcTableMap());
+            await WebSocketService.Instance.ConnectAsync();
+        }
+
+        private async void MainDashboardForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            await WebSocketService.Instance.DisconnectAsync();
         }
 
         private void ApplyRolePermissions()
@@ -42,6 +57,7 @@ namespace reservation_winforms.Forms
                 btnReports.Visible = false;
                 btnSystemLogs.Visible = false;
                 btnRegisterStaff.Visible = false;
+                btnSystemConfig.Visible = false;
             }
         }
 
@@ -104,12 +120,18 @@ namespace reservation_winforms.Forms
 
             pnlMainContent.Controls.Add(registerCtrl);
         }
-        private void BtnLogout_Click(object sender, EventArgs e)
+        private void BtnSystemConfig_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            LoadUserControl(new UcSystemConfig());
+        }
+        private async void BtnLogout_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show("Are you sure you want to log out of the system?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
+                await WebSocketService.Instance.DisconnectAsync();
+
                 GlobalState.StaffToken = "";
                 GlobalState.CurrentUsername = "";
                 GlobalState.Role = "";

@@ -48,7 +48,7 @@
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(283, 38);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "⚠️ YÊU CẦU GHI ĐÈ";
+            this.lblTitle.Text = "⚠️ Request for override";
             // 
             // lblWarning
             // 
@@ -59,8 +59,7 @@
             this.lblWarning.Name = "lblWarning";
             this.lblWarning.Size = new System.Drawing.Size(690, 69);
             this.lblWarning.TabIndex = 1;
-            this.lblWarning.Text = "Bàn 5 hiện đang bị chiếm dụng quá giờ (Overstay). Bạn phải nhập lý do giải quyết " +
-    "trước khi hệ thống cho phép Check-in.";
+            this.lblWarning.Text = "Table 5 is currently overstay. You must enter a resolution reason before the system allows check-in.";
             // 
             // lblReason
             // 
@@ -72,7 +71,7 @@
             this.lblReason.Name = "lblReason";
             this.lblReason.Size = new System.Drawing.Size(181, 32);
             this.lblReason.TabIndex = 2;
-            this.lblReason.Text = "Lý do xử lý (*):";
+            this.lblReason.Text = "Resolution reason:";
             // 
             // txtReason
             // 
@@ -97,7 +96,7 @@
             this.btnConfirm.Name = "btnConfirm";
             this.btnConfirm.Size = new System.Drawing.Size(300, 69);
             this.btnConfirm.TabIndex = 4;
-            this.btnConfirm.Text = "XÁC NHẬN GHI ĐÈ";
+            this.btnConfirm.Text = "CONFIRM OVERRIDE";
             this.btnConfirm.UseVisualStyleBackColor = false;
             // 
             // btnCancel
@@ -113,7 +112,7 @@
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(180, 69);
             this.btnCancel.TabIndex = 5;
-            this.btnCancel.Text = "Hủy bỏ";
+            this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = false;
             // 
             // OverrideDialog
@@ -134,7 +133,7 @@
             this.MinimizeBox = false;
             this.Name = "OverrideDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Nhật ký hệ thống";
+            this.Text = "Override Dialog";
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
             this.ResumeLayout(false);
