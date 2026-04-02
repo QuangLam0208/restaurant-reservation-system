@@ -15,7 +15,7 @@ import java.util.List;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
     List<Reservation> findByStatus(ReservationStatus status);
-    
+
     List<Reservation> findByCustomer_CustomerIdOrderByStartTimeDesc(Long customerId);
 
 
@@ -114,4 +114,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             "AND r.startTime > :now " +
             "GROUP BY m.tableInfo.tableId")
     List<Object[]> findNextBookingForTables(@Param("tableIds") List<Long> tableIds, @Param("now") LocalDateTime now);
+
+    @Query("SELECT r FROM Reservation r WHERE r.status = 'RESERVED' " +
+            "AND r.startTime BETWEEN :now AND :windowEnd")
+    List<Reservation> findUpcomingReservationsForAlert(@Param("now") LocalDateTime now,
+                                                       @Param("windowEnd") LocalDateTime windowEnd);
 }

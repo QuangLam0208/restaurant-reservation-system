@@ -1,9 +1,6 @@
 package com.hcmute.reservation.service.impl;
 
 import com.hcmute.reservation.event.TableStatusChangedEvent;
-import com.hcmute.reservation.model.entity.Reservation;
-import com.hcmute.reservation.model.entity.TableInfo;
-import com.hcmute.reservation.model.enums.TableStatus;
 import com.hcmute.reservation.repository.TableInfoRepository;
 import com.hcmute.reservation.service.TableReleaseService;
 import lombok.RequiredArgsConstructor;
