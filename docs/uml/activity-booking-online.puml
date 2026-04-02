@@ -1,71 +1,50 @@
 @startuml
-title Activity Diagram - Đặt bàn online (Tích hợp Xác thực, Thanh toán & Soft Lock)
+title Sơ đồ hoạt động - Đặt bàn online
 skinparam conditionStyle inside
 
 start
-:Khách mở Web/App & Chọn chức năng Đặt bàn;
+:Khách nhập số lượng khách,\nthời gian đến và ghi chú;
+:Gửi yêu cầu đặt bàn;
 
-if (Đã đăng nhập & is_verified == TRUE?) then (Có)
-  :Nhập Số lượng khách, Ngày, Giờ, Ghi chú;
-  :Hệ thống tự động lấy Tên, SĐT từ tài khoản;
-  :Hệ thống validate dữ liệu;
-
-  if (Thiếu dữ liệu / sai định dạng?) then (Có)
-    :Trả lỗi;
-    stop
-  endif
-
-  if (guest_count <= 0?) then (Có)
-    :Trả lỗi;
-    stop
-  endif
-
-  if (Thời gian <= hiện tại\nhoặc ngoài giờ mở cửa?) then (Có)
-    :Trả lỗi;
-    stop
-  endif
-
-  :Tính start_time = reservation_time;
-  :Tính end_time = min(start_time + 120p (duration) + 10p (buffer), giờ đóng cửa);
-  :Lọc bàn capacity >= guest_count;
-  :Loại bàn bị overlap (trùng lịch);
-
-  if (Có bàn đơn phù hợp?) then (Có)
-    :Chọn bàn nhỏ nhất đủ chỗ;
-  else (Không)
-    :Tính phương án ghép bàn;
-    if (Ghép bàn được?) then (Có)
-      :Chọn tổ hợp bàn tối ưu;
-    else (Không)
-      :Thông báo hết bàn;
-      :Gợi ý thời gian gần nhất còn trống;
-      stop
+if (Đã đăng nhập và xác minh?) then (Có)
+  :Kiểm tra điều kiện đặt bàn;
+  if (Yêu cầu hợp lệ?) then (Có)
+    :Tìm bàn đơn phù hợp;
+    if (Không có bàn đơn?) then (Có)
+      :Tìm phương án ghép bàn;
     endif
+
+    if (Có phương án xếp bàn?) then (Có)
+      :Tạo reservation = CREATED;
+      :Soft lock bàn và tạo mapping;
+
+
+      :Chuyển reservation sang PENDING_PAYMENT;
+      :Khách thực hiện thanh toán;
+
+      if (Thanh toán thành công?) then (Có)
+
+          :Chuyển reservation sang RESERVED;
+          :Giải phóng soft lock;
+          :Gửi xác nhận đặt bàn;
+      else (Không)
+        if (Khách hủy thanh toán?) then (Có)
+          :Chuyển reservation sang CANCELLED;
+          :Giải phóng soft lock;
+        else (Không)
+          :Tự động chuyển reservation sang EXPIRED;
+          :Giải phóng soft lock;
+        endif
+      endif
+    else (Không)
+    stop
+    endif
+  else (Không)
+    :Thông báo dữ liệu không hợp lệ\nhoặc vi phạm quy tắc nghiệp vụ;
   endif
-
-  ' --- BẮT ĐẦU LUỒNG SOFT LOCK VÀ THANH TOÁN ---
-  :Tạo Reservation type=ONLINE, status=CREATED;
-  :Thiết lập Khóa tạm (Soft Lock) trong 5 phút;
-  :Tính phí giữ bàn (guest_count * 50.000 VNĐ);
-  :Cập nhật trạng thái status=PENDING_PAYMENT;
-  :Điều hướng sang Cổng thanh toán\n& Kích hoạt đếm ngược 5 phút;
-
-  if (Thanh toán thành công trước khi hết 5 phút?) then (Thành công)
-    :Cập nhật trạng thái status=RESERVED;
-    :Chốt phân bổ bàn (Tạo record trong bảng Mapping);
-    :Gửi Email/SMS xác nhận đặt bàn;
-  else (Thất bại / Hủy / Quá hạn)
-    :Cập nhật trạng thái status=EXPIRED / CANCELLED;
-    :Giải phóng Soft Lock\n(Bàn trở lại trạng thái AVAILABLE);
-    :Thông báo hủy giao dịch cho khách hàng;
-  endif
-
 else (Không)
-  :Thông báo lỗi xác thực;
-  :Chuyển hướng đến trang Đăng nhập\nHOẶC Yêu cầu xác minh Email;
-  stop
+  :Yêu cầu đăng nhập hoặc xác minh tài khoản;
 endif
 
 stop
 @enduml
-
