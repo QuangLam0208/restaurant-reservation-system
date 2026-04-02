@@ -95,9 +95,6 @@ namespace reservation_winforms.Services
         private void HandleStompFrame(string payload)
         {
             if (string.IsNullOrEmpty(payload)) return;
-
-            // STOMP frames chuẩn luôn kết thúc bằng ký tự Null (\0)
-            // Nếu Server gửi 2, 3 sự kiện cùng lúc, ta tách chúng ra để xử lý không bị sót
             string[] frames = payload.Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
 
             foreach (string frame in frames)
@@ -105,7 +102,7 @@ namespace reservation_winforms.Services
                 if (frame.StartsWith("CONNECTED"))
                 {
                     Console.WriteLine("STOMP Connected successfully. Subscribing to topics...");
-                    SubscribeToTopics(); // Khi vào đây thành công là 100% sẽ nhận được tin
+                    SubscribeToTopics();
                 }
                 else if (frame.Contains("MESSAGE"))
                 {
