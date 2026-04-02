@@ -47,6 +47,7 @@ rectangle "Hệ thống Quản lý Đặt bàn Tích hợp (Online & Offline)" {
     usecase "Gợi ý khung giờ thay thế\n(UC_SuggestAltTime)" as UC_SuggestAltTime
     usecase "Gửi xác nhận đặt bàn\n(UC_NotifyReservation)" as UC_NotifyReservation
     usecase "Hủy đặt bàn\n(UC_CancelReservation)" as UC_CancelReservation
+    usecase "Hủy thanh toán\n(UC_CancelPayment)" as UC_CancelPayment
   }
 
   rectangle "Walk-in và Waitlist" {
@@ -94,6 +95,7 @@ Customer --> UC_UpdateProfile
 Customer --> UC_ChangePassword
 Customer --> UC_BookOnline
 Customer --> UC_CancelReservation
+Customer --> UC_CancelPayment
 
 Receptionist --> UC_StaffLogin
 Receptionist --> UC_StaffLogout
@@ -110,7 +112,6 @@ Receptionist --> UC_CheckIn
 Receptionist --> UC_ChangeTable
 Receptionist --> UC_CheckOut
 Receptionist --> UC_Override
-Receptionist --> UC_CancelReservation
 
 Manager --> UC_CreateStaff
 Manager --> UC_ManageTables
@@ -131,7 +132,8 @@ UC_BookOnline ..> UC_SoftLock : <<include>>
 UC_BookOnline ..> UC_Payment : <<include>>
 UC_Merge ..> UC_AutoAssign : <<extend>>
 UC_SuggestAltTime ..> UC_BookOnline : <<extend>>
-UC_NotifyReservation ..> UC_Payment : <<extend>>
+UC_NotifyReservation ..> UC_Payment : <<include>>
+UC_CancelPayment ..> UC_Payment : <<extend>>
 
 UC_SuggestWalkIn ..> UC_AutoAssign : <<include>>
 UC_SuggestWalkIn ..> UC_SoftLock : <<include>>
