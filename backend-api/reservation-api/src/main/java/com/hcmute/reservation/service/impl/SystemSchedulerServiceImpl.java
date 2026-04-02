@@ -2,7 +2,6 @@ package com.hcmute.reservation.service.impl;
 
 import com.hcmute.reservation.event.TableAlertEvent;
 import com.hcmute.reservation.event.TableStatusChangedEvent;
-import com.hcmute.reservation.model.dto.table.TableAlert;
 import com.hcmute.reservation.model.entity.Reservation;
 import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.model.enums.ReservationStatus;
@@ -11,6 +10,7 @@ import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.repository.TableInfoRepository;
 import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.SystemSchedulerService;
+import com.hcmute.reservation.service.TableReleaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -33,6 +33,7 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
     private final TableInfoRepository tableInfoRepository;
     private final TransactionTemplate transactionTemplate;
     private final ConfigProviderService configProvider;
+    private final TableReleaseService tableReleaseService;
 
     private final ApplicationEventPublisher eventPublisher;
     private final Set<Long> currentlyBlinkingTables = ConcurrentHashMap.newKeySet();
@@ -96,7 +97,7 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
         int count = processBatch(toExpire, ReservationStatus.PENDING_PAYMENT, fresh -> {
             fresh.markExpired();
             reservationRepository.save(fresh);
-            releaseLockedTables(fresh.getReservationId());
+            tableReleaseService.releaseLockedTable(fresh.getReservationId());
         });
 
         if (count > 0) log.info("[Scheduler] expireReservations: {} đơn hết hạn.", count);
@@ -107,14 +108,12 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
     @Scheduled(fixedDelay = 60_000)
     public Map<String, Object> releaseNoShow() {
         int gracePeriodMinutes = configProvider.getGracePeriodMinutes();
-
         List<Reservation> toNoShow = reservationRepository
                 .findNoShows(LocalDateTime.now().minusMinutes(gracePeriodMinutes));
 
         int count = processBatch(toNoShow, ReservationStatus.RESERVED, fresh -> {
             fresh.markNoShow();
             reservationRepository.save(fresh);
-            releaseTablesByReservation(fresh);
         });
 
         if (count > 0) log.info("[Scheduler] releaseNoShow: {} đơn no-show.", count);
@@ -163,8 +162,8 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
 
             for (var m : fresh.getTableMappings()) {
                 TableInfo t = m.getTableInfo();
-                if (!isPhysicallyOccupiedByOthers(t, fresh.getReservationId()) &&
-                        (t.getStatus() == TableStatus.OCCUPIED || t.getStatus() == TableStatus.OVERSTAY)) {
+                int seatedCount = tableInfoRepository.countOtherSeated(t.getTableId(), fresh.getReservationId());
+                if (seatedCount == 0 && (t.getStatus() == TableStatus.OCCUPIED || t.getStatus() == TableStatus.OVERSTAY)) {
                     t.setStatus(TableStatus.AVAILABLE);
                     tableInfoRepository.save(t);
                     tablesReleasedCount.incrementAndGet();
@@ -189,7 +188,6 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
             try {
                 boolean processed = Boolean.TRUE.equals(transactionTemplate.execute(status -> {
                     Reservation fresh = reservationRepository.findById(r.getReservationId()).orElse(null);
-
                     // Double check để tránh thao tác đè lên dữ liệu cũ (Stale State)
                     if (fresh == null || fresh.getStatus() != expectedStatus) {
                         return false;
@@ -210,41 +208,5 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
         result.put(key, count);
         result.put("executedAt", LocalDateTime.now().toString());
         return result;
-    }
-
-    private void releaseLockedTables(Long reservationId) {
-        tableInfoRepository.findByLockedByReservationId(reservationId).forEach(t -> {
-            t.releaseSoftLock();
-            tableInfoRepository.save(t);
-
-            eventPublisher.publishEvent(
-                    new TableStatusChangedEvent(this, t.getTableId(), "AVAILABLE"));
-        });
-    }
-
-    private void releaseTablesByReservation(Reservation r) {
-        if (r.getTableMappings() == null) return;
-
-        for (var m : r.getTableMappings()) {
-            TableInfo t = m.getTableInfo();
-            if (!isPhysicallyOccupiedByOthers(t, r.getReservationId())) {
-                t.setStatus(TableStatus.AVAILABLE);
-                tableInfoRepository.save(t);
-
-                eventPublisher.publishEvent(
-                        new TableStatusChangedEvent(this, t.getTableId(), "AVAILABLE"));
-            }
-        }
-    }
-
-    /**
-     * Logic kiểm tra xem bàn có đang bị khách khác ngồi không
-     */
-    private boolean isPhysicallyOccupiedByOthers(TableInfo table, Long currentReservationId) {
-        if (table.getMappings() == null) return false;
-        return table.getMappings().stream().anyMatch(other ->
-                !other.getReservation().getReservationId().equals(currentReservationId) &&
-                        (other.getReservation().getStatus() == ReservationStatus.SEATED ||
-                                other.getReservation().getStatus() == ReservationStatus.RESERVED));
     }
 }

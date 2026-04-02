@@ -25,6 +25,8 @@ public class ReservationController {
     private final OnlineBookingService onlineBookingService;
     private final InHouseService inHouseService;
     private final WalkInService walkInService;
+    private final ChangeTableService changeTableService;
+    private final CancellationService cancellationService;
 
     /** GET /api/reservations/availability?date=&time=&guests= */
     @GetMapping("/availability")
@@ -87,7 +89,7 @@ public class ReservationController {
             @PathVariable Long id, Authentication auth) {
         // auth.getDetails() là Long cho CUSTOMER token; null cho STAFF token
         Long customerId = (auth.getDetails() instanceof Long id2) ? id2 : null;
-        inHouseService.cancelReservation(id, customerId);
+        cancellationService.cancelReservation(id, customerId);
         return ResponseEntity.ok(Map.of("message", "Đơn đặt bàn đã được hủy thành công."));
     }
 
@@ -151,7 +153,7 @@ public class ReservationController {
     public ResponseEntity<ReservationResponse> changeTable(
             @PathVariable Long id,
             @Valid @RequestBody ChangeTableRequest req) {
-        return ResponseEntity.ok(inHouseService.changeTable(id, req));
+        return ResponseEntity.ok(changeTableService.changeTable(id, req));
     }
 
     /** POST /api/reservations/{id}/check-in */

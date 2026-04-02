@@ -26,9 +26,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         // Lấy pool bàn trống
         List<TableInfo> freeTables = availabilityService.getFreeTables(reservation);
 
-        if (freeTables.isEmpty()) {
-            return false;
-        }
+        if (freeTables.isEmpty()) return false;
 
         List<TableInfo> selectedTables = null;
 
