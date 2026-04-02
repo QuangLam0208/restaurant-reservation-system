@@ -1,6 +1,5 @@
 package com.hcmute.reservation.strategy.impl;
 
-import com.hcmute.reservation.model.entity.Reservation;
 import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.strategy.TableAllocationStrategy;
 import org.springframework.core.annotation.Order;
