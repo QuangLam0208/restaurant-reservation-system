@@ -53,7 +53,7 @@ namespace reservation_winforms.Forms
             }
 
             btnReload.Enabled = true;
-            btnReload.Text = "🔄 RELOAD";
+            btnReload.Text = "RELOAD";
         }
 
         private void RenderWaitingGrid()
