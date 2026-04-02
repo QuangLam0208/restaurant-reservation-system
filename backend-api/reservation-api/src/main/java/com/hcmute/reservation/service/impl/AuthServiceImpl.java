@@ -221,11 +221,9 @@ public class AuthServiceImpl implements AuthService {
             throw new ConflictException("Email đã được đăng ký: " + req.getEmail());
         }
 
-        if (c.getPasswordHash() == null) {
-            c.setName(req.getName());
-            c.setPhone(req.getPhone());
-            c.setPasswordHash(passwordHasher.hash(req.getPassword()));
-        }
+        c.setName(req.getName());
+        c.setPhone(req.getPhone());
+        c.setPasswordHash(passwordHasher.hash(req.getPassword()));
 
         c.setVerificationToken(token);
         c.setVerificationTokenExpiresAt(expiresAt);
