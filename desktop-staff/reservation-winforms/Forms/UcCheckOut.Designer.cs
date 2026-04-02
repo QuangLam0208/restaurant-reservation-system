@@ -32,6 +32,7 @@
             this.lblTitleDeposit = new System.Windows.Forms.Label();
             this.lblValDeposit = new System.Windows.Forms.Label();
             this.btnCheckOut = new System.Windows.Forms.Button();
+            this.btnChangeTable = new System.Windows.Forms.Button();
             this.chkOverride = new System.Windows.Forms.CheckBox();
             this.pnlHeader.SuspendLayout();
             this.pnlDetails.SuspendLayout();
@@ -61,7 +62,7 @@
             this.btnRefresh.Name = "btnRefresh";
             this.btnRefresh.Size = new System.Drawing.Size(204, 50);
             this.btnRefresh.TabIndex = 1;
-            this.btnRefresh.Text = "🔄 LÀM MỚI";
+            this.btnRefresh.Text = "RELOAD";
             this.btnRefresh.UseVisualStyleBackColor = false;
             // 
             // lblTitle
@@ -73,12 +74,12 @@
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(466, 48);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "THANH TOÁN && TRẢ BÀN";
+            this.lblTitle.Text = "CHECK OUT & CHANGE TABLE";
             // 
             // flpActiveTables
             // 
-            this.flpActiveTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.flpActiveTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.flpActiveTables.AutoScroll = true;
             this.flpActiveTables.Location = new System.Drawing.Point(30, 120);
@@ -88,7 +89,7 @@
             // 
             // pnlDetails
             // 
-            this.pnlDetails.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.pnlDetails.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlDetails.BackColor = System.Drawing.Color.White;
             this.pnlDetails.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -117,7 +118,7 @@
             this.lblDetailTitle.Name = "lblDetailTitle";
             this.lblDetailTitle.Size = new System.Drawing.Size(286, 45);
             this.lblDetailTitle.TabIndex = 0;
-            this.lblDetailTitle.Text = "THÔNG TIN BÀN:";
+            this.lblDetailTitle.Text = "TABLE INFO:";
             // 
             // lblTitleTable
             // 
@@ -128,7 +129,7 @@
             this.lblTitleTable.Name = "lblTitleTable";
             this.lblTitleTable.Size = new System.Drawing.Size(105, 38);
             this.lblTitleTable.TabIndex = 1;
-            this.lblTitleTable.Text = "Bàn số:";
+            this.lblTitleTable.Text = "Table:";
             // 
             // lblValTable
             // 
@@ -150,7 +151,7 @@
             this.lblTitleName.Name = "lblTitleName";
             this.lblTitleName.Size = new System.Drawing.Size(168, 38);
             this.lblTitleName.TabIndex = 3;
-            this.lblTitleName.Text = "Khách hàng:";
+            this.lblTitleName.Text = "Customer:";
             // 
             // lblValName
             // 
@@ -171,7 +172,7 @@
             this.lblTitleTime.Name = "lblTitleTime";
             this.lblTitleTime.Size = new System.Drawing.Size(117, 38);
             this.lblTitleTime.TabIndex = 5;
-            this.lblTitleTime.Text = "Giờ vào:";
+            this.lblTitleTime.Text = "Seated at:";
             // 
             // lblValTime
             // 
@@ -192,7 +193,7 @@
             this.lblTitleDuration.Name = "lblTitleDuration";
             this.lblTitleDuration.Size = new System.Drawing.Size(120, 38);
             this.lblTitleDuration.TabIndex = 7;
-            this.lblTitleDuration.Text = "Đã ngồi:";
+            this.lblTitleDuration.Text = "Duration:";
             // 
             // lblValDuration
             // 
@@ -203,7 +204,7 @@
             this.lblValDuration.Name = "lblValDuration";
             this.lblValDuration.Size = new System.Drawing.Size(109, 38);
             this.lblValDuration.TabIndex = 8;
-            this.lblValDuration.Text = "-- phút";
+            this.lblValDuration.Text = "-- mins";
             // 
             // lblTitleDeposit
             // 
@@ -214,7 +215,7 @@
             this.lblTitleDeposit.Name = "lblTitleDeposit";
             this.lblTitleDeposit.Size = new System.Drawing.Size(126, 38);
             this.lblTitleDeposit.TabIndex = 9;
-            this.lblTitleDeposit.Text = "Tiền cọc:";
+            this.lblTitleDeposit.Text = "Deposit:";
             // 
             // lblValDeposit
             // 
@@ -236,12 +237,29 @@
             this.btnCheckOut.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCheckOut.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
             this.btnCheckOut.ForeColor = System.Drawing.Color.White;
-            this.btnCheckOut.Location = new System.Drawing.Point(920, 700);
+            this.btnCheckOut.Location = new System.Drawing.Point(1220, 700);
             this.btnCheckOut.Name = "btnCheckOut";
-            this.btnCheckOut.Size = new System.Drawing.Size(580, 100);
+            this.btnCheckOut.Size = new System.Drawing.Size(280, 100);
             this.btnCheckOut.TabIndex = 5;
-            this.btnCheckOut.Text = "XÁC NHẬN TRẢ BÀN";
+            this.btnCheckOut.Text = "CHECK OUT";
             this.btnCheckOut.UseVisualStyleBackColor = false;
+            // 
+            // btnChangeTable
+            // 
+            this.btnChangeTable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnChangeTable.BackColor = System.Drawing.Color.White;
+            this.btnChangeTable.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnChangeTable.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
+            this.btnChangeTable.FlatAppearance.BorderSize = 2;
+            this.btnChangeTable.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnChangeTable.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            this.btnChangeTable.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
+            this.btnChangeTable.Location = new System.Drawing.Point(920, 700);
+            this.btnChangeTable.Name = "btnChangeTable";
+            this.btnChangeTable.Size = new System.Drawing.Size(280, 100);
+            this.btnChangeTable.TabIndex = 6;
+            this.btnChangeTable.Text = "CHANGE TABLE";
+            this.btnChangeTable.UseVisualStyleBackColor = false;
             // 
             // chkOverride
             // 
@@ -250,11 +268,11 @@
             this.chkOverride.Cursor = System.Windows.Forms.Cursors.Hand;
             this.chkOverride.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.chkOverride.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
-            this.chkOverride.Location = new System.Drawing.Point(899, 640);
+            this.chkOverride.Location = new System.Drawing.Point(920, 640);
             this.chkOverride.Name = "chkOverride";
             this.chkOverride.Size = new System.Drawing.Size(537, 34);
             this.chkOverride.TabIndex = 4;
-            this.chkOverride.Text = "⚠️ Đánh dấu để Cưỡng chế Trả bàn (OVERRIDE)";
+            this.chkOverride.Text = "⚠️ Check here to OVERRIDE Check Out";
             this.chkOverride.UseVisualStyleBackColor = true;
             this.chkOverride.Visible = false;
             // 
@@ -265,6 +283,7 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(246)))), ((int)(((byte)(250)))));
             this.Controls.Add(this.chkOverride);
             this.Controls.Add(this.btnCheckOut);
+            this.Controls.Add(this.btnChangeTable);
             this.Controls.Add(this.pnlDetails);
             this.Controls.Add(this.flpActiveTables);
             this.Controls.Add(this.pnlHeader);
@@ -296,6 +315,7 @@
         private System.Windows.Forms.Label lblTitleDeposit;
         private System.Windows.Forms.Label lblValDeposit;
         private System.Windows.Forms.CheckBox chkOverride;
+        private System.Windows.Forms.Button btnChangeTable;
         private System.Windows.Forms.Button btnCheckOut;
     }
 }

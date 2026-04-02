@@ -19,4 +19,5 @@ public class FloorMapTableResponse {
     private String currentCustomerName;
     private ReservationStatus currentReservationStatus;
     private LocalDateTime currentReservationTime;
+    private LocalDateTime nextReservationTime;
 }

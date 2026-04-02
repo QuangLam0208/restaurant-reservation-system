@@ -24,18 +24,18 @@ namespace reservation_winforms.Forms
 
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
             {
-                lblMessage.Text = "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!";
+                lblMessage.Text = "Please enter username and password!";
                 return;
             }
 
             btnLogin.Enabled = false;
-            btnLogin.Text = "Đang kiểm tra...";
+            btnLogin.Text = "Checking...";
             lblMessage.Text = "";
 
             var response = await _authService.LoginAsync(user, pass);
 
             btnLogin.Enabled = true;
-            btnLogin.Text = "ĐĂNG NHẬP";
+            btnLogin.Text = "SIGN IN";
 
             if (response.IsSuccess)
             {
