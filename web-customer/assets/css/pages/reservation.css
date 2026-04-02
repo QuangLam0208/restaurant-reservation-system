@@ -1,21 +1,21 @@
 :root {
-    --ink: #1C1814;
-    --ink-soft: #3A3028;
-    --cream: #FBF8F4;
-    --parchment: #EBE3D5;
-    --parchment-2: #DFD5C4;
-    --gold: #A38354;
-    --gold-light: #CDB17A;
-    --gold-pale: #F5EEE1;
-    --muted: #A39485;
-    --muted-2: #BCB0A3;
-    --white: #FFFFFF;
+    --ink: var(--text-primary);
+    --ink-soft: var(--text-secondary);
+    --cream: var(--bg-primary);
+    --parchment: var(--border);
+    --parchment-2: var(--border-light);
+    --gold: var(--accent-gold);
+    --gold-light: var(--accent-hover);
+    --gold-pale: var(--bg-secondary);
+    --muted: var(--text-secondary);
+    --muted-2: var(--text-muted);
+    --white: var(--bg-secondary);
     --r: 16px;
     --r-sm: 12px;
     --r-pill: 100px;
     --ease: cubic-bezier(0.33, 1, 0.68, 1);
-    --shadow-soft: 0 12px 34px rgba(163, 131, 84, 0.08);
-    --shadow-modal: 0 25px 50px rgba(28, 24, 20, 0.15);
+    --shadow-soft: var(--shadow-color);
+    --shadow-modal: var(--shadow-color);
 }
 
 *,
@@ -54,7 +54,7 @@ body::after {
 /* Header redundancy removed. Controlled by layout/header.css */
 .hero-band {
     padding: 84px 0 40px;
-    background: var(--ink);
+    background: var(--bg-primary);
 }
 
 .hero-band-inner {
@@ -95,7 +95,7 @@ body::after {
     font-size: clamp(3.2rem, 5.5vw, 5.5rem);
     font-weight: 300;
     line-height: 1.05;
-    color: var(--white);
+    color: var(--text-primary);
     letter-spacing: -0.01em;
 }
 
@@ -117,6 +117,8 @@ body::after {
     height: 360px;
     overflow: hidden;
     border-radius: var(--r) var(--r) 0 0;
+    position: relative;
+    z-index: 1; /* Keep behind facts strip */
 }
 
 .hero-img-wrap img {
@@ -142,11 +144,14 @@ body::after {
 .facts-inner {
     max-width: 1200px;
     margin: -40px auto 30px;
-    background: #1C1814;
+    background: var(--bg-secondary); /* Updated: Use Roast/White for cards */
     border-radius: 16px;
     display: flex;
     overflow: hidden;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 50px var(--shadow-color);
+    border: 1px solid var(--border);
+    position: relative;
+    z-index: 10;
 }
 
 .fact-card {
@@ -174,7 +179,7 @@ body::after {
     font-size: 32px;
     font-weight: 700;
     font-style: italic;
-    color: #CDB17A;
+    color: var(--text-secondary);
     opacity: 0.12;
     pointer-events: none;
 }
@@ -189,7 +194,7 @@ body::after {
     font-family: 'Cormorant Garamond', serif;
     font-size: 20px;
     font-weight: 500;
-    color: #CDB17A;
+    color: var(--text-primary);
     letter-spacing: 0.05em;
     margin-bottom: 8px;
 }
@@ -200,20 +205,20 @@ body::after {
     font-weight: 600;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--text-muted);
 }
 
 .card-line {
     width: 28px;
     height: 1px;
-    background: #A38354;
+    background: var(--accent-gold);
     margin-top: 16px;
     transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fact-card:hover .card-line {
     width: 100%;
-    background: #CDB17A;
+    background: var(--accent-gold);
 }
 
 /* Diagonal Gold Shimmer Effect */
@@ -239,7 +244,8 @@ body::after {
 
 
 /* MAIN LAYOUT */
-.booking-layout {
+.booking-layout,
+.pay-layout {
     max-width: 1280px;
     margin: 0 auto;
     padding: 64px 52px 90px;
@@ -247,6 +253,9 @@ body::after {
     grid-template-columns: 1fr 360px;
     gap: 48px;
     align-items: start;
+    background: var(--bg-primary);
+    position: relative;
+    z-index: 5;
 }
 
 /* PROGRESS */
@@ -266,7 +275,7 @@ body::after {
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    border: 1px solid var(--parchment-2);
+    border: 1px solid var(--step-inactive);
     background: transparent;
     display: flex;
     align-items: center;
@@ -274,15 +283,15 @@ body::after {
     font-family: 'DM Sans', sans-serif;
     font-size: 14px;
     font-style: normal;
-    color: var(--muted);
+    color: var(--text-muted);
     flex-shrink: 0;
     transition: all 0.4s var(--ease);
 }
 
 .prog-item.active .prog-dot {
-    border-color: var(--gold);
-    background: var(--gold-pale);
-    color: var(--gold);
+    border-color: var(--step-active);
+    background: var(--bg-tertiary);
+    color: var(--step-active);
 }
 
 .prog-item.done .prog-dot {
@@ -297,7 +306,7 @@ body::after {
     font-weight: 400;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--muted-2);
+    color: var(--text-muted);
     transition: color 0.4s var(--ease);
 }
 
@@ -312,7 +321,7 @@ body::after {
 .prog-line {
     flex: 1;
     height: 1px;
-    background: var(--parchment);
+    background: var(--step-line);
     margin: 0 16px;
 }
 
@@ -327,15 +336,16 @@ body::after {
 }
 
 .step.active {
-    background: var(--white);
-    border-color: rgba(163, 131, 84, 0.25);
+    background: var(--bg-secondary);
+    border-color: var(--accent-gold);
     box-shadow: var(--shadow-soft);
     transform: translateY(-2px);
 }
 
 .step.completed {
-    background: transparent;
-    border-color: var(--parchment-2);
+    background: var(--bg-tertiary);
+    border-color: var(--border-light);
+    opacity: 0.8;
 }
 
 .step-header {
@@ -920,11 +930,12 @@ textarea.finput {
 }
 
 .summary-card {
-    background: var(--ink);
+    background: var(--card-bg);
     border-radius: var(--r);
     overflow: hidden;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
     height: fit-content;
+    color: var(--card-text);
 }
 
 .sum-img-wrap {
@@ -966,7 +977,7 @@ textarea.finput {
     font-family: 'Cormorant Garamond', serif;
     font-size: 26px;
     font-weight: 300;
-    color: var(--white);
+    color: #F2E8D9; /* Always Cream on image overlay */
     line-height: 1.15;
     font-style: italic;
 }
@@ -980,7 +991,7 @@ textarea.finput {
     justify-content: space-between;
     align-items: baseline;
     padding: 12px 0;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+    border-bottom: 1px dashed var(--card-border);
 }
 
 .sum-row:last-of-type {
@@ -992,14 +1003,14 @@ textarea.finput {
     font-weight: 400;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--card-label);
 }
 
 .sum-val {
     font-family: 'Cormorant Garamond', serif;
     font-size: 19px;
-    font-weight: 300;
-    color: var(--white);
+    font-weight: 400; /* User wanted 600 weight for some, but Cormorant 400 is already distinct */
+    color: var(--card-text);
     text-align: right;
 }
 
@@ -1038,7 +1049,7 @@ textarea.finput {
     font-size: 13px;
     font-weight: 300;
     line-height: 1.65;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--card-text);
 }
 
 .sum-addr {
@@ -1183,18 +1194,19 @@ textarea.finput {
 }
 
 .pay-card {
-    background: var(--white);
-    border: 1px solid var(--parchment);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: var(--r);
     padding: 40px;
     box-shadow: var(--shadow-soft);
+    color: var(--card-text);
 }
 
 .pay-header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--parchment);
+    border-bottom: 1px solid var(--card-border);
     padding-bottom: 18px;
     margin-bottom: 24px;
 }
@@ -1314,16 +1326,18 @@ textarea.finput {
 }
 
 .order-card {
-    background: var(--ink);
+    background: var(--card-bg);
     border-radius: var(--r);
     overflow: hidden;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
     height: fit-content;
+    color: var(--card-text);
+    border: 1px solid var(--card-border);
 }
 
 .order-header {
     padding: 26px 28px;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+    border-bottom: 1px dashed var(--card-border);
 }
 
 .order-header p {
@@ -1338,8 +1352,8 @@ textarea.finput {
 .order-header h3 {
     font-family: 'Cormorant Garamond', serif;
     font-size: 26px;
-    font-weight: 300;
-    color: var(--white);
+    font-weight: 400;
+    color: var(--card-text);
     font-style: italic;
 }
 
@@ -1352,7 +1366,7 @@ textarea.finput {
     justify-content: space-between;
     align-items: center;
     padding: 12px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--card-border);
     font-size: 14.5px;
 }
 
@@ -1362,7 +1376,7 @@ textarea.finput {
 
 .o-item-name {
     font-weight: 300;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--card-text);
 }
 
 .o-item-price {
@@ -1376,11 +1390,11 @@ textarea.finput {
     font-size: 14px;
     font-family: 'DM Sans', sans-serif;
     font-weight: 300;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--card-label);
 }
 
 .order-total {
-    background: rgba(163, 131, 84, 0.15);
+    background: var(--bg-tertiary);
     padding: 22px 28px;
     display: flex;
     justify-content: space-between;
@@ -1398,8 +1412,8 @@ textarea.finput {
 .o-total-price {
     font-family: 'Cormorant Garamond', serif;
     font-size: 34px;
-    font-weight: 300;
-    color: var(--gold-light);
+    font-weight: 600; /* User wanted 600 weight for prices in cards */
+    color: var(--card-text);
 }
 
 .cancel-policy {
@@ -1468,7 +1482,7 @@ textarea.finput {
 }
 
 .modal-card {
-    background: var(--cream);
+    background: var(--bg-secondary);
     width: 90%;
     max-width: 500px;
     border-radius: var(--r);
@@ -1477,6 +1491,7 @@ textarea.finput {
     transform: translateY(20px);
     transition: transform 0.4s var(--ease);
     box-shadow: var(--shadow-modal);
+    border: 1px solid var(--border);
 }
 
 .modal-overlay.open .modal-card {
@@ -1504,10 +1519,10 @@ textarea.finput {
     font-family: 'Cormorant Garamond', serif;
     font-size: 28px;
     font-weight: 300;
-    color: var(--ink);
+    color: var(--text-primary);
     margin-bottom: 20px;
     font-style: italic;
-    border-bottom: 1px solid var(--parchment);
+    border-bottom: 1px solid var(--border);
     padding-bottom: 16px;
 }
 
@@ -1590,11 +1605,12 @@ textarea.finput {
 
 .booking-item {
     padding: 18px;
-    border: 1px solid var(--parchment);
+    border: 1px solid var(--border);
     border-radius: var(--r-sm);
-    background: var(--white);
+    background: var(--bg-secondary);
     margin-bottom: 12px;
-    transition: border-color 0.3s;
+    transition: all 0.3s;
+    color: var(--text-primary);
 }
 
 .booking-item:hover {
