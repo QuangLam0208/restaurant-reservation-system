@@ -1,38 +1,30 @@
 @startuml
-title Activity Diagram - Quy trình Đăng nhập (Login)
+title Sơ đồ hoạt động - Đăng nhập khách hàng
 skinparam conditionStyle inside
 
-|Khách hàng|
 start
-:Mở trang Đăng nhập;
-:Nhập Email và Mật khẩu;
-:Bấm nút "Đăng nhập";
+:Nhập email và mật khẩu;
+:Gửi yêu cầu đăng nhập;
 
-|Hệ thống|
-:Truy vấn thông tin Customer theo Email;
-if (Tồn tại tài khoản?) then (Có)
-  :Giải mã và So sánh Mật khẩu (Verify Hash);
-  if (Mật khẩu trùng khớp?) then (Có)
-
-    ' Kiểm tra điều kiện xác thực Email
-    if (is_verified == TRUE?) then (Có)
-      :Tạo JWT Token / Session ID;
-      :Lưu thông tin phiên đăng nhập;
-      :Trả về Token & Điều hướng vào Trang chủ;
-      stop
+:Tìm tài khoản theo email;
+if (Tài khoản tồn tại?) then (Có)
+  if (Tài khoản đã xác minh?) then (Có)
+    :So khớp mật khẩu;
+    if (Mật khẩu đúng?) then (Có)
+      :Tạo HTTP session;
+      :Cho phép truy cập hệ thống;
     else (Không)
-      :Báo lỗi "Tài khoản chưa được xác thực";
-      :Hiển thị nút "Gửi lại Email xác thực";
-      stop
+      :Thông báo sai email hoặc mật khẩu;
     endif
-
   else (Không)
-    :Báo lỗi "Sai Email hoặc Mật khẩu";
-    stop
+    if (Mã xác minh đã hết hạn?) then (Có)
+      :Gửi lại email xác minh;
+    endif
+    :Thông báo tài khoản chưa xác minh;
   endif
 else (Không)
-  :Báo lỗi "Sai Email hoặc Mật khẩu";
-  stop
+  :Thông báo sai email hoặc mật khẩu;
 endif
 
+stop
 @enduml

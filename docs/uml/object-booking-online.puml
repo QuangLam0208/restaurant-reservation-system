@@ -1,0 +1,34 @@
+@startuml
+title So do doi tuong - Use case Dat ban online
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam objectAttributeIconSize 0
+
+object "customer01:Customer" as customer01 {
+  customerId = 1
+  name = "Nguyen Van A"
+}
+
+object "reservation01:Reservation" as reservation01 {
+  reservationId = 101
+  type = ONLINE
+  guestCount = 4
+  status = RESERVED
+}
+
+object "tableA1:TableInfo" as tableA1 {
+  tableId = 12
+  capacity = 4
+  status = AVAILABLE
+}
+
+object "mapping01:ReservationTableMapping" as mapping01 {
+  mappingId = 501
+}
+
+customer01 -- reservation01 : customer
+reservation01 -- mapping01 : tableMappings
+mapping01 -- tableA1 : tableInfo
+
+@enduml
