@@ -25,7 +25,7 @@ namespace reservation_winforms.Forms
         private List<Button> _blinkingButtons = new List<Button>();
 
         private int _softLockMinutes = 5;
-
+        
         public UcTableMap()
         {
             InitializeComponent();
@@ -36,6 +36,7 @@ namespace reservation_winforms.Forms
             InitializeBlinkTimer();
 
             this.Load += UcTableMap_Load;
+            this.HandleDestroyed += UcTableMap_HandleDestroyed;
 
             btnFilterAll.Click += (s, e) => ApplyFilter("ALL");
             btnFilterAvailable.Click += (s, e) => ApplyFilter("AVAILABLE");
@@ -79,6 +80,78 @@ namespace reservation_winforms.Forms
         {
             await LoadSystemConfigsAsync();
             await LoadTableData();
+            WebSocketService.Instance.OnTableStatusChanged += OnTableStatusChanged;
+            WebSocketService.Instance.OnTableAlertReceived += OnTableAlertReceived;
+        }
+
+        private void UcTableMap_HandleDestroyed(object sender, EventArgs e)
+        {
+            WebSocketService.Instance.OnTableStatusChanged -= OnTableStatusChanged;
+            WebSocketService.Instance.OnTableAlertReceived -= OnTableAlertReceived;
+        }
+
+        private void OnTableStatusChanged(TableUpdate msg)
+        {
+            if (this.IsHandleCreated && !this.IsDisposed)
+            {
+                this.Invoke(new Action(async () => {
+
+                    if (msg.Status != "AVAILABLE")
+                    {
+                        var selected = _selectedTables.FirstOrDefault(t => t.TableId == msg.TableId);
+                        if (selected != null)
+                        {
+                            _selectedTables.Remove(selected);
+                            UpdateSelectedTableLabel();
+                        }
+                    }
+
+                    await LoadTableData();
+                }));
+            }
+        }
+
+        private void OnTableAlertReceived(TableAlertMessage msg)
+        {
+            if (this.IsHandleCreated && !this.IsDisposed)
+            {
+                this.Invoke(new Action(() => {
+                    var btn = GetButtonByTableId(msg.TableId);
+                    if (btn != null)
+                    {
+                        if (msg.AlertType == "START_BLINK")
+                        {
+                            if (!_blinkingButtons.Contains(btn))
+                            {
+                                _blinkingButtons.Add(btn);
+                                if (!_blinkTimer.Enabled) _blinkTimer.Start();
+                            }
+                        }
+                        else if (msg.AlertType == "STOP_BLINK")
+                        {
+                            _blinkingButtons.Remove(btn);
+
+                            var table = btn.Tag as FloorMapTableResponse;
+                            if (table != null)
+                            {
+                                btn.BackColor = table.Status == "OCCUPIED" ? Color.Gray : Color.IndianRed;
+                            }
+                        }
+                    }
+                }));
+            }
+        }
+
+        private Button GetButtonByTableId(long tableId)
+        {
+            foreach (Control ctrl in flpTableMap.Controls)
+            {
+                if (ctrl is Button btn && btn.Tag is FloorMapTableResponse t && t.TableId == tableId)
+                {
+                    return btn;
+                }
+            }
+            return null;
         }
 
         private async Task LoadSystemConfigsAsync()
@@ -251,6 +324,11 @@ namespace reservation_winforms.Forms
                         break;
                 }
 
+                if (_selectedTables.Any(t => t.TableId == table.TableId))
+                {
+                    btnTable.BackColor = Color.DodgerBlue;
+                }
+
                 btnTable.Text = tableText;
                 btnTable.Click += BtnTable_Click;
 
@@ -405,6 +483,8 @@ namespace reservation_winforms.Forms
                     MessageBox.Show("Seating suggestion canceled.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
+                _selectedTables.Clear();
+                UpdateSelectedTableLabel();
                 await LoadTableData();
             }
             finally
