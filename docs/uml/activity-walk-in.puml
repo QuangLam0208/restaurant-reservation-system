@@ -1,49 +1,57 @@
 @startuml
-title Activity Diagram - Tiếp nhận khách Walk-in
+title Sơ đồ hoạt động - Xử lý khách Walk-in
+skinparam conditionStyle inside
 
 start
-:Lễ tân tiếp nhận khách;
-:Nhập guest_count,\nname/phone (optional nếu có bàn ngay);
+:Lễ tân nhập số lượng khách;
 
-if (guest_count <= 0?) then (Có)
-  :Thông báo lỗi;
-  stop
-endif
+if (Số lượng khách hợp lệ?) then (Đúng)
+  :Hệ thống phân tích các tùy chọn bàn\n(FULL, MERGE, PARTIAL, PARTIAL_MERGED);
 
-:Tính start_time = NOW;
-:Tính end_time = min(NOW + Duration + Buffer, Giờ đóng cửa);
-:Lọc bàn capacity >= guest_count;
-:Phân tích available window từng bàn;
+  if (Có tổ hợp bàn trống?) then (Có)
+    :Lễ tân chọn một phương án xếp bàn;
 
-if (Có FULL AVAILABLE?) then (Có)
-  :Chọn bàn nhỏ nhất phù hợp;
-  :Lock bàn;
-  :Tạo Reservation type=WALK_IN,\nstatus=SEATED;
-  stop
-else (Không)
-  if (Có PARTIAL AVAILABLE?) then (Có)
-    :Tính toán available_until = \n(Next_Booking_Start - 10p Buffer);
-    :Đề xuất short seating đến available_until;
-    if (Khách đồng ý?) then (Có)
-      :Gán bàn tạm;
-      :Cập nhật end_time của Reservation \n= available_until;
-      :Tạo Reservation type=WALK_IN,\nstatus=SEATED;
+    :Hệ thống tạo đơn đặt bàn dự thảo (CREATED);
+    :Thực hiện khóa tạm thời bàn đã chọn (Soft Lock);
+
+    if (Xảy ra xung đột đồng thời\n(Bàn vừa bị khách khác đặt)?) then (Có)
+      :Báo lỗi xung đột dữ liệu;
+      :Yêu cầu Lễ tân tải lại sơ đồ bàn;
       stop
     else (Không)
-      :Thử bàn khác / ghép bàn;
+      :Hiển thị thông tin giữ chỗ thành công;
+
+      if (Là phương án có giới hạn thời gian (PARTIAL)?) then (Có)
+        :Lễ tân thông báo thời hạn trả bàn\nvà hỏi ý kiến khách (Short Seating);
+      else (Không)
+        :Lễ tân hỏi xác nhận nhận bàn;
+      endif
+
+      if (Khách đồng ý và Lễ tân bấm Xác nhận?) then (Đồng ý)
+        :Hệ thống xử lý xác nhận nhận bàn;
+        if (Khóa tạm (Soft lock) còn hiệu lực?) then (Còn)
+          :Chính thức xếp khách (SEATED);
+          :Giải phóng khóa tạm;
+          :Cập nhật trạng thái bàn (OCCUPIED);
+          :Phát tín hiệu cập nhật sơ đồ bàn theo thời gian thực;
+        else (Hết hạn)
+          :Báo lỗi quá thời gian thao tác;
+          :Hủy đơn đặt bàn dự thảo (EXPIRED);
+          :Yêu cầu Lễ tân thao tác lại;
+        endif
+      else (Từ chối / Hủy thao tác)
+        :Hủy đơn đặt bàn dự thảo (CANCELLED);
+        :Giải phóng khóa tạm;
+        :Cập nhật trạng thái bàn (AVAILABLE);
+      endif
     endif
+  else (Không có bàn)
+    :Thông báo không có tổ hợp bàn phù hợp;
+    :Đề xuất thêm khách vào danh sách chờ (Waitlist);
   endif
+else (Sai)
+  :Báo lỗi dữ liệu đầu vào;
 endif
 
-if (Có phương án ghép bàn?) then (Có)
-  :Lock các bàn liên quan;
-  :Tạo Reservation type=WALK_IN,\nstatus=SEATED;
-  :Tạo mapping chi tiết bàn;
-  stop
-else (Không)
-  :Yêu cầu nhập name + phone;
-  :Tạo Waitlist status=WAITING;
-  :Thông báo đang chờ;
-  stop
-endif
+stop
 @enduml
