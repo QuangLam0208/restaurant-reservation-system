@@ -2,142 +2,152 @@
 left to right direction
 skinparam actorStyle awesome
 skinparam packageStyle rectangle
-skinparam shadowing false
-skinparam nodesep 28
-skinparam ranksep 32
+skinparam nodesep 35
+skinparam ranksep 55
 skinparam usecase {
   BackgroundColor White
   BorderColor #555
   ArrowColor #333
 }
 
-actor "Khách chưa đăng ký" as Guest
-actor "Khách hàng online" as Customer
-actor "Lễ tân" as Receptionist
-actor "Quản lý" as Manager
-actor "Cổng thanh toán" as PaymentGateway
-actor "Scheduler" as Scheduler
+' ==========================================
+' ACTORS
+' ==========================================
+actor "Khách chưa ĐK\n(Guest)" as Guest
+actor "Khách hàng\nOnline" as OnlineCustomer
+actor "Nhân viên\nLễ tân" as Receptionist
+actor "Quản lý\n(Manager)" as Manager
+actor "Hệ thống\n(System)" as System
 
-Receptionist <|-- Manager
+' Kế thừa: OnlineCustomer mở rộng từ Guest
+Guest <|-- OnlineCustomer
 
 rectangle "Hệ thống Quản lý Đặt bàn Tích hợp (Online & Offline)" {
 
-  rectangle "Xác thực và tài khoản" {
+  ' ----------------------------------------
+  rectangle "Phân hệ Xác thực (IAM)" {
     usecase "Đăng ký tài khoản\n(UC_Register)" as UC_Register
-    usecase "Xác minh email\n(UC_VerifyEmail)" as UC_VerifyEmail
-    usecase "Gửi lại email xác minh\n(UC_ResendVerification)" as UC_ResendVerification
-    usecase "Đăng nhập khách hàng\n(UC_CustomerLogin)" as UC_CustomerLogin
-    usecase "Đăng xuất khách hàng\n(UC_CustomerLogout)" as UC_CustomerLogout
-    usecase "Quên mật khẩu\n(UC_ForgotPassword)" as UC_ForgotPassword
-    usecase "Đặt lại mật khẩu\n(UC_ResetPassword)" as UC_ResetPassword
-    usecase "Cập nhật hồ sơ cá nhân\n(UC_UpdateProfile)" as UC_UpdateProfile
-    usecase "Đổi mật khẩu\n(UC_ChangePassword)" as UC_ChangePassword
-    usecase "Đăng nhập POS\n(UC_StaffLogin)" as UC_StaffLogin
-    usecase "Đăng xuất POS\n(UC_StaffLogout)" as UC_StaffLogout
-    usecase "Tạo tài khoản nhân viên\n(UC_CreateStaff)" as UC_CreateStaff
+    usecase "Đăng nhập\n(UC_Login)" as UC_Login
+    usecase "Quên mật khẩu\n(UC_ForgotPassword)" as UC_Forgot
   }
 
-  rectangle "Đặt bàn online" {
-    usecase "Đặt bàn online\n(UC_BookOnline)" as UC_BookOnline
-    usecase "Tự động phân bổ bàn\n(UC_AutoAssign)" as UC_AutoAssign
-    usecase "Ghép bàn\n(UC_Merge)" as UC_Merge
-    usecase "Khóa tạm bàn\n(UC_SoftLock)" as UC_SoftLock
+  ' ----------------------------------------
+  rectangle "Phân hệ Đặt bàn Online" {
+    usecase "Đặt bàn trực tuyến\n(UC_BookOnline)" as UC_BookOnline
     usecase "Thanh toán phí giữ bàn\n(UC_Payment)" as UC_Payment
-    usecase "Tự động hết hạn thanh toán\n(UC_AutoExpire)" as UC_AutoExpire
-    usecase "Gợi ý khung giờ thay thế\n(UC_SuggestAltTime)" as UC_SuggestAltTime
-    usecase "Gửi xác nhận đặt bàn\n(UC_NotifyReservation)" as UC_NotifyReservation
     usecase "Hủy đặt bàn\n(UC_CancelReservation)" as UC_CancelReservation
   }
 
-  rectangle "Walk-in và Waitlist" {
-    usecase "Xem tùy chọn bàn walk-in\n(UC_ViewWalkInOptions)" as UC_ViewWalkInOptions
-    usecase "Tạo gợi ý walk-in\n(UC_SuggestWalkIn)" as UC_SuggestWalkIn
-    usecase "Xác nhận walk-in\n(UC_ConfirmWalkIn)" as UC_ConfirmWalkIn
-    usecase "Hủy gợi ý walk-in\n(UC_CancelWalkInSuggestion)" as UC_CancelWalkInSuggestion
-    usecase "Short seating\n(UC_ShortSeating)" as UC_ShortSeating
-    usecase "Thêm vào waitlist\n(UC_AddWaitlist)" as UC_AddWaitlist
-    usecase "Thông báo waitlist\n(UC_NotifyWaitlist)" as UC_NotifyWaitlist
-    usecase "Xếp khách từ waitlist\n(UC_SeatWaitlist)" as UC_SeatWaitlist
-    usecase "Đánh dấu missing\n(UC_MarkMissing)" as UC_MarkMissing
-    usecase "Bỏ qua waitlist\n(UC_SkipWaitlist)" as UC_SkipWaitlist
+  ' ----------------------------------------
+  rectangle "Phân hệ Xử lý Logic (System)" {
+    usecase "Tự động phân bổ bàn\n(UC_AutoAssign)" as UC_AutoAssign
+    usecase "Ghép bàn\n(UC_Merge)" as UC_Merge
+    usecase "Khóa bàn tạm\n(UC_SoftLock)" as UC_SoftLock
+    usecase "Khóa lạc quan\n(UC_OptimisticLock)" as UC_OptimisticLock
+    usecase "Tự động hủy Soft Lock\n(UC_AutoExpire)" as UC_AutoExpire
+    usecase "Gửi xác nhận Email/SMS\n(UC_Notify)" as UC_Notify
+    usecase "Gợi ý giờ trống\n(UC_Suggest)" as UC_Suggest
+    usecase "Tự động đánh No-show\n(UC_AutoNoShow)" as UC_AutoNoShow
+    usecase "Cảnh báo Overstay\n(UC_AlertOverstay)" as UC_AlertOverstay
   }
 
-  rectangle "Vận hành tại chỗ" {
-    usecase "Check-in\n(UC_CheckIn)" as UC_CheckIn
-    usecase "Đổi bàn\n(UC_ChangeTable)" as UC_ChangeTable
-    usecase "Check-out\n(UC_CheckOut)" as UC_CheckOut
-    usecase "Tự động đánh dấu no-show\n(UC_AutoNoShow)" as UC_AutoNoShow
-    usecase "Cảnh báo overstay\n(UC_AlertOverstay)" as UC_AlertOverstay
-    usecase "Giải phóng bàn sau buffer\n(UC_ReleaseAfterBuffer)" as UC_ReleaseAfterBuffer
-    usecase "Override khẩn cấp\n(UC_Override)" as UC_Override
-    usecase "Ghi nhật ký override\n(UC_LogOverride)" as UC_LogOverride
+  ' ----------------------------------------
+  rectangle "Phân hệ Vận hành Lễ tân (POS)" {
+    usecase "Tiếp nhận khách Walk-in\n(UC_HandleWalkIn)" as UC_HandleWalkIn
+    usecase "Xếp bàn ngồi tạm\n(UC_ShortSeating)" as UC_ShortSeating
+    usecase "Đưa vào Danh sách chờ\n(UC_Waitlist)" as UC_Waitlist
+    usecase "Thông báo bàn trống\n(UC_NotifyWaitlist)" as UC_NotifyWaitlist
+    usecase "Check-in khách\n(UC_CheckIn)" as UC_CheckIn
+    usecase "Check-out hoàn tất\n(UC_CheckOut)" as UC_CheckOut
+    usecase "Ghi đè thủ công\n(UC_Override)" as UC_Override
+    usecase "Ghi log hệ thống\n(UC_Log)" as UC_Log
   }
 
-  rectangle "Quản trị" {
-    usecase "Quản lý bàn\n(UC_ManageTables)" as UC_ManageTables
+  ' ----------------------------------------
+  rectangle "Phân hệ Quản trị" {
+    usecase "Quản lý sơ đồ bàn\n(UC_ManageTables)" as UC_ManageTables
     usecase "Xem báo cáo thống kê\n(UC_ViewReports)" as UC_ViewReports
-    usecase "Xem nhật ký override\n(UC_ViewOverrideLogs)" as UC_ViewOverrideLogs
-    usecase "Xem cấu hình hệ thống\n(UC_ViewSystemConfig)" as UC_ViewSystemConfig
-    usecase "Cập nhật cấu hình hệ thống\n(UC_UpdateSystemConfig)" as UC_UpdateSystemConfig
+    usecase "Quản lý nhật ký Override\n(UC_ManageLogs)" as UC_ManageLogs
   }
+
 }
 
+' ==========================================
+' ACTOR → USE CASE
+' ==========================================
+
+' Guest
 Guest --> UC_Register
-Guest --> UC_VerifyEmail
-Guest --> UC_ResendVerification
-Guest --> UC_ForgotPassword
-Guest --> UC_ResetPassword
+Guest --> UC_Forgot
 
-Customer --> UC_CustomerLogin
-Customer --> UC_CustomerLogout
-Customer --> UC_UpdateProfile
-Customer --> UC_ChangePassword
-Customer --> UC_BookOnline
-Customer --> UC_CancelReservation
+' Khách Online
+OnlineCustomer --> UC_Login
+OnlineCustomer --> UC_BookOnline
+OnlineCustomer --> UC_CancelReservation
 
-Receptionist --> UC_StaffLogin
-Receptionist --> UC_StaffLogout
-Receptionist --> UC_ViewWalkInOptions
-Receptionist --> UC_SuggestWalkIn
-Receptionist --> UC_ConfirmWalkIn
-Receptionist --> UC_CancelWalkInSuggestion
-Receptionist --> UC_AddWaitlist
-Receptionist --> UC_NotifyWaitlist
-Receptionist --> UC_SeatWaitlist
-Receptionist --> UC_MarkMissing
-Receptionist --> UC_SkipWaitlist
+' Lễ tân
+Receptionist --> UC_Login
+Receptionist --> UC_HandleWalkIn
 Receptionist --> UC_CheckIn
-Receptionist --> UC_ChangeTable
 Receptionist --> UC_CheckOut
-Receptionist --> UC_Override
 Receptionist --> UC_CancelReservation
+Receptionist --> UC_Override
+Receptionist --> UC_Waitlist
 
-Manager --> UC_CreateStaff
+' Quản lý
+Manager --> UC_Login
 Manager --> UC_ManageTables
 Manager --> UC_ViewReports
-Manager --> UC_ViewOverrideLogs
-Manager --> UC_ViewSystemConfig
-Manager --> UC_UpdateSystemConfig
+Manager --> UC_ManageLogs
 
-PaymentGateway --> UC_Payment
+' System (chạy ngầm)
+System --> UC_AutoNoShow
+System --> UC_AlertOverstay
+System --> UC_AutoExpire
+System --> UC_Notify
+System --> UC_NotifyWaitlist
 
-Scheduler --> UC_AutoExpire
-Scheduler --> UC_AutoNoShow
-Scheduler --> UC_AlertOverstay
-Scheduler --> UC_ReleaseAfterBuffer
+' ==========================================
+' INCLUDE / EXTEND
+' ==========================================
 
-UC_BookOnline ..> UC_AutoAssign : <<include>>
-UC_BookOnline ..> UC_SoftLock : <<include>>
-UC_BookOnline ..> UC_Payment : <<include>>
-UC_Merge ..> UC_AutoAssign : <<extend>>
-UC_SuggestAltTime ..> UC_BookOnline : <<extend>>
-UC_NotifyReservation ..> UC_Payment : <<extend>>
+' --- Phân hệ Xác thực ---
+' BookOnline yêu cầu đã đăng nhập
+UC_BookOnline ..> UC_Login : <<include>>
 
-UC_SuggestWalkIn ..> UC_AutoAssign : <<include>>
-UC_SuggestWalkIn ..> UC_SoftLock : <<include>>
-UC_ShortSeating ..> UC_SuggestWalkIn : <<extend>>
-UC_ShortSeating ..> UC_SeatWaitlist : <<extend>>
+' --- Phân hệ Online ---
+UC_BookOnline ..> UC_AutoAssign  : <<include>>
+UC_BookOnline ..> UC_SoftLock    : <<include>>
+UC_BookOnline ..> UC_Payment     : <<include>>
 
-UC_Override ..> UC_LogOverride : <<include>>
+' AutoAssign luôn dùng Optimistic Lock khi ghi reservation
+UC_AutoAssign ..> UC_OptimisticLock : <<include>>
+
+' Sau thanh toán thành công → gửi thông báo
+UC_Payment ..> UC_Notify         : <<include>>
+
+' Nếu quá hạn 5p → tự hủy lock
+UC_SoftLock ..> UC_AutoExpire    : <<include>>
+
+' AutoAssign thất bại (không có bàn đơn) → thử ghép bàn
+UC_Merge <.. UC_AutoAssign       : <<extend>>
+
+' Không tìm được bàn → gợi ý giờ khác
+UC_Suggest <.. UC_BookOnline     : <<extend>>
+
+' --- Phân hệ Walk-in ---
+UC_HandleWalkIn ..> UC_AutoAssign  : <<include>>
+
+' Bàn trống một phần → đề xuất Short Seating
+UC_ShortSeating <.. UC_HandleWalkIn : <<extend>>
+
+' Hết bàn → vào Waitlist
+UC_Waitlist <.. UC_HandleWalkIn   : <<extend>>
+
+' Có bàn trống → thông báo khách chờ
+UC_NotifyWaitlist <.. UC_Waitlist  : <<extend>>
+
+' --- Phân hệ Override ---
+UC_Override ..> UC_Log : <<include>>
 
 @enduml

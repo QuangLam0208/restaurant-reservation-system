@@ -1,54 +1,75 @@
 @startuml
-title Sơ đồ hoạt động - Xử lý khách walk-in
-skinparam conditionStyle inside
-
 start
-:Lễ tân nhập số lượng khách;
 
-if (Số lượng khách hợp lệ?) then (Có)
-  :Phân tích các tùy chọn bàn\n(FULL, MERGE, PARTIAL, PARTIAL_MERGED);
-  :Lễ tân chọn bàn hoặc chọn gợi ý;
-  :Kiểm tra phương án được chọn;
+:Nhân viên nhập guest_count;
 
-  if (Phương án hợp lệ?) then (Có)
-    if (Đây là phương án partial?) then (Có)
-      :Hỏi khách về short seating;
-      if (Khách đồng ý?) then (Có)
-        :Giới hạn thời gian sử dụng trước booking kế tiếp;
-      else (Không)
-        :Yêu cầu chọn phương án khác\nhoặc chuyển sang waitlist;
+if (guest_count > 0?) then (Yes)
+
+  :Tính start_time = NOW;
+  :Tính service_end_time = min(NOW + Duration, closing_time);
+  :Tính occupied_until = service_end_time + buffer_time;
+
+  :Tìm danh sách bàn phù hợp;
+  :Lọc bàn capacity >= guest_count;
+  :Loại các bàn xung đột với booking ONLINE (ưu tiên online);
+
+  if (Có bàn FULL AVAILABLE?) then (Yes)
+    :Chọn bàn nhỏ nhất đủ chỗ;
+    :Tạo Reservation (WALK_IN, SEATED);
+    :Tạo Reservation_Table_Mapping;
+    :Lock bàn (transaction / version check);
+    stop
+
+  else (No)
+
+    :Thử tìm phương án GHÉP BÀN (FULL);
+
+    if (Có thể ghép bàn?) then (Yes)
+      :Chọn tổ hợp bàn tối ưu;
+      :Tạo Reservation;
+      :Tạo nhiều Reservation_Table_Mapping;
+      :Lock tất cả bàn;
+      stop
+
+    else (No)
+
+      :Xét bàn PARTIAL AVAILABLE;
+
+      if (Có bàn PARTIAL?) then (Yes)
+
+        :Tính available_until (trước booking tiếp theo);
+
+        if (available_until > NOW?) then (Yes)
+          :Gợi ý Short Seating cho khách;
+
+          if (Khách đồng ý?) then (Yes)
+            :Tạo Reservation (end_time = available_until);
+            :Tạo Reservation_Table_Mapping;
+            :Lock bàn;
+            stop
+          else (No)
+            :Tiếp tục tìm phương án khác;
+          endif
+
+        endif
+
+      endif
+
+      :Thử lại ghép bàn (nếu có short window);
+
+      if (Vẫn không có bàn?) then (Yes)
+        :Nhập name + phone;
+        :Tạo hoặc tìm Customer;
+        :Tạo Waitlist (WAITING);
         stop
       endif
+
     endif
 
-    :Tạo reservation WALK_IN = CREATED;
-    :Soft lock bàn và tạo mapping;
-    if (Có xung đột đồng thời?) then (Có)
-      :Chuyển reservation tạm sang CANCELLED;
-      :Yêu cầu lễ tân thử lại;
-      stop
-    endif
-
-    if (Lễ tân xác nhận walk-in?) then (Có)
-      if (Soft lock còn hiệu lực?) then (Có)
-        :Chuyển reservation sang SEATED;
-        :Giải phóng soft lock;
-        :Cập nhật bàn = OCCUPIED;
-      else (Không)
-        :Chuyển reservation sang EXPIRED;
-        :Yêu cầu tìm bàn lại;
-      endif
-    else (Không)
-      :Chuyển reservation sang CANCELLED;
-      :Giải phóng soft lock;
-    endif
-  else (Không)
-    :Thông báo phương án không hợp lệ;
-    :Gợi ý thử lại hoặc chuyển sang waitlist;
   endif
-else (Không)
-  :Thông báo lỗi dữ liệu đầu vào;
+
+else (No)
+  :Hiển thị lỗi "Số lượng khách không hợp lệ";
 endif
 
-stop
 @enduml
