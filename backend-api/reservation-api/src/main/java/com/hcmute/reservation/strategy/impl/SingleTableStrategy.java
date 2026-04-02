@@ -1,5 +1,6 @@
 package com.hcmute.reservation.strategy.impl;
 
+import com.hcmute.reservation.model.entity.Reservation;
 import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.strategy.TableAllocationStrategy;
 import org.springframework.core.annotation.Order;
@@ -9,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
-@Order(1) // Chạy đầu tiên
+@Order(1)
 public class SingleTableStrategy implements TableAllocationStrategy {
 
     @Override
