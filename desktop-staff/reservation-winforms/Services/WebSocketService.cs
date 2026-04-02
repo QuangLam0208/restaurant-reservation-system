@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -10,14 +10,13 @@ namespace reservation_winforms.Services
 {
     public class WebSocketService
     {
-        // Singleton instance
         private static readonly WebSocketService _instance = new WebSocketService();
         public static WebSocketService Instance => _instance;
 
         private ClientWebSocket _webSocket;
         private CancellationTokenSource _cancellationTokenSource;
 
-        private readonly string _wsUri = "ws://localhost:8081/ws-reservation-native/websocket";
+        private readonly string _wsUri = "ws://localhost:8081/ws-reservation-native";
 
         public event Action<TableUpdate> OnTableStatusChanged;
         public event Action<TableAlertMessage> OnTableAlertReceived;
@@ -93,29 +92,46 @@ namespace reservation_winforms.Services
             }
         }
 
-        private void HandleStompFrame(string frame)
+        private void HandleStompFrame(string payload)
         {
-            if (frame.StartsWith("CONNECTED"))
-            {
-                Console.WriteLine("STOMP Connected successfully. Subscribing to topics...");
-                SubscribeToTopics();
-            }
-            else if (frame.StartsWith("MESSAGE"))
-            {
-                int bodyIndex = frame.IndexOf("\n\n");
-                if (bodyIndex != -1)
-                {
-                    string body = frame.Substring(bodyIndex + 2).Trim('\0', '\n', '\r');
+            if (string.IsNullOrEmpty(payload)) return;
 
-                    if (frame.Contains("destination:/topic/tables"))
+            // STOMP frames chuẩn luôn kết thúc bằng ký tự Null (\0)
+            // Nếu Server gửi 2, 3 sự kiện cùng lúc, ta tách chúng ra để xử lý không bị sót
+            string[] frames = payload.Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string frame in frames)
+            {
+                if (frame.StartsWith("CONNECTED"))
+                {
+                    Console.WriteLine("STOMP Connected successfully. Subscribing to topics...");
+                    SubscribeToTopics(); // Khi vào đây thành công là 100% sẽ nhận được tin
+                }
+                else if (frame.Contains("MESSAGE"))
+                {
+                    int bodyIndex = frame.IndexOf("\n\n");
+                    if (bodyIndex == -1) bodyIndex = frame.IndexOf("\r\n\r\n");
+
+                    if (bodyIndex != -1)
                     {
-                        var update = JsonConvert.DeserializeObject<TableUpdate>(body);
-                        OnTableStatusChanged?.Invoke(update);
-                    }
-                    else if (frame.Contains("destination:/topic/table-alerts"))
-                    {
-                        var alert = JsonConvert.DeserializeObject<TableAlertMessage>(body);
-                        OnTableAlertReceived?.Invoke(alert);
+                        string body = frame.Substring(bodyIndex).Trim();
+                        try
+                        {
+                            if (frame.Contains("destination:/topic/tables"))
+                            {
+                                var update = JsonConvert.DeserializeObject<TableUpdate>(body);
+                                if (update != null) OnTableStatusChanged?.Invoke(update);
+                            }
+                            else if (frame.Contains("destination:/topic/table-alerts"))
+                            {
+                                var alert = JsonConvert.DeserializeObject<TableAlertMessage>(body);
+                                if (alert != null) OnTableAlertReceived?.Invoke(alert);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("JSON Parse Error: " + ex.Message);
+                        }
                     }
                 }
             }
