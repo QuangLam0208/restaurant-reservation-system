@@ -15,7 +15,6 @@ import com.hcmute.reservation.repository.TableInfoRepository;
 import com.hcmute.reservation.service.AssignmentService;
 import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.InHouseService;
-import com.hcmute.reservation.service.TableReleaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -39,7 +38,6 @@ public class InHouseServiceImpl implements InHouseService {
     private final AssignmentService assignmentService;
     private final ReservationMapper mapper;
     private final ConfigProviderService configProvider;
-    private final TableReleaseService tableReleaseService;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
