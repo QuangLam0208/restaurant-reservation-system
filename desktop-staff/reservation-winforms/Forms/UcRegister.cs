@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
-using reservation_winforms.Services; // Chứa ApiService
+using reservation_winforms.Services;
 
 namespace reservation_winforms.Forms
 {
@@ -28,23 +28,22 @@ namespace reservation_winforms.Forms
 
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
             {
-                lblMessage.Text = "Vui lòng nhập đủ thông tin!";
+                lblMessage.Text = "Please enter your information!";
                 return;
             }
 
             btnRegister.Enabled = false;
-            btnRegister.Text = "Đang xử lý...";
+            btnRegister.Text = "Processinig...";
             lblMessage.Text = "";
 
-            // Gọi hàm đăng ký mà chúng ta đã viết ban nãy
             var response = await _authService.RegisterStaffAsync(user, pass, role);
 
             btnRegister.Enabled = true;
-            btnRegister.Text = "TẠO TÀI KHOẢN";
+            btnRegister.Text = "CREATE ACCOUNT";
 
             if (response.IsSuccess)
             {
-                MessageBox.Show("Tạo tài khoản thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Your account has been created successfully!", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 txtUsername.Clear();
                 txtPassword.Clear();
             }
@@ -56,7 +55,6 @@ namespace reservation_winforms.Forms
 
         private void BtnCancel_Click(object sender, EventArgs e)
         {
-            // Xóa rỗng các ô nhập liệu
             txtUsername.Clear();
             txtPassword.Clear();
             lblMessage.Text = "";

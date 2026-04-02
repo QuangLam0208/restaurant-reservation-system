@@ -10,13 +10,19 @@ namespace reservation_winforms.Forms
         {
             InitializeComponent();
 
-            // 1. Phân quyền hiển thị: Ẩn/Hiện tính năng dựa trên Role
+            this.WindowState = FormWindowState.Maximized;
+
+            clockTimer.Tick += (s, e) => {
+                lblRealTime.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+            };
+
             ApplyRolePermissions();
 
-            // 2. Mặc định khi vừa mở lên, hiển thị Sơ đồ bàn (UcTableMap)
+            this.Load += MainDashboardForm_Load;
+            this.FormClosing += MainDashboardForm_FormClosing;
+
             LoadUserControl(new UcTableMap());
 
-            // 3. Gắn sự kiện Click cho tất cả các nút trên thanh Menu
             btnTableMap.Click += BtnTableMap_Click;
             btnOnlineBooking.Click += BtnOnlineBooking_Click;
             btnWaitlist.Click += BtnWaitlist_Click;
@@ -26,47 +32,45 @@ namespace reservation_winforms.Forms
             btnReports.Click += BtnReports_Click;
             btnSystemLogs.Click += BtnSystemLogs_Click;
             btnRegisterStaff.Click += btnRegisterStaff_Click;
+            btnSystemConfig.Click += BtnSystemConfig_Click;
 
-            // 4. Nút Đăng xuất
             btnLogout.Click += BtnLogout_Click;
         }
 
-        // ==========================================
-        // PHÂN QUYỀN HIỂN THỊ MENU
-        // ==========================================
+        private async void MainDashboardForm_Load(object sender, EventArgs e)
+        {
+            LoadUserControl(new UcTableMap());
+            await WebSocketService.Instance.ConnectAsync();
+        }
+
+        private async void MainDashboardForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            await WebSocketService.Instance.DisconnectAsync();
+        }
+
         private void ApplyRolePermissions()
         {
-            // Nếu người đang đăng nhập KHÔNG PHẢI là MANAGER (tức là RECEPTIONIST)
             if (GlobalState.Role != "MANAGER")
             {
-                // Ẩn hoàn toàn khu vực dành cho Quản lý
-                lblAdminSection.Visible = false; // Nhãn "QUẢN TRỊ (MANAGER)"
-                btnTableSetup.Visible = false;   // Quản lý sơ đồ bàn
-                btnReports.Visible = false;      // Báo cáo thống kê
-                btnSystemLogs.Visible = false;   // Nhật ký hệ thống
-                btnRegisterStaff.Visible = false;// Tạo tài khoản Lễ tân
+                lblAdminSection.Visible = false;
+                btnTableSetup.Visible = false;
+                btnReports.Visible = false;
+                btnSystemLogs.Visible = false;
+                btnRegisterStaff.Visible = false;
+                btnSystemConfig.Visible = false;
             }
         }
 
-        // =========================================================
-        // HÀM XỬ LÝ LÕI: Nhúng UserControl vào Panel hiển thị
-        // =========================================================
         private void LoadUserControl(UserControl uc)
         {
-            // Xóa sạch nội dung cũ trong Panel
             pnlMainContent.Controls.Clear();
 
-            // Căn chỉnh giao diện mới lấp đầy Panel
             uc.Dock = DockStyle.Fill;
 
-            // Thêm giao diện mới vào Panel
             pnlMainContent.Controls.Add(uc);
             uc.BringToFront();
         }
 
-        // =========================================================
-        // XỬ LÝ CHUYỂN MENU (Sử dụng hàm LoadUserControl ở trên)
-        // =========================================================
 
         private void BtnTableMap_Click(object sender, EventArgs e)
         {
@@ -103,42 +107,35 @@ namespace reservation_winforms.Forms
             LoadUserControl(new UcSystemLogs());
         }
 
-        // =========================================================
-        // MỞ FORM ĐĂNG KÝ TÀI KHOẢN (Chỉ Manager mới bấm được nút này)
-        // =========================================================
         private void btnRegisterStaff_Click(object sender, EventArgs e)
         {
-            // 1. Xóa tất cả giao diện đang hiển thị trên khu vực chính
             pnlMainContent.Controls.Clear();
 
-            // 2. Khởi tạo UserControl Đăng ký
             UcRegister registerCtrl = new UcRegister();
 
-            // 3. Căn giữa UserControl bên trong pnlMainContent
             registerCtrl.Location = new System.Drawing.Point(
                 (pnlMainContent.Width - registerCtrl.Width) / 2,
                 (pnlMainContent.Height - registerCtrl.Height) / 2
             );
 
-            // 4. Thêm nó vào giao diện
             pnlMainContent.Controls.Add(registerCtrl);
         }
-            
-        // =========================================================
-        // XỬ LÝ ĐĂNG XUẤT
-        // =========================================================
-        private void BtnLogout_Click(object sender, EventArgs e)
+        private void BtnSystemConfig_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            LoadUserControl(new UcSystemConfig());
+        }
+        private async void BtnLogout_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show("Are you sure you want to log out of the system?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                // Xóa toàn bộ dữ liệu phiên đăng nhập
+                await WebSocketService.Instance.DisconnectAsync();
+
                 GlobalState.StaffToken = "";
                 GlobalState.CurrentUsername = "";
                 GlobalState.Role = "";
 
-                // Đóng Dashboard. Code bên LoginForm sẽ tự động hiện lại màn hình Login.
                 this.Close();
             }
         }

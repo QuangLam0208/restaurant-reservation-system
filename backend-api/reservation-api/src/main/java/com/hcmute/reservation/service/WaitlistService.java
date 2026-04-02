@@ -11,5 +11,11 @@ public interface WaitlistService {
 
     List<WaitlistResponse> getWaitlist();
 
+    WaitlistResponse markAsSeated(Long id);
+
+    WaitlistResponse markAsMissing(Long id);
+
     WaitlistResponse skipWaitlistEntry(Long id);
+
+    WaitlistResponse revertToWaiting(Long id);
 }

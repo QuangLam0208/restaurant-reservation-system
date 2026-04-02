@@ -15,38 +15,161 @@ namespace reservation_winforms.Forms
     {
         private readonly TableService _tableService;
         private readonly ReservationService _reservationService;
+        private readonly SystemConfigService _configService;
 
         private List<FloorMapTableResponse> _allTables = new List<FloorMapTableResponse>();
-        // Lưu trữ cái bàn mà Lễ tân vừa click vào
         private List<FloorMapTableResponse> _selectedTables = new List<FloorMapTableResponse>();
 
+        private Timer _blinkTimer;
+        private bool _blinkToggle = false;
+        private List<Button> _blinkingButtons = new List<Button>();
+
+        private int _softLockMinutes = 5;
+        
         public UcTableMap()
         {
             InitializeComponent();
             _tableService = new TableService();
             _reservationService = new ReservationService();
+            _configService = new SystemConfigService();
+
+            InitializeBlinkTimer();
 
             this.Load += UcTableMap_Load;
-            
-            // Sự kiện các nút lọc
+            this.HandleDestroyed += UcTableMap_HandleDestroyed;
+
             btnFilterAll.Click += (s, e) => ApplyFilter("ALL");
             btnFilterAvailable.Click += (s, e) => ApplyFilter("AVAILABLE");
             btnFilterOccupied.Click += (s, e) => ApplyFilter("OCCUPIED");
             btnFilterReserved.Click += (s, e) => ApplyFilter("RESERVED");
             btnFilterOverstay.Click += (s, e) => ApplyFilter("OVERSTAY");
 
-            // Sự kiện nút xếp bàn
             btnSeatWalkIn.Click += BtnSeatWalkIn_Click;
+        }
+
+        private void InitializeBlinkTimer()
+        {
+            _blinkTimer = new Timer();
+            _blinkTimer.Interval = 500;
+            _blinkTimer.Tick += BlinkTimer_Tick;
+        }
+
+        private void BlinkTimer_Tick(object sender, EventArgs e)
+        {
+            _blinkToggle = !_blinkToggle;
+
+            foreach (var btn in _blinkingButtons)
+            {
+                var table = btn.Tag as FloorMapTableResponse;
+                if (table == null) continue;
+
+                if (_blinkToggle)
+                {
+                    btn.BackColor = Color.Orange;
+                    btn.ForeColor = Color.White;
+                }
+                else
+                {
+                    btn.BackColor = table.Status == "OCCUPIED" ? Color.Gray : Color.IndianRed;
+                    btn.ForeColor = Color.White;
+                }
+            }
         }
 
         private async void UcTableMap_Load(object sender, EventArgs e)
         {
+            await LoadSystemConfigsAsync();
             await LoadTableData();
+            WebSocketService.Instance.OnTableStatusChanged += OnTableStatusChanged;
+            WebSocketService.Instance.OnTableAlertReceived += OnTableAlertReceived;
+        }
+
+        private void UcTableMap_HandleDestroyed(object sender, EventArgs e)
+        {
+            WebSocketService.Instance.OnTableStatusChanged -= OnTableStatusChanged;
+            WebSocketService.Instance.OnTableAlertReceived -= OnTableAlertReceived;
+        }
+
+        private void OnTableStatusChanged(TableUpdate msg)
+        {
+            if (this.IsHandleCreated && !this.IsDisposed)
+            {
+                this.Invoke(new Action(async () => {
+
+                    if (msg.Status != "AVAILABLE")
+                    {
+                        var selected = _selectedTables.FirstOrDefault(t => t.TableId == msg.TableId);
+                        if (selected != null)
+                        {
+                            _selectedTables.Remove(selected);
+                            UpdateSelectedTableLabel();
+                        }
+                    }
+
+                    await LoadTableData();
+                }));
+            }
+        }
+
+        private void OnTableAlertReceived(TableAlertMessage msg)
+        {
+            if (this.IsHandleCreated && !this.IsDisposed)
+            {
+                this.Invoke(new Action(() => {
+                    var btn = GetButtonByTableId(msg.TableId);
+                    if (btn != null)
+                    {
+                        if (msg.AlertType == "START_BLINK")
+                        {
+                            if (!_blinkingButtons.Contains(btn))
+                            {
+                                _blinkingButtons.Add(btn);
+                                if (!_blinkTimer.Enabled) _blinkTimer.Start();
+                            }
+                        }
+                        else if (msg.AlertType == "STOP_BLINK")
+                        {
+                            _blinkingButtons.Remove(btn);
+
+                            var table = btn.Tag as FloorMapTableResponse;
+                            if (table != null)
+                            {
+                                btn.BackColor = table.Status == "OCCUPIED" ? Color.Gray : Color.IndianRed;
+                            }
+                        }
+                    }
+                }));
+            }
+        }
+
+        private Button GetButtonByTableId(long tableId)
+        {
+            foreach (Control ctrl in flpTableMap.Controls)
+            {
+                if (ctrl is Button btn && btn.Tag is FloorMapTableResponse t && t.TableId == tableId)
+                {
+                    return btn;
+                }
+            }
+            return null;
+        }
+
+        private async Task LoadSystemConfigsAsync()
+        {
+            var res = await _configService.GetAllConfigsAsync();
+            if (res.IsSuccess && res.Data != null)
+            {
+                var softLockConfig = res.Data.FirstOrDefault(c => c.ConfigKey == "reservation.soft-lock-minutes");
+                if (softLockConfig != null && int.TryParse(softLockConfig.ConfigValue, out int parsedLock))
+                {
+                    _softLockMinutes = parsedLock;
+                }
+            }
         }
 
         private async Task LoadTableData()
         {
-            Label lblLoading = new Label { Text = "Đang tải sơ đồ bàn từ Server...", AutoSize = true, Font = new Font("Segoe UI", 12) };
+            Label lblLoading = new Label { Text = "Loading floor map from server...", AutoSize = true, Font = new Font("Segoe UI", 12) };
 
             flpTableMap.Controls.Add(lblLoading);
 
@@ -64,7 +187,7 @@ namespace reservation_winforms.Forms
                 {
                     Label lblEmpty = new Label
                     {
-                        Text = "Chưa có bàn nào trong hệ thống!\nVui lòng nhờ Quản lý (Manager) vào tab 'Quản lý Sơ đồ bàn' để thêm bàn mới.",
+                        Text = "No tables found in the system!\nPlease ask the Manager to add new tables in the 'Table Setup' tab.",
                         AutoSize = true,
                         Font = new Font("Segoe UI", 12, FontStyle.Italic),
                         ForeColor = Color.Gray,
@@ -80,7 +203,7 @@ namespace reservation_winforms.Forms
             }
             else
             {
-                MessageBox.Show(response.Message, "Lỗi tải dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(response.Message, "Data Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -123,6 +246,10 @@ namespace reservation_winforms.Forms
 
         private void DrawTables(List<FloorMapTableResponse> tables)
         {
+            _blinkTimer.Stop();
+            _blinkingButtons.Clear();
+            bool hasBlinkingTables = false;
+
             foreach (var table in tables)
             {
                 if (!table.IsActive) continue;
@@ -139,7 +266,21 @@ namespace reservation_winforms.Forms
                 };
 
                 btnTable.FlatAppearance.BorderSize = 0;
-                string tableText = $"Bàn {table.TableId}\n({table.Capacity} chỗ)";
+                string tableText = $"Table {table.TableId}\n({table.Capacity} pax)";
+
+                bool shouldBlink = false;
+
+                if ((table.Status == "OCCUPIED" || table.Status == "OVERSTAY") && table.NextReservationTime.HasValue)
+                {
+                    TimeSpan timeUntilNext = table.NextReservationTime.Value - DateTime.Now;
+
+                    if (timeUntilNext.TotalMinutes > 0 && timeUntilNext.TotalMinutes <= 15)
+                    {
+                        shouldBlink = true;
+                        hasBlinkingTables = true;
+                        tableText += $"\n\n⏰ Next: {table.NextReservationTime.Value:HH:mm}";
+                    }
+                }
 
                 switch (table.Status)
                 {
@@ -151,11 +292,11 @@ namespace reservation_winforms.Forms
 
                             if (table.CurrentReservationTime.HasValue)
                             {
-                                tableText += $"\n\nĐã đặt: {table.CurrentReservationTime.Value.ToString("HH:mm")}";
+                                tableText += $"\n\nReserved: {table.CurrentReservationTime.Value.ToString("HH:mm")}";
                             }
                             else
                             {
-                                tableText += $"\n\nĐã đặt trước";
+                                tableText += $"\n\nReserved";
                             }
                         }
                         else
@@ -168,13 +309,13 @@ namespace reservation_winforms.Forms
                     case "OCCUPIED":
                         btnTable.BackColor = Color.Gray;
                         btnTable.ForeColor = Color.White;
-                        tableText += $"\n\nKhách: {table.CurrentCustomerName}";
+                        if (!shouldBlink) tableText += $"\n\nCust: {table.CurrentCustomerName}";
                         break;
 
                     case "OVERSTAY":
                         btnTable.BackColor = Color.IndianRed;
                         btnTable.ForeColor = Color.White;
-                        tableText += $"\n\n⚠️ QUÁ GIỜ";
+                        if (!shouldBlink) tableText += $"\n\n⚠️ OVERSTAY";
                         break;
 
                     default:
@@ -183,10 +324,25 @@ namespace reservation_winforms.Forms
                         break;
                 }
 
+                if (_selectedTables.Any(t => t.TableId == table.TableId))
+                {
+                    btnTable.BackColor = Color.DodgerBlue;
+                }
+
                 btnTable.Text = tableText;
                 btnTable.Click += BtnTable_Click;
 
+                if (shouldBlink)
+                {
+                    _blinkingButtons.Add(btnTable);
+                }
+
                 flpTableMap.Controls.Add(btnTable);
+            }
+
+            if (hasBlinkingTables)
+            {
+                _blinkTimer.Start();
             }
         }
 
@@ -208,19 +364,18 @@ namespace reservation_winforms.Forms
                 }
                 else
                 {
-                    // FIX: Chỉ khi bấm OK mới thực hiện chọn bàn màu Cam
                     if (tableData.CurrentReservationStatus == "RESERVED")
                     {
                         string timeStr = tableData.CurrentReservationTime?.ToString("HH:mm") ?? "N/A";
                         DialogResult confirmResult = MessageBox.Show(
-                            $"Lưu ý: Bàn {tableData.TableId} đã có khách đặt lúc {timeStr}.\n" +
-                            "Hệ thống sẽ tự động giới hạn thời gian ăn của khách Walk-in để trả bàn kịp giờ.\n\n" +
-                            "Bạn có chắc chắn muốn chọn bàn này không?",
-                            "Bàn trống tạm thời",
+                            $"Note: Table {tableData.TableId} is reserved for {timeStr}.\n" +
+                            "The system will automatically limit the seating duration for Walk-in guests to clear the table on time.\n\n" +
+                            "Are you sure you want to select this table?",
+                            "Temporarily Available",
                             MessageBoxButtons.OKCancel,
                             MessageBoxIcon.Information);
 
-                        if (confirmResult != DialogResult.OK) return; // Thoát nếu không chọn OK
+                        if (confirmResult != DialogResult.OK) return;
                     }
 
                     _selectedTables.Add(tableData);
@@ -231,8 +386,8 @@ namespace reservation_winforms.Forms
             }
             else
             {
-                MessageBox.Show($"Bàn {tableData.TableId} hiện đang có khách ngồi (Occupied/Overstay), không thể chọn!",
-                    "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Table {tableData.TableId} is currently occupied/overstaying. Cannot be selected!",
+                    "Notification", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -240,13 +395,13 @@ namespace reservation_winforms.Forms
         {
             if (_selectedTables.Count == 0)
             {
-                lblSelectedTable.Text = "Chưa chọn bàn";
+                lblSelectedTable.Text = "No table selected";
                 lblSelectedTable.ForeColor = Color.FromArgb(41, 128, 185);
             }
             else
             {
                 var selectedIds = _selectedTables.Select(t => t.TableId).OrderBy(id => id);
-                lblSelectedTable.Text = $"Bàn: {string.Join(", ", selectedIds)}";
+                lblSelectedTable.Text = $"Table: {string.Join(", ", selectedIds)}";
                 lblSelectedTable.ForeColor = Color.MediumSeaGreen;
             }
         }
@@ -255,37 +410,31 @@ namespace reservation_winforms.Forms
         {
             try
             {
-                // KHÓA NÚT KHI VỪA BẤM
                 btnSeatWalkIn.Enabled = false;
-                btnSeatWalkIn.Text = "ĐANG XỬ LÝ...";
+                btnSeatWalkIn.Text = "PROCESSING...";
 
                 int guests = (int)nudGuestCount.Value;
                 List<long> finalTableIdsToSuggest = null;
 
-                // KỊCH BẢN 1: LỄ TÂN ĐÃ TỰ CLICK CHỌN BÀN TRÊN SƠ ĐỒ
                 if (_selectedTables.Count > 0)
                 {
                     finalTableIdsToSuggest = _selectedTables.Select(t => t.TableId).ToList();
                 }
-                // KỊCH BẢN 2: LỄ TÂN CHƯA CHỌN BÀN -> GỌI API LẤY GỢI Ý
                 else
                 {
                     var optionsRes = await _reservationService.GetWalkInOptionsAsync(guests);
 
                     if (!optionsRes.IsSuccess || optionsRes.Data.Groups == null || optionsRes.Data.Groups.Count == 0)
                     {
-                        MessageBox.Show("Nhà hàng hiện đã hết bàn trống hoặc không có tổ hợp bàn ghép nào phù hợp cho số lượng khách này.", "Hết bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return; // Thoát hàm -> Sẽ nhảy thẳng xuống khối finally để mở khóa nút
+                        MessageBox.Show("There are no available tables or combinable tables suitable for this party size.", "No Tables", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
                     }
 
-                    // Hiển thị Popup danh sách phương án cho Lễ tân chọn
                     finalTableIdsToSuggest = ShowOptionsDialog(optionsRes.Data, guests);
 
-                    // Lễ tân tắt Popup hoặc bấm Cancel
                     if (finalTableIdsToSuggest == null) return;
                 }
 
-                // --- BƯỚC TIẾP THEO: GỌI API SUGGEST ĐỂ SOFT-LOCK BÀN LẠI ---
                 var request = new WalkInRequest
                 {
                     GuestCount = guests,
@@ -297,24 +446,23 @@ namespace reservation_winforms.Forms
 
                 if (!suggestRes.IsSuccess)
                 {
-                    MessageBox.Show(suggestRes.Message, "Không thể giữ bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(suggestRes.Message, "Cannot hold table", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     await LoadTableData();
                     return;
                 }
 
-                // --- BƯỚC CUỐI: XÁC NHẬN CHÍNH THỨC (CONFIRM) VỚI KHÁCH ---
                 var suggestion = suggestRes.Data;
                 string tableList = string.Join(", ", suggestion.SuggestedTables.Select(t => t.TableId));
-                string typeText = suggestion.AvailabilityType.Contains("PARTIAL") ? "⚠️ TRỐNG TẠM THỜI (Vướng lịch đặt sau)" : "✅ TRỐNG HOÀN TOÀN";
+                string typeText = suggestion.AvailabilityType.Contains("PARTIAL") ? "⚠️ TEMPORARILY AVAILABLE (Pending later reservation)" : "✅ FULLY AVAILABLE";
 
-                string confirmMsg = $"[THÔNG TIN CHỐT XẾP BÀN]\n\n" +
-                                    $"Bàn: {tableList} (Sức chứa {suggestion.SuggestedTables.Sum(t => t.Capacity)} chỗ)\n" +
-                                    $"Loại bàn: {typeText}\n" +
-                                    $"Thời gian khách ngồi: Từ {suggestion.StartTime:HH:mm} đến {suggestion.EndTime:HH:mm}\n\n" +
-                                    $"*Hệ thống đang khóa tạm bàn này đến {suggestion.LockExpiresAt:HH:mm:ss}.\n" +
-                                    $"Khách hàng có đồng ý không?";
+                string confirmMsg = $"[SEATING CONFIRMATION]\n\n" +
+                                    $"Tables: {tableList} (Capacity: {suggestion.SuggestedTables.Sum(t => t.Capacity)} seats)\n" +
+                                    $"Type: {typeText}\n" +
+                                    $"Duration: From {suggestion.StartTime:HH:mm} to {suggestion.EndTime:HH:mm}\n\n" +
+                                    $"*System is temporarily locking this table for {_softLockMinutes} mins (until {suggestion.LockExpiresAt:HH:mm:ss}).\n" +
+                                    $"Does the customer agree?";
 
-                DialogResult result = MessageBox.Show(confirmMsg, "Xác nhận chốt đơn", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                DialogResult result = MessageBox.Show(confirmMsg, "Confirm Order", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
 
                 if (result == DialogResult.OK)
                 {
@@ -322,39 +470,37 @@ namespace reservation_winforms.Forms
 
                     if (confirmRes.IsSuccess)
                     {
-                        MessageBox.Show("Xếp bàn thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Table seated successfully!", "Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
                     {
-                        MessageBox.Show(confirmRes.Message, "Lỗi chốt đơn", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(confirmRes.Message, "Confirmation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
                 else
                 {
                     await _reservationService.CancelWalkInSuggestionAsync(suggestion.SuggestionId);
-                    MessageBox.Show("Đã hủy gợi ý xếp bàn.", "Đã hủy", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Seating suggestion canceled.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
+                _selectedTables.Clear();
+                UpdateSelectedTableLabel();
                 await LoadTableData();
             }
             finally
             {
-                // BÙA HỘ MỆNH: LUÔN TRẢ LẠI TRẠNG THÁI NÚT VỀ BAN ĐẦU
                 btnSeatWalkIn.Enabled = true;
-                btnSeatWalkIn.Text = "XẾP BÀN (WALK-IN)";
+                btnSeatWalkIn.Text = "SEAT WALK-IN";
             }
         }
 
-        // =========================================================================
-        // HÀM VẼ GIAO DIỆN POPUP CHỌN PHƯƠNG ÁN (KHÔNG CẦN DÙNG TỚI DESIGNER)
-        // =========================================================================
         private List<long> ShowOptionsDialog(WalkInOptionResponse data, int guestCount)
         {
             List<long> selectedIds = null;
 
             Form popup = new Form
             {
-                Text = $"Danh sách phương án xếp bàn cho {guestCount} khách",
+                Text = $"Table suggestions for {guestCount} guests",
                 Size = new Size(550, 500),
                 StartPosition = FormStartPosition.CenterParent,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
@@ -373,7 +519,6 @@ namespace reservation_winforms.Forms
             };
             popup.Controls.Add(flp);
 
-            // Vẽ từng nhóm (Ưu tiên, Dự phòng)
             foreach (var group in data.Groups)
             {
                 Label lblGroup = new Label
@@ -382,18 +527,17 @@ namespace reservation_winforms.Forms
                     Font = new Font("Segoe UI", 12, FontStyle.Bold),
                     AutoSize = true,
                     Margin = new Padding(0, 10, 0, 5),
-                    ForeColor = group.GroupName.Contains("Ưu tiên") ? Color.MediumSeaGreen : Color.Orange
+                    ForeColor = group.GroupName.Contains("Priority") ? Color.MediumSeaGreen : Color.Orange
                 };
                 flp.Controls.Add(lblGroup);
 
-                // Vẽ từng Option trong nhóm đó dưới dạng Nút bấm
                 foreach (var opt in group.Options)
                 {
                     string tableStr = string.Join(", ", opt.TableIds);
-                    string typeStr = opt.TableIds.Count > 1 ? "Ghép bàn" : "Bàn đơn";
-                    string limitStr = opt.AvailableUntil.HasValue ? $" | Phải trả bàn lúc: {opt.AvailableUntil.Value:HH:mm}" : "";
+                    string typeStr = opt.TableIds.Count > 1 ? "Combined" : "Single";
+                    string limitStr = opt.AvailableUntil.HasValue ? $" | Must leave by: {opt.AvailableUntil.Value:HH:mm}" : "";
 
-                    string btnText = $"Bàn {tableStr} ({opt.TotalCapacity} chỗ) - {typeStr}{limitStr}";
+                    string btnText = $"Table {tableStr} ({opt.TotalCapacity} pax) - {typeStr}{limitStr}";
 
                     Button btnOpt = new Button
                     {
@@ -407,10 +551,8 @@ namespace reservation_winforms.Forms
                         Font = new Font("Segoe UI", 10, FontStyle.Regular)
                     };
 
-                    // Trang trí viền nút theo loại
                     btnOpt.FlatAppearance.BorderColor = opt.AvailableUntil.HasValue ? Color.Orange : Color.LightGray;
 
-                    // Gắn sự kiện: Bấm vào option nào thì bắt ID của option đó và tắt Form
                     btnOpt.Click += (s, e) =>
                     {
                         selectedIds = opt.TableIds;
@@ -423,7 +565,7 @@ namespace reservation_winforms.Forms
             }
 
             popup.ShowDialog();
-            return selectedIds; // Trả về List ID bàn Lễ tân vừa bấm chọn
+            return selectedIds;
         }
 
     }

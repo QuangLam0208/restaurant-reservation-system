@@ -4,6 +4,7 @@ import com.hcmute.reservation.model.dto.table.AvailableWindowResponse;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.service.AvailabilityApiService;
+import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.TableAvailabilityService;
 import com.hcmute.reservation.strategy.TableAllocationStrategy;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,17 +29,12 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
 
     private final TableAvailabilityService tableAvailabilityService;
     private final List<TableAllocationStrategy> allocationStrategies;
-
-    @Value("${reservation.duration-minutes:120}")
-    private int durationMinutes;
-
-    @Value("${reservation.buffer-minutes:10}")
-    private int bufferMinutes;
+    private final ConfigProviderService configProvider;
 
     @Override
     public Map<String, Boolean> checkSlotsAvailability(LocalDate date, int guests, List<LocalTime> slots) {
         Map<String, Boolean> result = new LinkedHashMap<>();
-        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         for (LocalTime slot : slots) {
             LocalDateTime start = LocalDateTime.of(date, slot);
             String timeStr = slot.format(formatter);
@@ -86,6 +83,8 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
     }
 
     private List<TableInfo> findSelectedTables(LocalDateTime start, int guests) {
+        int durationMinutes = configProvider.getDurationMinutes();
+
         LocalDateTime end = start.plusMinutes(durationMinutes);
         List<TableInfo> allFree = tableAvailabilityService.getFreeTables(start, end);
 
@@ -102,6 +101,9 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
     @Override
     @Cacheable(value = "availableWindows", key = "#guests + '_' + #time")
     public List<AvailableWindowResponse> getAvailableWindows(int guests, LocalDateTime time) {
+        int durationMinutes = configProvider.getDurationMinutes();
+        int bufferMinutes = configProvider.getBufferMinutes();
+
         validateAvailableWindowRequest(guests, time);
 
         // GỌI CORE SERVICE lấy bàn trống hiện tại

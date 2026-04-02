@@ -11,7 +11,7 @@ namespace reservation_winforms.Forms
     {
         private readonly TableService _tableService;
         private List<TableResponse> _tables = new List<TableResponse>();
-        private int _currentTableVersion = 0; // Để truyền vào lúc Update chống conflict
+        private int _currentTableVersion = 0;
 
         public UcTableSetup()
         {
@@ -31,12 +31,11 @@ namespace reservation_winforms.Forms
 
         private void SetupDataGridView()
         {
-            dgvTables.Columns.Add("TableId", "Mã Bàn");
-            dgvTables.Columns.Add("Capacity", "Sức Chứa (Người)");
-            dgvTables.Columns.Add("Status", "Tình trạng sử dụng");
-            dgvTables.Columns.Add("IsActive", "Trạng thái hoạt động");
+            dgvTables.Columns.Add("TableId", "Table ID");
+            dgvTables.Columns.Add("Capacity", "Capacity (Pax)");
+            dgvTables.Columns.Add("Status", "Usage Status");
+            dgvTables.Columns.Add("IsActive", "Operating Status");
 
-            // Style DataGridView cho đẹp
             dgvTables.EnableHeadersVisualStyles = false;
             dgvTables.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(41, 128, 185);
             dgvTables.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
@@ -54,20 +53,19 @@ namespace reservation_winforms.Forms
                 dgvTables.Rows.Clear();
                 foreach (var t in _tables)
                 {
-                    string activeText = t.IsActive ? "Đang mở" : "Đã tắt (Vô hiệu hóa)";
+                    string activeText = t.IsActive ? "Open" : "Disabled (Inactive)";
                     dgvTables.Rows.Add(t.TableId, t.Capacity, t.Status, activeText);
 
-                    // Đổi màu dòng bị tắt cho dễ nhìn
                     if (!t.IsActive)
                     {
                         dgvTables.Rows[dgvTables.Rows.Count - 1].DefaultCellStyle.ForeColor = Color.DarkGray;
                     }
                 }
-                BtnClear_Click(null, null); // Reset form sau khi tải xong
+                BtnClear_Click(null, null);
             }
             else
             {
-                MessageBox.Show(res.Message, "Lỗi tải dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(res.Message, "Data Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -82,11 +80,11 @@ namespace reservation_winforms.Forms
                     txtTableId.Text = table.TableId.ToString();
                     numCapacity.Value = table.Capacity;
                     chkIsActive.Checked = table.IsActive;
-                    _currentTableVersion = table.Version; // Lưu lại Version hiện tại của DB
+                    _currentTableVersion = table.Version;
 
-                    btnSave.Enabled = false; // Đã chọn bàn cũ thì không cho Thêm mới
+                    btnSave.Enabled = false;
                     btnUpdate.Enabled = true;
-                    btnDelete.Enabled = table.IsActive; // Nếu đang tắt thì không cho bấm nút Vô hiệu hóa nữa
+                    btnDelete.Enabled = table.IsActive;
                 }
             }
         }
@@ -94,7 +92,7 @@ namespace reservation_winforms.Forms
         private void BtnClear_Click(object sender, EventArgs e)
         {
             txtTableId.Text = "";
-            numCapacity.Value = 4;
+            numCapacity.Value = 4; // Default to 4 pax
             chkIsActive.Checked = true;
             _currentTableVersion = 0;
 
@@ -111,10 +109,10 @@ namespace reservation_winforms.Forms
 
             if (res.IsSuccess)
             {
-                MessageBox.Show(res.Message, "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(res.Message, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 await LoadDataAsync();
             }
-            else MessageBox.Show(res.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else MessageBox.Show(res.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private async void BtnUpdate_Click(object sender, EventArgs e)
@@ -124,34 +122,34 @@ namespace reservation_winforms.Forms
             {
                 Capacity = (int)numCapacity.Value,
                 IsActive = chkIsActive.Checked,
-                Version = _currentTableVersion // Truyền Version lên để Backend kiểm tra Optimistic Locking
+                Version = _currentTableVersion
             };
 
             var res = await _tableService.UpdateTableAsync(id, req);
 
             if (res.IsSuccess)
             {
-                MessageBox.Show(res.Message, "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(res.Message, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 await LoadDataAsync();
             }
-            else MessageBox.Show(res.Message, "Lỗi cập nhật", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else MessageBox.Show(res.Message, "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private async void BtnDelete_Click(object sender, EventArgs e)
         {
             long id = Convert.ToInt64(txtTableId.Text);
-            var confirm = MessageBox.Show($"Bạn có chắc muốn VÔ HIỆU HÓA Bàn số {id} không?\nKhách sẽ không thể đặt bàn này nữa.",
-                                          "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var confirm = MessageBox.Show($"Are you sure you want to DISABLE Table #{id}?\nCustomers will no longer be able to book this table.",
+                                          "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (confirm == DialogResult.Yes)
             {
                 var res = await _tableService.DeleteTableAsync(id);
                 if (res.IsSuccess)
                 {
-                    MessageBox.Show(res.Message, "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(res.Message, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     await LoadDataAsync();
                 }
-                else MessageBox.Show(res.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                else MessageBox.Show(res.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
     }

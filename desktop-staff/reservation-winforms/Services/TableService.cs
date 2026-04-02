@@ -12,33 +12,25 @@ namespace reservation_winforms.Services
 {
     public class TableService
     {
-        // =========================================================
-        // HÀM HELPER: Bóc tách JSON lấy đúng câu thông báo lỗi
-        // =========================================================
         private string GetErrorMessage(string jsonContent)
         {
             try
             {
-                // Phân tích chuỗi JSON
+                if (string.IsNullOrWhiteSpace(jsonContent)) return "Lỗi không xác định từ máy chủ.";
+
                 var jObject = JObject.Parse(jsonContent);
-                // Nếu có trường "message" thì chỉ lấy đúng trường đó
-                if (jObject["message"] != null)
-                {
-                    return jObject["message"].ToString();
-                }
+
+                if (jObject["message"] != null) return jObject["message"].ToString();
+
+                if (jObject["error"] != null) return jObject["error"].ToString();
             }
             catch
             {
-                // Bỏ qua lỗi nếu chuỗi trả về không phải là định dạng JSON hợp lệ
+                if (jsonContent.Length > 100) return jsonContent.Substring(0, 100) + "...";
             }
 
-            // Trả về nguyên gốc nếu không móc được "message"
             return jsonContent;
         }
-
-        // =========================================================
-        // CÁC HÀM GỌI API
-        // =========================================================
 
         // Hàm gọi API lấy danh sách sơ đồ bàn (Floor Map)
         public async Task<(bool IsSuccess, List<FloorMapTableResponse> Data, string Message)> GetFloorMapAsync()

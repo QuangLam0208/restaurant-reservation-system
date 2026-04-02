@@ -1,8 +1,7 @@
 package com.hcmute.reservation.controller;
 
 import com.hcmute.reservation.model.dto.reservation.*;
-import com.hcmute.reservation.service.AvailabilityApiService;
-import com.hcmute.reservation.service.ReservationService;
+import com.hcmute.reservation.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,6 +22,9 @@ public class ReservationController {
 
     private final ReservationService reservationService;
     private final AvailabilityApiService availabilityApiService;
+    private final OnlineBookingService onlineBookingService;
+    private final InHouseService inHouseService;
+    private final WalkInService walkInService;
 
     /** GET /api/reservations/availability?date=&time=&guests= */
     @GetMapping("/availability")
@@ -49,7 +51,7 @@ public class ReservationController {
             Authentication auth) {
         Long customerId = (auth.getDetails() instanceof Number n) ? n.longValue() : null;
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(reservationService.createOnlineReservation(req, customerId));
+                .body(onlineBookingService.createOnlineReservation(req, customerId));
     }
 
     /** GET /api/reservations/my */
@@ -85,20 +87,20 @@ public class ReservationController {
             @PathVariable Long id, Authentication auth) {
         // auth.getDetails() là Long cho CUSTOMER token; null cho STAFF token
         Long customerId = (auth.getDetails() instanceof Long id2) ? id2 : null;
-        reservationService.cancelReservation(id, customerId);
+        inHouseService.cancelReservation(id, customerId);
         return ResponseEntity.ok(Map.of("message", "Đơn đặt bàn đã được hủy thành công."));
     }
 
     /** POST /api/reservations/{id}/payment/confirm */
     @PostMapping("/{id}/payment/confirm")
     public ResponseEntity<ReservationResponse> confirmPayment(@PathVariable Long id) {
-        return ResponseEntity.ok(reservationService.confirmPayment(id));
+        return ResponseEntity.ok(onlineBookingService.confirmPayment(id));
     }
 
     /** POST /api/reservations/{id}/payment/cancel */
     @PostMapping("/{id}/payment/cancel")
     public ResponseEntity<ReservationResponse> cancelPayment(@PathVariable Long id) {
-        return ResponseEntity.ok(reservationService.cancelPayment(id));
+        return ResponseEntity.ok(onlineBookingService.cancelPayment(id));
     }
 
     /**
@@ -108,7 +110,7 @@ public class ReservationController {
     @GetMapping("/walk-in/options")
     public ResponseEntity<WalkInOptionResponse> getWalkInOptions(
             @RequestParam int guestCount) {
-        return ResponseEntity.ok(reservationService.getWalkInOptions(guestCount));
+        return ResponseEntity.ok(walkInService.getWalkInOptions(guestCount));
     }
 
     /**
@@ -118,7 +120,7 @@ public class ReservationController {
     @PostMapping("/walk-in/suggest")
     public ResponseEntity<WalkInSuggestionResponse> suggestWalkIn(
             @Valid @RequestBody WalkInRequest req) {
-        return ResponseEntity.ok(reservationService.suggestWalkIn(req));
+        return ResponseEntity.ok(walkInService.suggestWalkIn(req));
     }
 
     /**
@@ -129,7 +131,7 @@ public class ReservationController {
     public ResponseEntity<ReservationResponse> confirmWalkIn(
             @PathVariable Long suggestionId) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(reservationService.confirmWalkIn(suggestionId));
+                .body(walkInService.confirmWalkIn(suggestionId));
     }
 
     /**
@@ -140,7 +142,7 @@ public class ReservationController {
     @PostMapping("/walk-in/cancel-suggestion/{suggestionId}")
     public ResponseEntity<Map<String, String>> cancelWalkInSuggestion(
             @PathVariable Long suggestionId) {
-        reservationService.cancelWalkInSuggestion(suggestionId);
+        walkInService.cancelWalkInSuggestion(suggestionId);
         return ResponseEntity.ok(Map.of("message", "Da huy goi y ban thanh cong."));
     }
 
@@ -149,19 +151,19 @@ public class ReservationController {
     public ResponseEntity<ReservationResponse> changeTable(
             @PathVariable Long id,
             @Valid @RequestBody ChangeTableRequest req) {
-        return ResponseEntity.ok(reservationService.changeTable(id, req));
+        return ResponseEntity.ok(inHouseService.changeTable(id, req));
     }
 
     /** POST /api/reservations/{id}/check-in */
     @PostMapping("/{id}/check-in")
     public ResponseEntity<ReservationResponse> checkIn(@PathVariable Long id) {
-        return ResponseEntity.ok(reservationService.checkIn(id));
+        return ResponseEntity.ok(inHouseService.checkIn(id));
     }
 
     /** POST /api/reservations/{id}/check-out */
     @PostMapping("/{id}/check-out")
     public ResponseEntity<ReservationResponse> checkOut(@PathVariable Long id) {
-        return ResponseEntity.ok(reservationService.checkOut(id, 10));
+        return ResponseEntity.ok(inHouseService.checkOut(id));
     }
 
 }

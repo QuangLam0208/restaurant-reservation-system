@@ -53,4 +53,11 @@ public class Waitlist {
     public void skip() {
         this.status = WaitlistStatus.SKIPPED;
     }
+
+    public void markAsMissing() {
+        this.status = WaitlistStatus.MISSING;
+    }
+
+    // Khách quay lại sau khi bị đánh dấu vắng mặt → WAITING
+    public void revertToWaiting() { this.status = WaitlistStatus.WAITING; }
 }

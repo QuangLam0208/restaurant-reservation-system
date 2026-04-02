@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -55,10 +57,10 @@ public class EmailServiceImpl implements EmailService{
     }
 
     @Override
-    public void sendReservationConfirmationEmail(String toEmail, String customerName, Long reservationId, java.time.LocalDateTime startTime) {
+    public void sendReservationConfirmationEmail(String toEmail, String customerName, Long reservationId, LocalDateTime startTime) {
         String subject = "Xác nhận đặt bàn thành công - San-Lorenzo Restaurant";
 
-        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
         String startTimeFormatted = startTime.format(formatter);
 
         String body = String.format("Chào %s,\n\nChúc mừng bạn đã đặt bàn thành công tại San-Lorenzo!\n\n" +
@@ -67,6 +69,17 @@ public class EmailServiceImpl implements EmailService{
                 "Hẹn gặp lại bạn sớm.\nTrân trọng.", customerName, reservationId, startTimeFormatted);
 
         sendCustomEmail(toEmail, subject, body);
+    }
+
+    @Override
+    public void sendEmailChangeAlert(String oldEmail, String newEmail) {
+        String subject = "Cảnh báo bảo mật: Thay đổi địa chỉ email";
+        String body = String.format(
+                "Chào bạn,\n\nTài khoản của bạn vừa yêu cầu đổi địa chỉ email sang: %s.\n" +
+                "Nếu bạn không thực hiện yêu cầu này, vui lòng liên hệ ngay với bộ phận hỗ trợ của chúng tôi để bảo mật tài khoản.\n\n" +
+                "Trân trọng,\nSan-Lorenzo Restaurant", newEmail
+        );
+        sendCustomEmail(oldEmail, subject, body);
     }
 
     // --- CÁC HÀM PRIVATE PHỤ TRỢ ---

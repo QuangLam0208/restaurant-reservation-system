@@ -1,6 +1,10 @@
-﻿using reservation_winforms.Services;
+﻿using reservation_winforms.DTO.report;
+using reservation_winforms.Services;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -10,93 +14,232 @@ namespace reservation_winforms.Forms
     {
         private readonly ReportService _reportService;
 
+        private List<DailyReservationReport> _currentReportData;
+        private NoShowRateResponse _currentRateData;
+
         public UcReports()
         {
             InitializeComponent();
             _reportService = new ReportService();
 
-            // Cài đặt ngày mặc định: Từ đầu tháng đến hôm nay
-            dtpFrom.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            dtpTo.Value = DateTime.Now;
+            dtpFromDate.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            dtpToDate.Value = DateTime.Now;
 
-            // Xóa rác biểu đồ lúc thiết kế
+            dtpFromMonth.Value = new DateTime(DateTime.Now.Year, 1, 1);
+            dtpToMonth.Value = DateTime.Now;
+
+            numFromYear.Value = DateTime.Now.Year - 3;
+            numToYear.Value = DateTime.Now.Year;
+
+            chartReservations.Series.Clear();
+            dtpFromDate.ValueChanged += DtpFromDate_ValueChanged;
+            dtpFromMonth.ValueChanged += DtpFromMonth_ValueChanged;
+            numFromYear.ValueChanged += NumFromYear_ValueChanged;
+
+            DtpFromDate_ValueChanged(null, null);
+            DtpFromMonth_ValueChanged(null, null);
+            NumFromYear_ValueChanged(null, null);
+
+            Series sWalkIn = new Series("Walk-in Reservations");
+            sWalkIn.ChartType = SeriesChartType.StackedColumn;
+            sWalkIn.Color = Color.FromArgb(39, 174, 96);
+            sWalkIn.IsValueShownAsLabel = true;
+
+            Series sOnline = new Series("Online Reservations (Success)");
+            sOnline.ChartType = SeriesChartType.StackedColumn;
+            sOnline.Color = Color.FromArgb(41, 128, 185);
+            sOnline.IsValueShownAsLabel = true;
+
+            Series sNoShow = new Series("No-Show Guests");
+            sNoShow.ChartType = SeriesChartType.StackedColumn;
+            sNoShow.Color = Color.FromArgb(243, 156, 18);
+            sNoShow.IsValueShownAsLabel = true;
+
+            chartReservations.Series.Add(sWalkIn);
+            chartReservations.Series.Add(sOnline);
+            chartReservations.Series.Add(sNoShow);
+
             chartReservations.Series[0].Points.Clear();
+            chartReservations.ChartAreas[0].AxisX.Title = "Time";
+            chartReservations.ChartAreas[0].AxisX.TitleFont = new Font("Segoe UI", 12, FontStyle.Bold);
+            chartReservations.ChartAreas[0].AxisY.Title = "Number of Reservations";
+            chartReservations.ChartAreas[0].AxisY.TitleFont = new Font("Segoe UI", 12, FontStyle.Bold);
 
             btnFilter.Click += BtnFilter_Click;
+            tabFilter.SizeMode = TabSizeMode.Fixed;
+            tabFilter.ItemSize = new Size((tabFilter.Width / tabFilter.TabCount) - 2, 35);
 
-            // Tự động load dữ liệu khi vừa mở tab
-            this.Load += async (s, e) => await LoadReportDataAsync();
+            if (btnExportExcel != null)
+            {
+                btnExportExcel.Click += BtnExportExcel_Click;
+            }
+
+            this.Load += async (s, e) => await ExecuteFilterAsync();
+        }
+
+        private void DtpFromDate_ValueChanged(object sender, EventArgs e)
+        {
+            DateTime from = dtpFromDate.Value;
+            dtpToDate.MinDate = new DateTime(1753, 1, 1);
+            dtpToDate.MaxDate = new DateTime(9998, 12, 31);
+            dtpToDate.MinDate = from;
+            dtpToDate.MaxDate = new DateTime(from.Year, from.Month, DateTime.DaysInMonth(from.Year, from.Month));
+        }
+
+        private void DtpFromMonth_ValueChanged(object sender, EventArgs e)
+        {
+            DateTime from = dtpFromMonth.Value;
+            dtpToMonth.MinDate = new DateTime(1753, 1, 1);
+            dtpToMonth.MaxDate = new DateTime(9998, 12, 31);
+            dtpToMonth.MinDate = from;
+            dtpToMonth.MaxDate = new DateTime(from.Year, 12, 31);
+        }
+
+        private void NumFromYear_ValueChanged(object sender, EventArgs e)
+        {
+            numToYear.Minimum = numFromYear.Value;
         }
 
         private async void BtnFilter_Click(object sender, EventArgs e)
         {
-            await LoadReportDataAsync();
+            await ExecuteFilterAsync();
         }
 
-        private async System.Threading.Tasks.Task LoadReportDataAsync()
+        private async System.Threading.Tasks.Task ExecuteFilterAsync()
         {
-            if (dtpFrom.Value.Date > dtpTo.Value.Date)
-            {
-                MessageBox.Show("Ngày bắt đầu không được lớn hơn ngày kết thúc!", "Lỗi bộ lọc", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             try
             {
-                // Khóa nút lọc
                 btnFilter.Enabled = false;
-                btnFilter.Text = "ĐANG TẢI...";
+                btnFilter.Text = "LOADING...";
 
-                DateTime from = dtpFrom.Value.Date;
-                DateTime to = dtpTo.Value.Date;
+                _currentReportData = null;
+                _currentRateData = null;
 
-                // GỌI API 1: LẤY TỶ LỆ NO-SHOW (Cho 3 Thẻ phía trên)
-                var noShowRes = await _reportService.GetNoShowRateAsync(from, to);
-                if (noShowRes.IsSuccess && noShowRes.Data != null)
+                (bool IsSuccess, List<DailyReservationReport> Data, string Message) chartRes = (false, null, "");
+                (bool IsSuccess, NoShowRateResponse Data, string Message) rateRes = (false, null, "");
+
+                string xLabelFormat = "dd/MM";
+
+                if (tabFilter.SelectedTab == tabPageDate)
                 {
-                    lblTotal.Text = noShowRes.Data.TotalReservations.ToString();
-                    lblNoShow.Text = noShowRes.Data.NoShowCount.ToString();
-                    lblRate.Text = $"{noShowRes.Data.NoShowRate}%";
+                    string fromStr = dtpFromDate.Value.ToString("yyyy-MM-dd");
+                    string toStr = dtpToDate.Value.ToString("yyyy-MM-dd");
 
-                    // Đổi màu tỷ lệ: > 15% thì báo động Đỏ
-                    lblRate.ForeColor = noShowRes.Data.NoShowRate > 15 ? Color.FromArgb(231, 76, 60) : Color.FromArgb(46, 204, 113);
+                    chartRes = await _reportService.GetReservationsByDateAsync(fromStr, toStr);
+                    rateRes = await _reportService.GetNoShowRateAsync(fromStr, toStr);
+                    xLabelFormat = "dd/MM";
                 }
-                else
+                else if (tabFilter.SelectedTab == tabPageMonth)
                 {
-                    MessageBox.Show(noShowRes.Message, "Lỗi lấy Tỷ lệ No-Show", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    string fromStr = dtpFromMonth.Value.ToString("yyyy-MM");
+                    string toStr = dtpToMonth.Value.ToString("yyyy-MM");
+
+                    chartRes = await _reportService.GetReservationsByMonthAsync(fromStr, toStr);
+                    rateRes = await _reportService.GetNoShowRateByMonthAsync(fromStr, toStr);
+                    xLabelFormat = "MM/yyyy";
+                }
+                else if (tabFilter.SelectedTab == tabPageYear)
+                {
+                    string fromStr = numFromYear.Value.ToString();
+                    string toStr = numToYear.Value.ToString();
+
+                    chartRes = await _reportService.GetReservationsByYearAsync(fromStr, toStr);
+                    rateRes = await _reportService.GetNoShowRateByYearAsync(fromStr, toStr);
+                    xLabelFormat = "yyyy";
                 }
 
-                // GỌI API 2: LẤY DỮ LIỆU VẼ BIỂU ĐỒ
-                var chartRes = await _reportService.GetReservationsByDateAsync(from, to);
+                if (rateRes.IsSuccess && rateRes.Data != null)
+                {
+                    _currentRateData = rateRes.Data;
+                    lblTotalAll.Text = rateRes.Data.TotalAll.ToString();
+                    lblTotalOnline.Text = rateRes.Data.TotalOnline.ToString();
+                    lblTotalWalkIn.Text = rateRes.Data.TotalWalkIn.ToString();
+                    lblNoShow.Text = rateRes.Data.NoShowCount.ToString();
+                    lblRate.Text = $"{rateRes.Data.NoShowRate}%";
+
+                    lblRate.ForeColor = rateRes.Data.NoShowRate > 15 ? Color.FromArgb(231, 76, 60) : Color.FromArgb(46, 204, 113);
+                }
+                else MessageBox.Show(rateRes.Message, "Error fetching No-Show Rate", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
                 if (chartRes.IsSuccess && chartRes.Data != null)
                 {
-                    // Vẽ biểu đồ
-                    chartReservations.Series[0].Points.Clear();
+                    _currentReportData = chartRes.Data;
+                    chartReservations.Series["Walk-in Reservations"].Points.Clear();
+                    chartReservations.Series["Online Reservations (Success)"].Points.Clear();
+                    chartReservations.Series["No-Show Guests"].Points.Clear();
+
                     foreach (var item in chartRes.Data)
                     {
-                        // Chuyển "2026-03-31" thành "31/03" cho dễ nhìn
-                        DateTime dt = DateTime.Parse(item.Date);
-                        string displayDate = dt.ToString("dd/MM");
+                        string displayLabel = item.Date;
+                        if (item.Date.Length == 10) displayLabel = DateTime.Parse(item.Date).ToString(xLabelFormat);
+                        else if (item.Date.Length == 7) displayLabel = DateTime.Parse(item.Date + "-01").ToString(xLabelFormat);
 
-                        DataPoint point = new DataPoint();
-                        point.SetValueXY(displayDate, item.Count);
+                        long walkIn = item.TotalWalkIn;
+                        long noShow = item.NoShowCount;
+                        long onlineSuccess = item.TotalOnline - noShow;
 
-                        // Đổi màu cột nếu ngày đó không có đơn nào
-                        if (item.Count == 0) point.Color = Color.LightGray;
+                        chartReservations.Series["Walk-in Reservations"].Points.AddXY(displayLabel, walkIn);
+                        chartReservations.Series["Online Reservations (Success)"].Points.AddXY(displayLabel, onlineSuccess);
+                        chartReservations.Series["No-Show Guests"].Points.AddXY(displayLabel, noShow);
 
-                        chartReservations.Series[0].Points.Add(point);
+                        int lastIdx = chartReservations.Series["Walk-in Reservations"].Points.Count - 1;
+                        chartReservations.Series["Walk-in Reservations"].Points[lastIdx].IsValueShownAsLabel = (walkIn > 0);
+                        chartReservations.Series["Online Reservations (Success)"].Points[lastIdx].IsValueShownAsLabel = (onlineSuccess > 0);
+                        chartReservations.Series["No-Show Guests"].Points[lastIdx].IsValueShownAsLabel = (noShow > 0);
                     }
                 }
-                else
-                {
-                    MessageBox.Show(chartRes.Message, "Lỗi lấy dữ liệu Biểu đồ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                else MessageBox.Show(chartRes.Message, "Error rendering chart", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
-                // Xả khóa nút lọc
                 btnFilter.Enabled = true;
-                btnFilter.Text = "🔍 LỌC DỮ LIỆU";
+                btnFilter.Text = "FILTER DATA";
+            }
+        }
+
+        private void BtnExportExcel_Click(object sender, EventArgs e)
+        {
+            if (_currentReportData == null || _currentReportData.Count == 0 || _currentRateData == null)
+            {
+                MessageBox.Show("There is no report data to export!", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel CSV File|*.csv", FileName = $"Statistics_Report_{DateTime.Now:ddMMyyyy}.csv" })
+            {
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.Append('\uFEFF');
+
+                        sb.AppendLine("1. REPORT OVERVIEW");
+                        sb.AppendLine($"Total Reservations:,\"{_currentRateData.TotalAll}\"");
+                        sb.AppendLine($"Online Reservations:,\"{_currentRateData.TotalOnline}\"");
+                        sb.AppendLine($"Walk-in Reservations:,\"{_currentRateData.TotalWalkIn}\"");
+                        sb.AppendLine($"No-Show Guests:,\"{_currentRateData.NoShowCount}\"");
+                        sb.AppendLine($"No-Show Rate:,\"{_currentRateData.NoShowRate}%\"");
+                        sb.AppendLine();
+                        sb.AppendLine();
+
+                        sb.AppendLine("2. DETAILS BY TIME");
+                        sb.AppendLine("Time,Total Reservations,Walk-in Reservations,Online Reservations,No-Show Guests");
+
+                        foreach (var item in _currentReportData)
+                        {
+                            long total = item.TotalWalkIn + item.TotalOnline;
+                            sb.AppendLine($"\"{item.Date}\",\"{total}\",\"{item.TotalWalkIn}\",\"{item.TotalOnline}\",\"{item.NoShowCount}\"");
+                        }
+
+                        File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
+                        MessageBox.Show("Report exported to Excel successfully!", "Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error exporting file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
             }
         }
     }

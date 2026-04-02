@@ -34,22 +34,24 @@
             // 
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
-            this.lblTitle.Location = new System.Drawing.Point(0, 30);
+            this.lblTitle.Location = new System.Drawing.Point(0, 46);
+            this.lblTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(400, 40);
+            this.lblTitle.Size = new System.Drawing.Size(600, 62);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "ĐĂNG KÝ TÀI KHOẢN";
+            this.lblTitle.Text = "ACCOUNT REGISTRATION";
             this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblSubtitle
             // 
             this.lblSubtitle.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblSubtitle.ForeColor = System.Drawing.Color.Gray;
-            this.lblSubtitle.Location = new System.Drawing.Point(0, 70);
+            this.lblSubtitle.Location = new System.Drawing.Point(0, 108);
+            this.lblSubtitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblSubtitle.Name = "lblSubtitle";
-            this.lblSubtitle.Size = new System.Drawing.Size(400, 20);
+            this.lblSubtitle.Size = new System.Drawing.Size(600, 31);
             this.lblSubtitle.TabIndex = 1;
-            this.lblSubtitle.Text = "Cấp tài khoản cho Lễ tân / Quản lý";
+            this.lblSubtitle.Text = "Create an account for Receptionist";
             this.lblSubtitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblUsername
@@ -57,18 +59,20 @@
             this.lblUsername.AutoSize = true;
             this.lblUsername.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblUsername.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblUsername.Location = new System.Drawing.Point(65, 104);
+            this.lblUsername.Location = new System.Drawing.Point(98, 160);
+            this.lblUsername.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblUsername.Name = "lblUsername";
-            this.lblUsername.Size = new System.Drawing.Size(87, 23);
+            this.lblUsername.Size = new System.Drawing.Size(109, 28);
             this.lblUsername.TabIndex = 2;
-            this.lblUsername.Text = "Tài khoản:";
+            this.lblUsername.Text = "Username:";
             // 
             // txtUsername
             // 
             this.txtUsername.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtUsername.Location = new System.Drawing.Point(70, 129);
+            this.txtUsername.Location = new System.Drawing.Point(105, 198);
+            this.txtUsername.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtUsername.Name = "txtUsername";
-            this.txtUsername.Size = new System.Drawing.Size(260, 34);
+            this.txtUsername.Size = new System.Drawing.Size(388, 39);
             this.txtUsername.TabIndex = 3;
             // 
             // lblPassword
@@ -76,19 +80,21 @@
             this.lblPassword.AutoSize = true;
             this.lblPassword.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblPassword.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblPassword.Location = new System.Drawing.Point(65, 174);
+            this.lblPassword.Location = new System.Drawing.Point(98, 268);
+            this.lblPassword.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblPassword.Name = "lblPassword";
-            this.lblPassword.Size = new System.Drawing.Size(88, 23);
+            this.lblPassword.Size = new System.Drawing.Size(102, 28);
             this.lblPassword.TabIndex = 4;
-            this.lblPassword.Text = "Mật khẩu:";
+            this.lblPassword.Text = "Password:";
             // 
             // txtPassword
             // 
             this.txtPassword.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtPassword.Location = new System.Drawing.Point(70, 199);
+            this.txtPassword.Location = new System.Drawing.Point(105, 306);
+            this.txtPassword.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '●';
-            this.txtPassword.Size = new System.Drawing.Size(260, 34);
+            this.txtPassword.Size = new System.Drawing.Size(388, 39);
             this.txtPassword.TabIndex = 5;
             // 
             // lblRole
@@ -96,11 +102,12 @@
             this.lblRole.AutoSize = true;
             this.lblRole.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblRole.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblRole.Location = new System.Drawing.Point(65, 244);
+            this.lblRole.Location = new System.Drawing.Point(98, 375);
+            this.lblRole.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblRole.Name = "lblRole";
-            this.lblRole.Size = new System.Drawing.Size(64, 23);
+            this.lblRole.Size = new System.Drawing.Size(56, 28);
             this.lblRole.TabIndex = 6;
-            this.lblRole.Text = "Vai trò:";
+            this.lblRole.Text = "Role:";
             // 
             // cboRole
             // 
@@ -108,11 +115,12 @@
             this.cboRole.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cboRole.FormattingEnabled = true;
             this.cboRole.Items.AddRange(new object[] {
-            "RECEPTIONIST", // Đã sửa lại khớp với Backend của bạn
+            "RECEPTIONIST",
             "MANAGER"});
-            this.cboRole.Location = new System.Drawing.Point(70, 269);
+            this.cboRole.Location = new System.Drawing.Point(105, 414);
+            this.cboRole.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.cboRole.Name = "cboRole";
-            this.cboRole.Size = new System.Drawing.Size(260, 36);
+            this.cboRole.Size = new System.Drawing.Size(388, 40);
             this.cboRole.TabIndex = 7;
             // 
             // btnRegister
@@ -124,11 +132,12 @@
             this.btnRegister.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnRegister.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnRegister.ForeColor = System.Drawing.Color.White;
-            this.btnRegister.Location = new System.Drawing.Point(70, 332);
+            this.btnRegister.Location = new System.Drawing.Point(105, 511);
+            this.btnRegister.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnRegister.Name = "btnRegister";
-            this.btnRegister.Size = new System.Drawing.Size(260, 45);
+            this.btnRegister.Size = new System.Drawing.Size(390, 69);
             this.btnRegister.TabIndex = 9;
-            this.btnRegister.Text = "TẠO TÀI KHOẢN";
+            this.btnRegister.Text = "CREATE ACCOUNT";
             this.btnRegister.UseVisualStyleBackColor = false;
             // 
             // btnCancel
@@ -140,26 +149,28 @@
             this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCancel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.btnCancel.Location = new System.Drawing.Point(138, 390);
+            this.btnCancel.Location = new System.Drawing.Point(207, 600);
+            this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(123, 35);
+            this.btnCancel.Size = new System.Drawing.Size(184, 54);
             this.btnCancel.TabIndex = 10;
-            this.btnCancel.Text = "Hủy";
+            this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = false;
             // 
             // lblMessage
             // 
             this.lblMessage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblMessage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
-            this.lblMessage.Location = new System.Drawing.Point(70, 302);
+            this.lblMessage.Location = new System.Drawing.Point(105, 465);
+            this.lblMessage.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblMessage.Name = "lblMessage";
-            this.lblMessage.Size = new System.Drawing.Size(260, 20);
+            this.lblMessage.Size = new System.Drawing.Size(390, 31);
             this.lblMessage.TabIndex = 8;
             this.lblMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // RegisterControl
+            // UcRegister
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.Controls.Add(this.btnCancel);
@@ -173,8 +184,9 @@
             this.Controls.Add(this.lblUsername);
             this.Controls.Add(this.lblSubtitle);
             this.Controls.Add(this.lblTitle);
-            this.Name = "RegisterControl";
-            this.Size = new System.Drawing.Size(400, 468);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Name = "UcRegister";
+            this.Size = new System.Drawing.Size(600, 720);
             this.ResumeLayout(false);
             this.PerformLayout();
 

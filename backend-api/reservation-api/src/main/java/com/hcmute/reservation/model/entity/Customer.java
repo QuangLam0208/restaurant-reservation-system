@@ -2,6 +2,7 @@ package com.hcmute.reservation.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -59,4 +60,15 @@ public class Customer {
     // Quan hệ 1-N với Waitlist
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     private List<Waitlist> waitlistEntries;
+
+    // Profile Details
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "gender", length = 20)
+    private String gender;
+
+    // Email Change Flow
+    @Column(name = "pending_email", unique = true)
+    private String pendingEmail;
 }

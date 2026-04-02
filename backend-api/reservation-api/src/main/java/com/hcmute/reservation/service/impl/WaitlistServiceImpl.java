@@ -62,8 +62,9 @@ public class WaitlistServiceImpl implements WaitlistService {
         Set<Long> consumedTableIds = new HashSet<>();
         List<WaitlistResponse> responses = new ArrayList<>();
 
-        List<Waitlist> waitingList = waitlistRepository.findByStatusOrderByJoinedAtAsc(WaitlistStatus.WAITING);
-
+        List<Waitlist> waitingList = waitlistRepository.findByStatusInOrderByJoinedAtAsc(
+                List.of(WaitlistStatus.WAITING, WaitlistStatus.MISSING)
+        );
         for (Waitlist entry : waitingList) {
             AvailableWindowResponse suggestion = findBestWindow(entry, assessmentTime, consumedTableIds);
             if (suggestion != null) {
@@ -77,13 +78,55 @@ public class WaitlistServiceImpl implements WaitlistService {
 
     @Override
     @Transactional
+    public WaitlistResponse markAsSeated(Long id) {
+        Waitlist entry = getWaitlistOrThrow(id);
+
+        if (entry.getStatus() != WaitlistStatus.WAITING && entry.getStatus() != WaitlistStatus.MISSING) {
+            throw new BadRequestException("Chỉ có thể xác nhận vào bàn cho khách đang ở trạng thái WAITING hoặc MISSING.");
+        }
+
+        entry.seat();
+
+        return toResponse(waitlistRepository.save(entry), null);
+    }
+
+    @Override
+    @Transactional
     public WaitlistResponse skipWaitlistEntry(Long id) {
         Waitlist entry = getWaitlistOrThrow(id);
 
-        if (entry.getStatus() != WaitlistStatus.WAITING) {
-            throw new BadRequestException("Chỉ có thể bỏ qua khách đang ở trạng thái WAITING.");
+        if (entry.getStatus() != WaitlistStatus.WAITING && entry.getStatus() != WaitlistStatus.MISSING) {
+            throw new BadRequestException("Chỉ có thể hủy xếp bàn cho khách đang ở trạng thái WAITING hoặc MISSING.");
         }
         entry.skip();
+        return toResponse(waitlistRepository.save(entry), null);
+    }
+
+    @Override
+    @Transactional
+    public WaitlistResponse markAsMissing(Long id) {
+        Waitlist entry = getWaitlistOrThrow(id);
+
+        if (entry.getStatus() != WaitlistStatus.WAITING) {
+            throw new BadRequestException("Chỉ có thể đánh dấu vắng mặt cho khách đang ở trạng thái WAITING.");
+        }
+
+        entry.markAsMissing();
+
+        return toResponse(waitlistRepository.save(entry), null);
+    }
+
+    @Override
+    @Transactional
+    public WaitlistResponse revertToWaiting(Long id) {
+        Waitlist entry = getWaitlistOrThrow(id);
+
+        if (entry.getStatus() != WaitlistStatus.MISSING) {
+            throw new BadRequestException("Chỉ có thể đưa khách quay lại hàng đợi khi khách đang ở trạng thái MISSING.");
+        }
+
+        entry.revertToWaiting();
+
         return toResponse(waitlistRepository.save(entry), null);
     }
 

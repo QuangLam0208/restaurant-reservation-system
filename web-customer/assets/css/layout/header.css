@@ -124,9 +124,9 @@ header.scrolled .nav-link.btn-reserve-header {
 .nav-auth-group {
     display: flex;
     align-items: center;
-    gap: 32px;
+    gap: 24px;
     margin-left: 16px;
-    padding-left: 32px;
+    padding-left: 24px;
     border-left: 1px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -138,7 +138,136 @@ header.header-solid .nav-auth-group {
 .user-hi {
     color: #CDB17A !important;
     font-weight: 700;
+    cursor: default;
 }
+
+/* Gear Dropdown */
+.gear-dropdown {
+    position: relative;
+}
+
+.gear-btn {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #FFFFFF;
+}
+
+header.scrolled .gear-btn,
+header.header-solid .gear-btn {
+    border-color: rgba(163, 131, 84, 0.3);
+    color: #A39485;
+}
+
+.gear-btn:hover {
+    border-color: #CDB17A;
+    color: #CDB17A;
+    background: rgba(205, 177, 122, 0.08);
+    transform: rotate(30deg);
+}
+
+.gear-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.gear-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    min-width: 180px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(28, 24, 20, 0.15);
+    border: 1px solid rgba(163, 131, 84, 0.1);
+    padding: 8px 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1001;
+}
+
+.gear-menu::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 14px;
+    width: 12px;
+    height: 12px;
+    background: #FFFFFF;
+    border-top: 1px solid rgba(163, 131, 84, 0.1);
+    border-left: 1px solid rgba(163, 131, 84, 0.1);
+    transform: rotate(45deg);
+}
+
+.gear-dropdown.open .gear-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.gear-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    font-family: 'DM Sans', 'Jost', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #3A3028;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+
+.gear-menu-item svg {
+    width: 15px;
+    height: 15px;
+    stroke: #A39485;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke 0.2s;
+}
+
+.gear-menu-item:hover {
+    background: rgba(163, 131, 84, 0.06);
+    color: #A38354;
+}
+
+.gear-menu-item:hover svg {
+    stroke: #A38354;
+}
+
+.gear-menu-divider {
+    height: 1px;
+    background: rgba(163, 131, 84, 0.1);
+    margin: 4px 12px;
+}
+
+.gear-menu-item.danger { color: #c96e6e; }
+.gear-menu-item.danger svg { stroke: #c96e6e; }
+.gear-menu-item.danger:hover { background: rgba(201, 110, 110, 0.06); }
 
 /* ──────────────────────────────────────────────────────────
    PREMIUM GOLD BUTTON WITH SHIMMER SWEEP
