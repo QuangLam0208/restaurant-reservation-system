@@ -19,6 +19,7 @@ import com.hcmute.reservation.repository.ReservationRepository;
 import com.hcmute.reservation.repository.ReservationTableMappingRepository;
 import com.hcmute.reservation.repository.TableInfoRepository;
 import com.hcmute.reservation.service.ConfigProviderService;
+import com.hcmute.reservation.service.TableReleaseService;
 import com.hcmute.reservation.service.WalkInService;
 import com.hcmute.reservation.strategy.TableCombinationAlgorithm;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,7 @@ public class WalkInServiceImpl implements WalkInService {
     private final TableCombinationAlgorithm algorithm;
     private final ReservationMapper mapper;
     private final ConfigProviderService configProvider;
+    private final TableReleaseService tableReleaseService;
 
     @Override
     @Transactional(readOnly = true)
@@ -403,15 +405,8 @@ public class WalkInServiceImpl implements WalkInService {
         if (reservation.getStatus() == CREATED) {
             reservation.setStatus(CANCELLED);
             reservationRepository.save(reservation);
-            releaseLockedTable(suggestionId);
+            tableReleaseService.releaseLockedTable(suggestionId);
         }
-    }
-
-    private void releaseLockedTable(Long reservationId) {
-        tableInfoRepository.findByLockedByReservationId(reservationId).forEach(t -> {
-            t.releaseSoftLock();
-            tableInfoRepository.save(t);
-        });
     }
 
     private WalkInOptionResponse.TableOption buildWalkInOption(List<TableInfo> tables,

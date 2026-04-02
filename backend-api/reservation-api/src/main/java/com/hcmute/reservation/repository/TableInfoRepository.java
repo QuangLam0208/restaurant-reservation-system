@@ -35,4 +35,11 @@ public interface TableInfoRepository extends JpaRepository<TableInfo, Long> {
             @Param("status") ReservationStatus status,
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay);
+
+    // Đếm xem bàn này có đang bị khách khác NGỒI (SEATED) ngay lúc này không
+    @Query("SELECT COUNT(m) FROM ReservationTableMapping m " +
+            "WHERE m.tableInfo.tableId = :tableId " +
+            "AND m.reservation.reservationId != :excludeResId " +
+            "AND m.reservation.status = 'SEATED'")
+    int countOtherSeated(Long tableId, Long excludeResId);
 }
