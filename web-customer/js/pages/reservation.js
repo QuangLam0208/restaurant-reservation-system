@@ -351,19 +351,13 @@ async function confirmReservation() {
     }
 
     stopTimer();
+    S.reservationId = null;
     document.getElementById('payment-page').style.display = 'none';
     const sp = document.getElementById('success-page'); sp.style.display = 'flex';
     window.scrollTo(0, 0);
 
     const refId = 'RS-' + S.reservationId;
     document.getElementById('success-ref').textContent = 'Reservation · ' + refId;
-
-    myBookingsList.push({
-        ref: refId,
-        date: `${DAYS[S.date.getDay()]}, ${S.date.getDate()} ${MONTHS[S.date.getMonth()]}`,
-        time: S.time,
-        party: S.party
-    });
 }
 
 // ─── KHỞI TẠO DOM ───
