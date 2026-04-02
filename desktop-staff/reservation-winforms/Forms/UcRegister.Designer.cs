@@ -39,7 +39,7 @@
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(600, 62);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "ĐĂNG KÝ TÀI KHOẢN";
+            this.lblTitle.Text = "ACCOUNT REGISTRATION";
             this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblSubtitle
@@ -51,7 +51,7 @@
             this.lblSubtitle.Name = "lblSubtitle";
             this.lblSubtitle.Size = new System.Drawing.Size(600, 31);
             this.lblSubtitle.TabIndex = 1;
-            this.lblSubtitle.Text = "Cấp tài khoản cho Lễ tân";
+            this.lblSubtitle.Text = "Create an account for Receptionist";
             this.lblSubtitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblUsername
@@ -62,9 +62,9 @@
             this.lblUsername.Location = new System.Drawing.Point(98, 160);
             this.lblUsername.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblUsername.Name = "lblUsername";
-            this.lblUsername.Size = new System.Drawing.Size(104, 28);
+            this.lblUsername.Size = new System.Drawing.Size(109, 28);
             this.lblUsername.TabIndex = 2;
-            this.lblUsername.Text = "Tài khoản:";
+            this.lblUsername.Text = "Username:";
             // 
             // txtUsername
             // 
@@ -83,9 +83,9 @@
             this.lblPassword.Location = new System.Drawing.Point(98, 268);
             this.lblPassword.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblPassword.Name = "lblPassword";
-            this.lblPassword.Size = new System.Drawing.Size(103, 28);
+            this.lblPassword.Size = new System.Drawing.Size(102, 28);
             this.lblPassword.TabIndex = 4;
-            this.lblPassword.Text = "Mật khẩu:";
+            this.lblPassword.Text = "Password:";
             // 
             // txtPassword
             // 
@@ -105,9 +105,9 @@
             this.lblRole.Location = new System.Drawing.Point(98, 375);
             this.lblRole.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblRole.Name = "lblRole";
-            this.lblRole.Size = new System.Drawing.Size(76, 28);
+            this.lblRole.Size = new System.Drawing.Size(56, 28);
             this.lblRole.TabIndex = 6;
-            this.lblRole.Text = "Vai trò:";
+            this.lblRole.Text = "Role:";
             // 
             // cboRole
             // 
@@ -137,7 +137,7 @@
             this.btnRegister.Name = "btnRegister";
             this.btnRegister.Size = new System.Drawing.Size(390, 69);
             this.btnRegister.TabIndex = 9;
-            this.btnRegister.Text = "TẠO TÀI KHOẢN";
+            this.btnRegister.Text = "CREATE ACCOUNT";
             this.btnRegister.UseVisualStyleBackColor = false;
             // 
             // btnCancel
@@ -154,7 +154,7 @@
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(184, 54);
             this.btnCancel.TabIndex = 10;
-            this.btnCancel.Text = "Hủy";
+            this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = false;
             // 
             // lblMessage

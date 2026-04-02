@@ -28,5 +28,9 @@ namespace reservation_winforms.DTO.table
 
         [JsonProperty("currentReservationTime")]
         public DateTime? CurrentReservationTime { get; set; }
+
+        [JsonProperty("nextReservationTime")]
+        public DateTime? NextReservationTime { get; set; }
+
     }
 }

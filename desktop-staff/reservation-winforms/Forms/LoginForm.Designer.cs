@@ -36,7 +36,7 @@
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(400, 40);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "HỆ THỐNG POS";
+            this.lblTitle.Text = "POS SYSTEM";
             this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblSubtitle
@@ -47,7 +47,7 @@
             this.lblSubtitle.Name = "lblSubtitle";
             this.lblSubtitle.Size = new System.Drawing.Size(400, 20);
             this.lblSubtitle.TabIndex = 1;
-            this.lblSubtitle.Text = "Đăng nhập để tiếp tục";
+            this.lblSubtitle.Text = "Sign in to continue";
             this.lblSubtitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblUsername
@@ -59,7 +59,7 @@
             this.lblUsername.Name = "lblUsername";
             this.lblUsername.Size = new System.Drawing.Size(87, 23);
             this.lblUsername.TabIndex = 2;
-            this.lblUsername.Text = "Tài khoản:";
+            this.lblUsername.Text = "Username:";
             // 
             // txtUsername
             // 
@@ -78,7 +78,7 @@
             this.lblPassword.Name = "lblPassword";
             this.lblPassword.Size = new System.Drawing.Size(88, 23);
             this.lblPassword.TabIndex = 4;
-            this.lblPassword.Text = "Mật khẩu:";
+            this.lblPassword.Text = "Password:";
             // 
             // txtPassword
             // 
@@ -102,7 +102,7 @@
             this.btnLogin.Name = "btnLogin";
             this.btnLogin.Size = new System.Drawing.Size(260, 45);
             this.btnLogin.TabIndex = 7;
-            this.btnLogin.Text = "ĐĂNG NHẬP";
+            this.btnLogin.Text = "SIGN IN";
             this.btnLogin.UseVisualStyleBackColor = false;
             // 
             // btnExit
@@ -118,7 +118,7 @@
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(123, 35);
             this.btnExit.TabIndex = 8;
-            this.btnExit.Text = "Thoát";
+            this.btnExit.Text = "Exit";
             this.btnExit.UseVisualStyleBackColor = false;
             this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
             // 

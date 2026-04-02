@@ -1,5 +1,8 @@
 package com.hcmute.reservation.service.impl;
 
+import com.hcmute.reservation.event.TableAlertEvent;
+import com.hcmute.reservation.event.TableStatusChangedEvent;
+import com.hcmute.reservation.model.dto.table.TableAlert;
 import com.hcmute.reservation.model.entity.Reservation;
 import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.model.enums.ReservationStatus;
@@ -10,15 +13,14 @@ import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.SystemSchedulerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -31,6 +33,57 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
     private final TableInfoRepository tableInfoRepository;
     private final TransactionTemplate transactionTemplate;
     private final ConfigProviderService configProvider;
+
+    private final ApplicationEventPublisher eventPublisher;
+    private final Set<Long> currentlyBlinkingTables = ConcurrentHashMap.newKeySet();
+
+    @Scheduled(fixedDelay = 60_000)
+    public void scanAndAlertUpcomingConflicts() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime windowEnd = now.plusMinutes(15); // Quét trước 15 phút
+
+        List<Reservation> upcoming = reservationRepository.findUpcomingReservationsForAlert(now, windowEnd);
+
+        Set<Long> conflictedTableIdsInThisScan = new HashSet<>();
+
+        // 1. Quét tìm các bàn có nguy cơ
+        for (Reservation r : upcoming) {
+            if (r.getTableMappings() == null) continue;
+
+            for (var mapping : r.getTableMappings()) {
+                TableInfo table = mapping.getTableInfo();
+
+                // Nếu bàn CHƯA TRỐNG (đang bị Occupied/Overstay/SoftLocked)
+                if (table.getStatus() != TableStatus.AVAILABLE) {
+                    conflictedTableIdsInThisScan.add(table.getTableId());
+
+                    // Nếu bàn này chưa nằm trong danh sách nhấp nháy -> Phát sự kiện báo BẬT nhấp nháy
+                    if (!currentlyBlinkingTables.contains(table.getTableId())) {
+                        currentlyBlinkingTables.add(table.getTableId());
+
+                        eventPublisher.publishEvent(
+                                new TableAlertEvent(this, table.getTableId(), "START_BLINK"));
+                        log.info("Bật cảnh báo nhấp nháy cho bàn {}", table.getTableId());
+                    }
+                }
+            }
+        }
+
+        // 2. Tắt cảnh báo cho những bàn đã "an toàn"
+        // (Trước đó nó nhấp nháy, nhưng lần quét này không còn bị conflict nữa)
+        Iterator<Long> iterator = currentlyBlinkingTables.iterator();
+        while (iterator.hasNext()) {
+            Long tableId = iterator.next();
+            if (!conflictedTableIdsInThisScan.contains(tableId)) {
+                // Bàn đã trống hoặc đã quá giờ đơn đặt -> Phát sự kiện báo TẮT nhấp nháy
+                eventPublisher.publishEvent(
+                        new TableAlertEvent(this, tableId, "STOP_BLINK"));
+                log.info("Tắt cảnh báo nhấp nháy cho bàn {}", tableId);
+
+                iterator.remove(); // Xóa khỏi danh sách nhớ
+            }
+        }
+    }
 
     @Override
     @Scheduled(fixedDelay = 60_000)
@@ -83,6 +136,9 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
                 if (table.getStatus() != TableStatus.OVERSTAY) {
                     table.setStatus(TableStatus.OVERSTAY);
                     tableInfoRepository.save(table);
+
+                    eventPublisher.publishEvent(
+                            new TableStatusChangedEvent(this, table.getTableId(), "OVERSTAY"));
                 }
             });
         });
@@ -112,6 +168,9 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
                     t.setStatus(TableStatus.AVAILABLE);
                     tableInfoRepository.save(t);
                     tablesReleasedCount.incrementAndGet();
+
+                    eventPublisher.publishEvent(
+                            new TableStatusChangedEvent(this, t.getTableId(), "AVAILABLE"));
                 }
             }
         });
@@ -157,6 +216,9 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
         tableInfoRepository.findByLockedByReservationId(reservationId).forEach(t -> {
             t.releaseSoftLock();
             tableInfoRepository.save(t);
+
+            eventPublisher.publishEvent(
+                    new TableStatusChangedEvent(this, t.getTableId(), "AVAILABLE"));
         });
     }
 
@@ -168,6 +230,9 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
             if (!isPhysicallyOccupiedByOthers(t, r.getReservationId())) {
                 t.setStatus(TableStatus.AVAILABLE);
                 tableInfoRepository.save(t);
+
+                eventPublisher.publishEvent(
+                        new TableStatusChangedEvent(this, t.getTableId(), "AVAILABLE"));
             }
         }
     }
