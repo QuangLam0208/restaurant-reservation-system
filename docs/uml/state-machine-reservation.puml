@@ -1,0 +1,40 @@
+@startuml
+title Sơ đồ trạng thái - Reservation
+skinparam shadowing false
+
+[*] --> CREATED : Tạo đơn online\nhoặc tạo gợi ý walk-in
+
+CREATED --> PENDING_PAYMENT : Chuyển sang chờ thanh toán
+CREATED --> SEATED : Xác nhận walk-in
+CREATED --> CANCELLED : Hủy gợi ý walk-in
+CREATED --> EXPIRED : Hết thời gian giữ bàn
+
+PENDING_PAYMENT --> RESERVED : Thanh toán thành công
+PENDING_PAYMENT --> CANCELLED : Hủy thanh toán
+PENDING_PAYMENT --> EXPIRED : Quá hạn thanh toán
+
+RESERVED --> SEATED : Check-in thành công
+RESERVED --> CANCELLED : Hủy đơn hợp lệ
+RESERVED --> NO_SHOW : Quá grace period
+
+SEATED --> COMPLETED : Check-out / Override
+SEATED --> SEATED : Đổi bàn
+
+CANCELLED --> [*]
+EXPIRED --> [*]
+NO_SHOW --> [*]
+COMPLETED --> [*]
+
+note right of CREATED
+Dùng cho:
+- Đơn online trước khi vào thanh toán
+- Gợi ý walk-in trước khi xác nhận
+end note
+
+note right of SEATED
+Reservation vẫn giữ trạng thái SEATED
+khi khách bị overstay.
+OVERSTAY là trạng thái của bàn.
+end note
+
+@enduml
