@@ -29,7 +29,6 @@
 html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
-    zoom: 0.8;
 }
 
 body {
@@ -360,13 +359,13 @@ body::after {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    border: 1px solid var(--parchment-2);
+    border: 1px solid var(--accent-gold, #C4A472);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     transition: all 0.4s var(--ease);
-    background: var(--white);
+    background: var(--bg-tertiary);
     font-family: 'DM Sans', sans-serif;
     font-size: 16px;
     color: var(--muted);
@@ -375,8 +374,8 @@ body::after {
 .step-icon svg {
     width: 18px;
     height: 18px;
-    stroke: var(--text-muted);
-    opacity: 0.8;
+    stroke: var(--accent-gold, #C4A472);
+    opacity: 0.7;
     transition: stroke 0.4s, opacity 0.4s;
 }
 
@@ -2153,46 +2152,66 @@ body.light-mode [class*="quick-label"] {
   letter-spacing: 0.12em;
 }
 
-/* 4. GUEST BUTTONS */
+/* 4. GUEST BUTTONS & CHIPS */
 body.light-mode .party-chip,
 body.light-mode .guest-btn,
 body.light-mode .quick-select-btn,
-body.light-mode [class*="guest-option"]:not(.sel):not(.selected):not(.active) {
-  background: #F5F0E8;
+body.light-mode [class*="guest-option"]:not(.sel):not(.selected):not(.active),
+body.light-mode .d-chip:not(.sel),
+body.light-mode .t-chip:not(.sel) {
+  background: #FFFFFF;
   border: 1px solid #D4C5AD;
-  color: #2C1F14;
+  color: #1C1410;
 }
 
 body.light-mode .party-chip.sel,
 body.light-mode .guest-btn.selected,
 body.light-mode .quick-select-btn.selected,
 body.light-mode [class*="guest-option"].sel,
-body.light-mode [class*="guest-option"].selected,
-body.light-mode [class*="guest-option"].active {
-  background: #7A5C35;
-  border-color: #7A5C35;
-  color: #F5ECD8;
+body.light-mode .d-chip.sel,
+body.light-mode .t-chip.sel,
+body.light-mode .occ-chip.sel {
+  background: #7A5C35 !important;
+  border-color: #7A5C35 !important;
+  color: #F5F0E8 !important;
+  box-shadow: 0 4px 12px rgba(122, 92, 53, 0.2);
+}
+
+body.light-mode .d-chip .dd,
+body.light-mode .t-chip {
+  color: #1C1410;
+}
+
+body.light-mode .d-chip.sel .dn,
+body.light-mode .d-chip.sel .dd,
+body.light-mode .t-chip.sel {
+  color: #F5F0E8 !important;
 }
 
 body.light-mode .party-chip:hover:not(.sel),
-body.light-mode .guest-btn:hover:not(.selected) {
+body.light-mode .d-chip:hover:not(.sel),
+body.light-mode .t-chip:hover:not(.sel) {
   border-color: #8B6840;
   background: #EDE3D4;
 }
 
-body.light-mode .plbl,
-body.light-mode .guest-sublabel,
-body.light-mode .guest-btn [class*="label"],
-body.light-mode .quick-select-btn span:last-child {
-  color: inherit;
-  opacity: 0.75;
+/* 5. INPUTS & STEPPER */
+body.light-mode .finput {
+  background: #FFFFFF !important;
+  border-color: #D4C5AD !important;
+  color: #1C1410 !important;
 }
 
-body.light-mode .pnum {
-  color: inherit;
+body.light-mode .finput::placeholder {
+  color: #9A856A;
 }
 
-/* 5. STEPPER — no outer frame, no side lines */
+body.light-mode .occ-chip:not(.sel) {
+  background: #FFFFFF;
+  border-color: #D4C5AD;
+  color: #7A5C35;
+}
+
 body.light-mode .stepper-row {
   border: none !important;
   padding: 16px 0 !important;
@@ -2200,61 +2219,51 @@ body.light-mode .stepper-row {
 }
 
 body.light-mode .stepper {
-  background: transparent !important;
-  border: 1px solid #D4C5AD;
-  color: #2C1F14;
+  background: #FFFFFF !important;
+  border: 1px solid #D4C5AD !important;
 }
 
 body.light-mode .st-val {
-  border-left: none !important;
-  border-right: none !important;
-}
-
-body.light-mode .st-btn,
-body.light-mode .stepper-btn,
-body.light-mode [class*="stepper"] button {
-  background: #EDE3D4;
-  color: #7A5C35;
-  border: none;
-  border-radius: 50%;
-}
-
-body.light-mode .st-val,
-body.light-mode .stepper-value,
-body.light-mode [class*="stepper"] span,
-body.light-mode [class*="stepper"] input {
-  color: #1C1410;
-  font-weight: 600;
-  background: transparent;
+  background: transparent !important;
+  color: #1C1410 !important;
   border: none !important;
 }
 
-body.light-mode .stepper-text,
-body.light-mode [class*="stepper-hint"],
-body.light-mode [class*="custom-label"] {
-  color: #9A856A;
+body.light-mode .st-btn {
+  background: #EDE3D4 !important;
+  color: #7A5C35 !important;
 }
 
-/* 6. CONTINUE BUTTON */
+/* 6. DIVIDERS & LABELS */
+body.light-mode .divider,
+body.light-mode .time-period::after {
+  background: #D4C5AD;
+}
+
+body.light-mode .time-period {
+  color: #7A5C35;
+  font-weight: 500;
+}
+
+/* 7. CTA BUTTONS */
 body.light-mode .step-cta,
 body.light-mode .btn-continue,
-body.light-mode button[class*="continue"],
-body.light-mode [class*="step-cta"] {
-  background: #1C1410 !important;
-  color: #F2E8D9 !important;
+body.light-mode .proceed-btn,
+body.light-mode button[class*="continue"] {
+  background: #2C1F14 !important; /* Deep Roast instead of Black */
+  color: #F5F0E8 !important;
   border: none !important;
   border-radius: 40px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  transition: background 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 4px 12px rgba(44, 31, 20, 0.15);
 }
 
-body.light-mode .step-cta:hover {
-  background: #261E17 !important;
-  box-shadow: 0 4px 16px rgba(28, 20, 16, 0.25) !important;
+body.light-mode .step-cta:hover,
+body.light-mode .proceed-btn:hover {
+  background: #1C1410 !important; /* Espresso on hover */
+  box-shadow: 0 6px 16px rgba(44, 31, 20, 0.25);
 }
 
-/* 7. BODY / PAGE BACKGROUND */
+/* 8. BODY / PAGE BACKGROUND */
 body.light-mode .booking-layout,
 body.light-mode .booking-section,
 body.light-mode .reservation-form-section,

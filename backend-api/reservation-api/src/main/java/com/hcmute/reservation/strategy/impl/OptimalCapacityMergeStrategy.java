@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@Order(2) // Chạy TỐI ƯU GHÉP BÀN nếu SingleTableStrategy (Order 1) thất bại
+@Order(2)
 public class OptimalCapacityMergeStrategy implements TableAllocationStrategy {
 
     @Override
