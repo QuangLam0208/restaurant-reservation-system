@@ -197,6 +197,7 @@ public class TableServiceImpl implements  TableService {
         TableStatus currentStatus = t.getStatus();
         ReservationStatus currentResStatus = null;
         LocalDateTime resTime = null; // Biến cục bộ an toàn cho đa luồng
+        LocalDateTime nextResTime = null;
 
         if (t.getMappings() != null && !t.getMappings().isEmpty()) {
             var safeMappings = t.getMappings().stream()
@@ -211,6 +212,11 @@ public class TableServiceImpl implements  TableService {
                     .filter(m -> m.getReservation().getStatus() == ReservationStatus.RESERVED)
                     .filter(m -> m.getReservation().getStartTime().isAfter(now) && m.getReservation().getStartTime().isBefore(endOfDay))
                     .min(Comparator.comparing(m -> m.getReservation().getStartTime()));
+
+            // lấy ra giờ bắt đầu của đơn tiếp theo
+            if (reservedMapping.isPresent()) {
+                nextResTime = reservedMapping.get().getReservation().getStartTime();
+            }
 
             var activeMapping = seatedMapping.isPresent() ? seatedMapping : reservedMapping;
 
@@ -238,6 +244,7 @@ public class TableServiceImpl implements  TableService {
                 .currentReservationStatus(currentResStatus)
                 .currentCustomerName(customerName)
                 .currentReservationTime(resTime) // Dùng biến cục bộ
+                .nextReservationTime(nextResTime)
                 .build();
     }
 

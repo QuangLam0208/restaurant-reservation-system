@@ -28,22 +28,22 @@ namespace reservation_winforms.Forms
 
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
             {
-                lblMessage.Text = "Vui lòng nhập đủ thông tin!";
+                lblMessage.Text = "Please enter your information!";
                 return;
             }
 
             btnRegister.Enabled = false;
-            btnRegister.Text = "Đang xử lý...";
+            btnRegister.Text = "Processinig...";
             lblMessage.Text = "";
 
             var response = await _authService.RegisterStaffAsync(user, pass, role);
 
             btnRegister.Enabled = true;
-            btnRegister.Text = "TẠO TÀI KHOẢN";
+            btnRegister.Text = "CREATE ACCOUNT";
 
             if (response.IsSuccess)
             {
-                MessageBox.Show("Tạo tài khoản thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Your account has been created successfully!", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 txtUsername.Clear();
                 txtPassword.Clear();
             }

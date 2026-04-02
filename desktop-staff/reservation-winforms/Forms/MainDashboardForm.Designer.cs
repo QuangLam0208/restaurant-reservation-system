@@ -19,6 +19,7 @@
         {
             this.components = new System.ComponentModel.Container();
             this.pnlSidebar = new System.Windows.Forms.Panel();
+            this.btnSystemConfig = new System.Windows.Forms.Button();
             this.btnRegisterStaff = new System.Windows.Forms.Button();
             this.btnSystemLogs = new System.Windows.Forms.Button();
             this.btnReports = new System.Windows.Forms.Button();
@@ -44,6 +45,7 @@
             // pnlSidebar
             // 
             this.pnlSidebar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.pnlSidebar.Controls.Add(this.btnSystemConfig);
             this.pnlSidebar.Controls.Add(this.btnRegisterStaff);
             this.pnlSidebar.Controls.Add(this.btnSystemLogs);
             this.pnlSidebar.Controls.Add(this.btnReports);
@@ -81,6 +83,25 @@
             this.btnRegisterStaff.Text = "👤 Register Reception";
             this.btnRegisterStaff.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnRegisterStaff.UseVisualStyleBackColor = true;
+            // 
+            // btnSystemConfig
+            // 
+            this.btnSystemConfig.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnSystemConfig.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnSystemConfig.FlatAppearance.BorderSize = 0;
+            this.btnSystemConfig.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.btnSystemConfig.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSystemConfig.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSystemConfig.ForeColor = System.Drawing.Color.White;
+            this.btnSystemConfig.Location = new System.Drawing.Point(0, 894);
+            this.btnSystemConfig.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnSystemConfig.Name = "btnSystemConfig";
+            this.btnSystemConfig.Padding = new System.Windows.Forms.Padding(30, 0, 0, 0);
+            this.btnSystemConfig.Size = new System.Drawing.Size(390, 77);
+            this.btnSystemConfig.TabIndex = 12;
+            this.btnSystemConfig.Text = "🔧 System Config";
+            this.btnSystemConfig.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnSystemConfig.UseVisualStyleBackColor = true;
             // 
             // btnSystemLogs
             // 
@@ -326,7 +347,7 @@
             this.lblWelcome.Name = "lblWelcome";
             this.lblWelcome.Size = new System.Drawing.Size(1530, 1122);
             this.lblWelcome.TabIndex = 0;
-            this.lblWelcome.Text = "Vui lòng chọn một chức năng từ Menu bên trái";
+            this.lblWelcome.Text = "Please select a tab from the menu on the left.";
             this.lblWelcome.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // MainDashboardForm
@@ -340,7 +361,7 @@
             this.MinimumSize = new System.Drawing.Size(1525, 1151);
             this.Name = "MainDashboardForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Hệ thống POS - Quản lý Nhà hàng";
+            this.Text = "POS System - Reservation Management";
             this.pnlSidebar.ResumeLayout(false);
             this.pnlLogo.ResumeLayout(false);
             this.pnlMainContent.ResumeLayout(false);
@@ -360,6 +381,7 @@
         private System.Windows.Forms.Button btnWaitlist;
         private System.Windows.Forms.Button btnOnlineBooking;
         private System.Windows.Forms.Button btnCheckOut;
+        private System.Windows.Forms.Button btnSystemConfig;
         private System.Windows.Forms.Label lblAdminSection;
         private System.Windows.Forms.Button btnSystemLogs;
         private System.Windows.Forms.Button btnReports;

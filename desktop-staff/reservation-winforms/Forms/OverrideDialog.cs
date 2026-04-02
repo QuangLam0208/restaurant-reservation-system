@@ -29,7 +29,7 @@ namespace reservation_winforms.Forms
 
             if (string.IsNullOrEmpty(inputReason))
             {
-                MessageBox.Show("Vui lòng nhập lý do cưỡng chế ghi đè (Override)!", "Bắt buộc nhập", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter the reason for override!", "Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtReason.Focus();
                 return;
             }
