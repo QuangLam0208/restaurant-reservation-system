@@ -15,7 +15,6 @@ if (Loại yêu cầu?) then (Online)
       :Chuyển sang CANCELLED hoặc EXPIRED;
     endif
   else (Không)
-    :Gợi ý khung giờ khác;
   endif
 else (Walk-in)
   :Tiếp nhận khách walk-in;
