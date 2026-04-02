@@ -1,5 +1,6 @@
 package com.hcmute.reservation.service.impl;
 import com.hcmute.reservation.event.ReservationConfirmedEvent;
+import com.hcmute.reservation.event.TableStatusChangedEvent;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.ResourceNotFoundException;
@@ -13,7 +14,6 @@ import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.OnlineBookingService;
 import com.hcmute.reservation.strategy.TableCombinationAlgorithm;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
@@ -109,6 +109,9 @@ public class OnlineBookingServiceImpl implements OnlineBookingService {
                 ReservationTableMapping mapping = ReservationTableMapping.builder()
                         .reservation(reservation).tableInfo(t).build();
                 mappings.add(mappingRepository.save(mapping));
+
+                eventPublisher.publishEvent(
+                        new TableStatusChangedEvent(this, t.getTableId(), "OCCUPIED"));
             }
         } catch (ObjectOptimisticLockingFailureException e) {
             throw new ConflictException(
@@ -132,7 +135,13 @@ public class OnlineBookingServiceImpl implements OnlineBookingService {
         if (lockedTables.isEmpty()) throw new ConflictException("Giao dịch thanh toán mất quá nhiều thời gian. Thời gian giữ bàn (5 phút) đã hết và bàn đã bị giải phóng. Vui lòng liên hệ nhà hàng để được hỗ trợ hoàn tiền hoặc xếp bàn mới.");
 
         reservation.setStatus(RESERVED);
-        lockedTables.forEach(t -> { t.releaseSoftLock(); tableInfoRepository.save(t); });
+        lockedTables.forEach(t -> {
+            t.releaseSoftLock();
+            tableInfoRepository.save(t);
+
+            eventPublisher.publishEvent(
+                    new TableStatusChangedEvent(this, t.getTableId(), "AVAILABLE"));
+        });
 
         // Chuẩn bị dữ liệu gửi Email (Tránh lazy loading trong Async thread sau này)
         String customerEmail = reservation.getCustomer() != null ? reservation.getCustomer().getEmail() : null;
@@ -152,7 +161,12 @@ public class OnlineBookingServiceImpl implements OnlineBookingService {
         if (reservation.getStatus() == PENDING_PAYMENT || reservation.getStatus() == CREATED) {
             reservation.setStatus(CANCELLED);
             tableInfoRepository.findByLockedByReservationId(id)
-                    .forEach(t -> { t.releaseSoftLock(); tableInfoRepository.save(t); });
+                    .forEach(t -> {
+                        t.releaseSoftLock();
+                        tableInfoRepository.save(t);
+                        eventPublisher.publishEvent(
+                                new TableStatusChangedEvent(this, t.getTableId(), "AVAILABLE"));
+                    });
         } else throw new BadRequestException("Không thể hủy đơn đặt bàn ở trạng thái hiện tại.");
 
         return mapper.toResponse(reservation);

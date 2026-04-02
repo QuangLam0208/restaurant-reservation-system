@@ -1,5 +1,6 @@
 package com.hcmute.reservation.service.impl;
 
+import com.hcmute.reservation.event.TableStatusChangedEvent;
 import com.hcmute.reservation.exception.BadRequestException;
 import com.hcmute.reservation.exception.ConflictException;
 import com.hcmute.reservation.exception.ResourceNotFoundException;
@@ -18,7 +19,8 @@ import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.InHouseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,8 @@ public class InHouseServiceImpl implements InHouseService {
     private final AssignmentService assignmentService;
     private final ReservationMapper mapper;
     private final ConfigProviderService configProvider;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -111,6 +115,8 @@ public class InHouseServiceImpl implements InHouseService {
         for (TableInfo t : assignedTables) {
             t.setStatus(TableStatus.OCCUPIED);
             tableInfoRepository.save(t);
+            eventPublisher.publishEvent(
+                    new TableStatusChangedEvent(this, t.getTableId(), "OCCUPIED"));
         }
         return mapper.toResponse(reservationRepository.save(reservation));
     }
@@ -124,7 +130,6 @@ public class InHouseServiceImpl implements InHouseService {
             throw new BadRequestException("Đơn không ở trạng thái SEATED.");
         }
         reservation.checkOut();
-        // endTime = lúc checkout thực tế. Scheduler sẽ lo vụ buffer sau.
         reservation.setEndTime(LocalDateTime.now());
         reservationRepository.save(reservation);
         return mapper.toResponse(reservation);
@@ -208,6 +213,9 @@ public class InHouseServiceImpl implements InHouseService {
                 if (!isKeptTable) {
                     oldTable.setStatus(TableStatus.AVAILABLE);
                     tableInfoRepository.save(oldTable);
+
+                    eventPublisher.publishEvent(
+                            new TableStatusChangedEvent(this, oldTable.getTableId(), "AVAILABLE"));
                 }
             }
             mappingRepository.deleteAll(reservation.getTableMappings());
@@ -221,6 +229,8 @@ public class InHouseServiceImpl implements InHouseService {
                 // Chỉ set OCCUPIED nếu khách đang ngồi thực tế
                 if (reservation.getStatus() == SEATED) {
                     table.setStatus(TableStatus.OCCUPIED);
+                    eventPublisher.publishEvent(
+                            new TableStatusChangedEvent(this, table.getTableId(), "OCCUPIED"));
                 }
                 // Nếu RESERVED thì giữ nguyên AVAILABLE — bàn chỉ bị "chiếm" khi check-in
                 tableInfoRepository.saveAndFlush(table);
@@ -232,7 +242,7 @@ public class InHouseServiceImpl implements InHouseService {
 
                 newMappings.add(mappingRepository.save(mapping));
             }
-        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+        } catch (ObjectOptimisticLockingFailureException e) {
             throw new ConflictException(
                     "Một trong các bàn vừa bị thay đổi bởi giao dịch khác. Vui lòng tải lại và thử lại.");
         }
@@ -292,6 +302,9 @@ public class InHouseServiceImpl implements InHouseService {
                 TableInfo t = m.getTableInfo();
                 t.setStatus(TableStatus.AVAILABLE);
                 tableInfoRepository.save(t);
+
+                eventPublisher.publishEvent(
+                        new TableStatusChangedEvent(this, t.getTableId(), "AVAILABLE"));
             });
         }
     }
@@ -300,6 +313,8 @@ public class InHouseServiceImpl implements InHouseService {
         tableInfoRepository.findByLockedByReservationId(reservationId).forEach(t -> {
             t.releaseSoftLock();
             tableInfoRepository.save(t);
+            eventPublisher.publishEvent(
+                    new TableStatusChangedEvent(this, t.getTableId(), "AVAILABLE"));
         });
     }
 }
