@@ -1,5 +1,6 @@
 package com.hcmute.reservation.service.impl;
 
+import com.hcmute.reservation.event.TableStatusChangedEvent;
 import com.hcmute.reservation.model.entity.Reservation;
 import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.model.enums.ReservationStatus;
@@ -10,7 +11,7 @@ import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.SystemSchedulerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -31,6 +32,8 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
     private final TableInfoRepository tableInfoRepository;
     private final TransactionTemplate transactionTemplate;
     private final ConfigProviderService configProvider;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Scheduled(fixedDelay = 60_000)
@@ -83,6 +86,9 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
                 if (table.getStatus() != TableStatus.OVERSTAY) {
                     table.setStatus(TableStatus.OVERSTAY);
                     tableInfoRepository.save(table);
+
+                    eventPublisher.publishEvent(
+                            new TableStatusChangedEvent(this, table.getTableId(), "OVERSTAY"));
                 }
             });
         });
@@ -112,6 +118,9 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
                     t.setStatus(TableStatus.AVAILABLE);
                     tableInfoRepository.save(t);
                     tablesReleasedCount.incrementAndGet();
+
+                    eventPublisher.publishEvent(
+                            new TableStatusChangedEvent(this, t.getTableId(), "AVAILABLE"));
                 }
             }
         });
@@ -157,6 +166,9 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
         tableInfoRepository.findByLockedByReservationId(reservationId).forEach(t -> {
             t.releaseSoftLock();
             tableInfoRepository.save(t);
+
+            eventPublisher.publishEvent(
+                    new TableStatusChangedEvent(this, t.getTableId(), "AVAILABLE"));
         });
     }
 
@@ -168,6 +180,9 @@ public class SystemSchedulerServiceImpl implements SystemSchedulerService {
             if (!isPhysicallyOccupiedByOthers(t, r.getReservationId())) {
                 t.setStatus(TableStatus.AVAILABLE);
                 tableInfoRepository.save(t);
+
+                eventPublisher.publishEvent(
+                        new TableStatusChangedEvent(this, t.getTableId(), "AVAILABLE"));
             }
         }
     }
