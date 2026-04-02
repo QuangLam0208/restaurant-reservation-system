@@ -12,36 +12,47 @@ database "Cơ sở dữ liệu" as DB
 participant "Cổng thanh toán" as Payment
 actor "Scheduler" as Scheduler
 
-Customer -> WebUI : Nhập thông tin đặt bàn
-WebUI -> System : Gửi yêu cầu đặt bàn online
-System -> DB : Kiểm tra điều kiện đặt bàn\nvà tìm phương án phân bổ hoặc ghép bàn
+Customer -> WebUI : Nhập số lượng khách và ngày đến
+WebUI -> System : Yêu cầu tra cứu khung giờ khả dụng
+System -> DB : Kiểm tra điều kiện nghiệp vụ\nvà tra cứu khung giờ phù hợp
 
-alt Có bàn phù hợp
-    System -> DB : Tạo reservation = CREATED\nLưu mapping và soft lock bàn
-    System -> DB : Chuyển reservation = PENDING_PAYMENT
-    System --> WebUI : Trả thông tin chờ thanh toán
+alt Có khung giờ khả dụng
+    System --> WebUI : Trả danh sách khung giờ khả dụng
+    Customer -> WebUI : Chọn một khung giờ
+    WebUI -> System : Gửi yêu cầu tạo đặt bàn online
 
-    Customer -> Payment : Thực hiện thanh toán
+    System -> DB : Tìm bàn đơn hoặc ghép bàn
 
-    alt Thanh toán thành công
-        Payment -> WebUI : Trả kết quả thành công
-        WebUI -> System : Xác nhận thanh toán
-        System -> DB : Cập nhật reservation = RESERVED\nGiải phóng soft lock
-        System --> WebUI : Trả kết quả thành công
+    alt Có phương án xếp bàn
+        System -> DB : Tạo reservation = CREATED\nLưu mapping và soft lock bàn
+        System -> DB : Chuyển reservation = PENDING_PAYMENT
+        System --> WebUI : Trả thông tin chờ thanh toán
 
-    else Khách hủy thanh toán
-        Payment -> WebUI : Trả kết quả hủy
-        WebUI -> System : Hủy thanh toán
-        System -> DB : Cập nhật reservation = CANCELLED\nGiải phóng soft lock
-        System --> WebUI : Trả kết quả hủy
+        Customer -> Payment : Thực hiện thanh toán
 
-    else Quá hạn thanh toán
-        Scheduler -> System : Quét đơn chờ thanh toán
-        System -> DB : Cập nhật reservation = EXPIRED\nGiải phóng soft lock
+        alt Thanh toán thành công
+            Payment -> WebUI : Trả kết quả thành công
+            WebUI -> System : Xác nhận thanh toán
+            System -> DB : Cập nhật reservation = RESERVED\nGiải phóng soft lock
+            System --> WebUI : Trả kết quả thành công
+
+        else Khách hủy thanh toán
+            Payment -> WebUI : Trả kết quả hủy
+            WebUI -> System : Hủy thanh toán
+            System -> DB : Cập nhật reservation = CANCELLED\nGiải phóng soft lock
+            System --> WebUI : Trả kết quả hủy
+
+        else Quá hạn thanh toán
+            Scheduler -> System : Quét đơn chờ thanh toán
+            System -> DB : Cập nhật reservation = EXPIRED\nGiải phóng soft lock
+        end
+
+    else Không còn bàn phù hợp ở khung giờ đã chọn
+        System --> WebUI : Thông báo khung giờ đã chọn\nkhông còn bàn phù hợp
     end
 
-else Không có bàn phù hợp
-    System --> WebUI : Thông báo hết bàn\nvà gợi ý khung giờ khác
+else Không có khung giờ khả dụng
+    System --> WebUI : Thông báo không có khung giờ phù hợp
 end
 
 @enduml
