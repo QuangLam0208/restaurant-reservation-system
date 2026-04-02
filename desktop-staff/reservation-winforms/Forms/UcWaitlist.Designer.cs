@@ -366,7 +366,7 @@ namespace reservation_winforms.Forms
             // 
             // colWaitActionMiss
             // 
-            this.colWaitActionMiss.HeaderText = "Mark Missed";
+            this.colWaitActionMiss.HeaderText = "Missed";
             this.colWaitActionMiss.MinimumWidth = 8;
             this.colWaitActionMiss.Name = "colWaitActionMiss";
             this.colWaitActionMiss.ReadOnly = true;
@@ -376,7 +376,7 @@ namespace reservation_winforms.Forms
             // 
             // colWaitActionSkip
             // 
-            this.colWaitActionSkip.HeaderText = "Skip/Cancel";
+            this.colWaitActionSkip.HeaderText = "Skip";
             this.colWaitActionSkip.MinimumWidth = 8;
             this.colWaitActionSkip.Name = "colWaitActionSkip";
             this.colWaitActionSkip.ReadOnly = true;

@@ -6,6 +6,8 @@ import com.hcmute.reservation.model.dto.auth.StaffRegisterRequest;
 
 public interface StaffAuthService {
     StaffLoginResponse login(StaffLoginRequest req);
+
     void logout(String token);
-    void register(StaffRegisterRequest req);
+
+    String register(StaffRegisterRequest req);
 }
