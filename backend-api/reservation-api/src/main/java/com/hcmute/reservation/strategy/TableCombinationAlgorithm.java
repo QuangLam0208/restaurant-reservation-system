@@ -3,7 +3,6 @@ package com.hcmute.reservation.strategy;
 import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.service.ConfigProviderService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
