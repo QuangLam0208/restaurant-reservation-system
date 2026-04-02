@@ -18,10 +18,10 @@ endif
 
 :Truy vấn Email trong Database;
 if (Email đã tồn tại?) then (Có)
-  if (password_hash IS NULL \nAND is_verified == FALSE?) then (Đúng - Khách Walk-in)
+  if (is_verified == FALSE?) then (Đúng - Khách Walk-in)
     :Cho phép ghi đè (Cập nhật tài khoản hiện tại);
   else (Sai - User đã tồn tại)
-    :Báo lỗi "Email đã được sử dụng";
+    :Báo lỗi "Email đã được đăng ký";
     stop
   endif
 else (Không)
