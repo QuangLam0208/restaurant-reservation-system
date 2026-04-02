@@ -16,13 +16,17 @@ if (Tồn tại tài khoản?) then (Có)
 
     ' Kiểm tra điều kiện xác thực Email
     if (is_verified == TRUE?) then (Có)
-      :Tạo JWT Token / Session ID;
+      :Tạo Session ID;
       :Lưu thông tin phiên đăng nhập;
-      :Trả về Token & Điều hướng vào Trang chủ;
+      :Trả về Token & Điều hướng vào Trang Đặt bàn;
       stop
     else (Không)
       :Báo lỗi "Tài khoản chưa được xác thực";
-      :Hiển thị nút "Gửi lại Email xác thực";
+      if (verification_token_expired == TRUE?) then (Có)
+        :Hệ thống gửi lại Email xác thực;
+      else (Không)
+        :Người dùng vào email để xác thực;
+      endif
       stop
     endif
 
