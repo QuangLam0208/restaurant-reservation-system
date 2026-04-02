@@ -2,7 +2,6 @@ package com.hcmute.reservation.service.impl;
 
 import com.hcmute.reservation.event.TableAlertEvent;
 import com.hcmute.reservation.event.TableStatusChangedEvent;
-import com.hcmute.reservation.model.dto.table.TableAlert;
 import com.hcmute.reservation.model.entity.Reservation;
 import com.hcmute.reservation.model.entity.TableInfo;
 import com.hcmute.reservation.model.enums.ReservationStatus;
