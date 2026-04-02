@@ -46,6 +46,7 @@ public class StaffAuthServiceImpl implements StaffAuthService {
     @Override
     @Transactional
     public void logout(String token) {
+        if (token == null || token.isBlank()) return;
         // Tìm tài khoản dựa trên session token đang hoạt động
         accountRepository.findBySessionToken(token).ifPresent(account -> {
             account.setSessionToken(null);
@@ -56,7 +57,7 @@ public class StaffAuthServiceImpl implements StaffAuthService {
 
     @Override
     @Transactional
-    public void register(StaffRegisterRequest req) {
+    public String register(StaffRegisterRequest req) {
         // Kiểm tra xem username đã tồn tại chưa
         if (accountRepository.findByUsername(req.getUsername()).isPresent()) {
             throw new ConflictException("Tên đăng nhập đã tồn tại trong hệ thống.");
@@ -70,5 +71,6 @@ public class StaffAuthServiceImpl implements StaffAuthService {
                 .build();
 
         accountRepository.save(newAccount);
+        return "Tạo tài khoản " + req.getRole().name() + " thành công!";
     }
 }
