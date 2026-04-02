@@ -18,6 +18,9 @@ namespace reservation_winforms.Forms
 
             ApplyRolePermissions();
 
+            this.Load += MainDashboardForm_Load;
+            this.FormClosing += MainDashboardForm_FormClosing;
+
             LoadUserControl(new UcTableMap());
 
             btnTableMap.Click += BtnTableMap_Click;
@@ -32,6 +35,17 @@ namespace reservation_winforms.Forms
             btnSystemConfig.Click += BtnSystemConfig_Click;
 
             btnLogout.Click += BtnLogout_Click;
+        }
+
+        private async void MainDashboardForm_Load(object sender, EventArgs e)
+        {
+            LoadUserControl(new UcTableMap());
+            await WebSocketService.Instance.ConnectAsync();
+        }
+
+        private async void MainDashboardForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            await WebSocketService.Instance.DisconnectAsync();
         }
 
         private void ApplyRolePermissions()
@@ -110,12 +124,14 @@ namespace reservation_winforms.Forms
         {
             LoadUserControl(new UcSystemConfig());
         }
-        private void BtnLogout_Click(object sender, EventArgs e)
+        private async void BtnLogout_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Are you sure you want to log out of the system?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
+                await WebSocketService.Instance.DisconnectAsync();
+
                 GlobalState.StaffToken = "";
                 GlobalState.CurrentUsername = "";
                 GlobalState.Role = "";
