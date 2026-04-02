@@ -195,6 +195,9 @@
     <EmbeddedResource Include="Forms\UcSystemLogs.resx">
       <DependentUpon>UcSystemLogs.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UcTableMap.resx">
+      <DependentUpon>UcTableMap.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\UcTableSetup.resx">
       <DependentUpon>UcTableSetup.cs</DependentUpon>
     </EmbeddedResource>

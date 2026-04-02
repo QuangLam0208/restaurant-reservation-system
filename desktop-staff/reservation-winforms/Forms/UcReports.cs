@@ -40,17 +40,17 @@ namespace reservation_winforms.Forms
             DtpFromMonth_ValueChanged(null, null);
             NumFromYear_ValueChanged(null, null);
 
-            Series sWalkIn = new Series("Đơn Walk-in");
+            Series sWalkIn = new Series("Walk-in Reservations");
             sWalkIn.ChartType = SeriesChartType.StackedColumn;
             sWalkIn.Color = Color.FromArgb(39, 174, 96);
             sWalkIn.IsValueShownAsLabel = true;
 
-            Series sOnline = new Series("Đơn Online (Thành công)");
+            Series sOnline = new Series("Online Reservations (Success)");
             sOnline.ChartType = SeriesChartType.StackedColumn;
             sOnline.Color = Color.FromArgb(41, 128, 185);
             sOnline.IsValueShownAsLabel = true;
 
-            Series sNoShow = new Series("Khách No-Show");
+            Series sNoShow = new Series("No-Show Guests");
             sNoShow.ChartType = SeriesChartType.StackedColumn;
             sNoShow.Color = Color.FromArgb(243, 156, 18);
             sNoShow.IsValueShownAsLabel = true;
@@ -60,16 +60,15 @@ namespace reservation_winforms.Forms
             chartReservations.Series.Add(sNoShow);
 
             chartReservations.Series[0].Points.Clear();
-            chartReservations.ChartAreas[0].AxisX.Title = "Thời gian";
+            chartReservations.ChartAreas[0].AxisX.Title = "Time";
             chartReservations.ChartAreas[0].AxisX.TitleFont = new Font("Segoe UI", 12, FontStyle.Bold);
-            chartReservations.ChartAreas[0].AxisY.Title = "Số lượng đơn đặt bàn (Đơn)";
+            chartReservations.ChartAreas[0].AxisY.Title = "Number of Reservations";
             chartReservations.ChartAreas[0].AxisY.TitleFont = new Font("Segoe UI", 12, FontStyle.Bold);
 
             btnFilter.Click += BtnFilter_Click;
             tabFilter.SizeMode = TabSizeMode.Fixed;
             tabFilter.ItemSize = new Size((tabFilter.Width / tabFilter.TabCount) - 2, 35);
 
-            // BỔ SUNG: Sự kiện click cho nút xuất Excel
             if (btnExportExcel != null)
             {
                 btnExportExcel.Click += BtnExportExcel_Click;
@@ -111,7 +110,7 @@ namespace reservation_winforms.Forms
             try
             {
                 btnFilter.Enabled = false;
-                btnFilter.Text = "ĐANG TẢI...";
+                btnFilter.Text = "LOADING...";
 
                 _currentReportData = null;
                 _currentRateData = null;
@@ -160,14 +159,14 @@ namespace reservation_winforms.Forms
 
                     lblRate.ForeColor = rateRes.Data.NoShowRate > 15 ? Color.FromArgb(231, 76, 60) : Color.FromArgb(46, 204, 113);
                 }
-                else MessageBox.Show(rateRes.Message, "Lỗi lấy Tỷ lệ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else MessageBox.Show(rateRes.Message, "Error fetching No-Show Rate", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                 if (chartRes.IsSuccess && chartRes.Data != null)
                 {
                     _currentReportData = chartRes.Data;
-                    chartReservations.Series["Đơn Walk-in"].Points.Clear();
-                    chartReservations.Series["Đơn Online (Thành công)"].Points.Clear();
-                    chartReservations.Series["Khách No-Show"].Points.Clear();
+                    chartReservations.Series["Walk-in Reservations"].Points.Clear();
+                    chartReservations.Series["Online Reservations (Success)"].Points.Clear();
+                    chartReservations.Series["No-Show Guests"].Points.Clear();
 
                     foreach (var item in chartRes.Data)
                     {
@@ -179,22 +178,22 @@ namespace reservation_winforms.Forms
                         long noShow = item.NoShowCount;
                         long onlineSuccess = item.TotalOnline - noShow;
 
-                        chartReservations.Series["Đơn Walk-in"].Points.AddXY(displayLabel, walkIn);
-                        chartReservations.Series["Đơn Online (Thành công)"].Points.AddXY(displayLabel, onlineSuccess);
-                        chartReservations.Series["Khách No-Show"].Points.AddXY(displayLabel, noShow);
+                        chartReservations.Series["Walk-in Reservations"].Points.AddXY(displayLabel, walkIn);
+                        chartReservations.Series["Online Reservations (Success)"].Points.AddXY(displayLabel, onlineSuccess);
+                        chartReservations.Series["No-Show Guests"].Points.AddXY(displayLabel, noShow);
 
-                        int lastIdx = chartReservations.Series["Đơn Walk-in"].Points.Count - 1;
-                        chartReservations.Series["Đơn Walk-in"].Points[lastIdx].IsValueShownAsLabel = (walkIn > 0);
-                        chartReservations.Series["Đơn Online (Thành công)"].Points[lastIdx].IsValueShownAsLabel = (onlineSuccess > 0);
-                        chartReservations.Series["Khách No-Show"].Points[lastIdx].IsValueShownAsLabel = (noShow > 0);
+                        int lastIdx = chartReservations.Series["Walk-in Reservations"].Points.Count - 1;
+                        chartReservations.Series["Walk-in Reservations"].Points[lastIdx].IsValueShownAsLabel = (walkIn > 0);
+                        chartReservations.Series["Online Reservations (Success)"].Points[lastIdx].IsValueShownAsLabel = (onlineSuccess > 0);
+                        chartReservations.Series["No-Show Guests"].Points[lastIdx].IsValueShownAsLabel = (noShow > 0);
                     }
                 }
-                else MessageBox.Show(chartRes.Message, "Lỗi vẽ biểu đồ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else MessageBox.Show(chartRes.Message, "Error rendering chart", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
                 btnFilter.Enabled = true;
-                btnFilter.Text = "🔍 LỌC DỮ LIỆU";
+                btnFilter.Text = "FILTER DATA";
             }
         }
 
@@ -202,11 +201,11 @@ namespace reservation_winforms.Forms
         {
             if (_currentReportData == null || _currentReportData.Count == 0 || _currentRateData == null)
             {
-                MessageBox.Show("Không có dữ liệu báo cáo để xuất!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("There is no report data to export!", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel CSV File|*.csv", FileName = $"BaoCao_ThongKe_{DateTime.Now:ddMMyyyy}.csv" })
+            using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel CSV File|*.csv", FileName = $"Statistics_Report_{DateTime.Now:ddMMyyyy}.csv" })
             {
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
@@ -215,17 +214,17 @@ namespace reservation_winforms.Forms
                         StringBuilder sb = new StringBuilder();
                         sb.Append('\uFEFF');
 
-                        sb.AppendLine("1. TỔNG QUAN BÁO CÁO");
-                        sb.AppendLine($"Tổng số đơn đã đặt:,\"{_currentRateData.TotalAll}\"");
-                        sb.AppendLine($"Đơn Online:,\"{_currentRateData.TotalOnline}\"");
-                        sb.AppendLine($"Đơn Walk-in:,\"{_currentRateData.TotalWalkIn}\"");
-                        sb.AppendLine($"Số khách bỏ chỗ (No-Show):,\"{_currentRateData.NoShowCount}\"");
-                        sb.AppendLine($"Tỷ lệ No-Show:,\"{_currentRateData.NoShowRate}%\"");
+                        sb.AppendLine("1. REPORT OVERVIEW");
+                        sb.AppendLine($"Total Reservations:,\"{_currentRateData.TotalAll}\"");
+                        sb.AppendLine($"Online Reservations:,\"{_currentRateData.TotalOnline}\"");
+                        sb.AppendLine($"Walk-in Reservations:,\"{_currentRateData.TotalWalkIn}\"");
+                        sb.AppendLine($"No-Show Guests:,\"{_currentRateData.NoShowCount}\"");
+                        sb.AppendLine($"No-Show Rate:,\"{_currentRateData.NoShowRate}%\"");
                         sb.AppendLine();
                         sb.AppendLine();
 
-                        sb.AppendLine("2. CHI TIẾT THEO THỜI GIAN");
-                        sb.AppendLine("Thời gian,Tổng đơn đặt,Đơn Walk-in,Đơn Online,Khách No-Show");
+                        sb.AppendLine("2. DETAILS BY TIME");
+                        sb.AppendLine("Time,Total Reservations,Walk-in Reservations,Online Reservations,No-Show Guests");
 
                         foreach (var item in _currentReportData)
                         {
@@ -234,11 +233,11 @@ namespace reservation_winforms.Forms
                         }
 
                         File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
-                        MessageBox.Show("Xuất báo cáo ra Excel thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Report exported to Excel successfully!", "Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Lỗi khi xuất file: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Error exporting file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }

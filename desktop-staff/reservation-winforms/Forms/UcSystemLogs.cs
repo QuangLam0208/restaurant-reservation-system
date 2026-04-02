@@ -29,8 +29,8 @@ namespace reservation_winforms.Forms
 
             btnFilter.Click += BtnFilter_Click;
 
-            txtSearch.GotFocus += RemoveText;
-            txtSearch.LostFocus += AddText;
+            txtSearch.Text = "";
+            txtSearch.ForeColor = Color.Black;
             txtSearch.TextChanged += TxtSearch_TextChanged;
 
             dgvLogs.RowTemplate.Height = 50;
@@ -45,24 +45,6 @@ namespace reservation_winforms.Forms
             dtpTo.MinDate = dtpFrom.Value.Date;
         }
 
-        private void RemoveText(object sender, EventArgs e)
-        {
-            if (txtSearch.Text == "Nhập tên nhân viên hoặc mã đơn...")
-            {
-                txtSearch.Text = "";
-                txtSearch.ForeColor = Color.Black;
-            }
-        }
-
-        private void AddText(object sender, EventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(txtSearch.Text))
-            {
-                txtSearch.Text = "Nhập tên nhân viên hoặc mã đơn...";
-                txtSearch.ForeColor = Color.Gray;
-            }
-        }
-
         private async void BtnFilter_Click(object sender, EventArgs e)
         {
             await LoadLogsAsync();
@@ -71,7 +53,7 @@ namespace reservation_winforms.Forms
         private async Task LoadLogsAsync()
         {
             btnFilter.Enabled = false;
-            btnFilter.Text = "ĐANG TẢI...";
+            btnFilter.Text = "LOADING...";
 
             DateTime fromDate = dtpFrom.Value.Date;
             DateTime toDate = dtpTo.Value.Date.AddDays(1).AddTicks(-1);
@@ -82,7 +64,8 @@ namespace reservation_winforms.Forms
             {
                 _allLogs = res.Data;
 
-                if (txtSearch.Text != "Nhập tên nhân viên hoặc mã đơn..." && !string.IsNullOrWhiteSpace(txtSearch.Text))
+                // Nếu ô tìm kiếm đang có chữ thì tự động lọc lại luôn
+                if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
                     TxtSearch_TextChanged(null, null);
                 }
@@ -93,11 +76,11 @@ namespace reservation_winforms.Forms
             }
             else
             {
-                MessageBox.Show(res.Message, "Lỗi lấy dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(res.Message, "Data Retrieval Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             btnFilter.Enabled = true;
-            btnFilter.Text = "LỌC DỮ LIỆU";
+            btnFilter.Text = "FILTER DATA";
         }
 
         private void RenderLogs(List<OverrideLogResponse> list)
@@ -119,7 +102,7 @@ namespace reservation_winforms.Forms
         {
             string keyword = txtSearch.Text.Trim().ToLower();
 
-            if (keyword == "nhập tên nhân viên hoặc mã đơn..." || string.IsNullOrEmpty(keyword))
+            if (string.IsNullOrEmpty(keyword))
             {
                 RenderLogs(_allLogs);
                 return;
@@ -132,11 +115,12 @@ namespace reservation_winforms.Forms
 
             RenderLogs(filteredList);
         }
+
         private void BtnExportExcel_Click(object sender, EventArgs e)
         {
             if (dgvLogs.Rows.Count == 0 || (dgvLogs.Rows.Count == 1 && dgvLogs.Rows[0].IsNewRow))
             {
-                MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("No data to export!", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -147,9 +131,9 @@ namespace reservation_winforms.Forms
                     try
                     {
                         StringBuilder sb = new StringBuilder();
-                        sb.Append('\uFEFF'); // BOM giúp Excel đọc tiếng Việt có dấu
+                        sb.Append('\uFEFF');
 
-                        sb.AppendLine("Thời gian,Tên nhân viên,Mã đơn,Lý do");
+                        sb.AppendLine("Time,Staff Name,Reservation ID,Reason");
 
                         foreach (DataGridViewRow row in dgvLogs.Rows)
                         {
@@ -165,11 +149,11 @@ namespace reservation_winforms.Forms
                         }
 
                         File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
-                        MessageBox.Show("Xuất file Excel thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Excel file exported successfully!", "Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Lỗi khi xuất file: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Error exporting file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }

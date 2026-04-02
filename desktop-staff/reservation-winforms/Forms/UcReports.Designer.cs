@@ -93,7 +93,7 @@ namespace reservation_winforms.Forms
             this.btnExportExcel.Name = "btnExportExcel";
             this.btnExportExcel.Size = new System.Drawing.Size(200, 48);
             this.btnExportExcel.TabIndex = 3;
-            this.btnExportExcel.Text = "XUẤT EXCEL";
+            this.btnExportExcel.Text = "EXPORT EXCEL";
             this.btnExportExcel.UseVisualStyleBackColor = false;
             // 
             // lblTitle
@@ -103,13 +103,14 @@ namespace reservation_winforms.Forms
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.lblTitle.Location = new System.Drawing.Point(30, 22);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(441, 48);
+            this.lblTitle.Size = new System.Drawing.Size(462, 48);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "📈 BÁO CÁO & THỐNG KÊ";
+            this.lblTitle.Text = "📈 REPORT & STATISTICS";
             // 
             // pnlFilter
             // 
-            this.pnlFilter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlFilter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlFilter.BackColor = System.Drawing.Color.White;
             this.pnlFilter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlFilter.Controls.Add(this.tabFilter);
@@ -144,7 +145,7 @@ namespace reservation_winforms.Forms
             this.tabPageDate.Name = "tabPageDate";
             this.tabPageDate.Size = new System.Drawing.Size(1127, 92);
             this.tabPageDate.TabIndex = 0;
-            this.tabPageDate.Text = "Lọc theo Ngày";
+            this.tabPageDate.Text = "Filter by Date";
             this.tabPageDate.UseVisualStyleBackColor = true;
             // 
             // lblToDate
@@ -152,9 +153,9 @@ namespace reservation_winforms.Forms
             this.lblToDate.AutoSize = true;
             this.lblToDate.Location = new System.Drawing.Point(338, 13);
             this.lblToDate.Name = "lblToDate";
-            this.lblToDate.Size = new System.Drawing.Size(122, 32);
+            this.lblToDate.Size = new System.Drawing.Size(100, 32);
             this.lblToDate.TabIndex = 2;
-            this.lblToDate.Text = "Đến ngày:";
+            this.lblToDate.Text = "To date:";
             // 
             // dtpToDate
             // 
@@ -169,14 +170,14 @@ namespace reservation_winforms.Forms
             this.lblFromDate.AutoSize = true;
             this.lblFromDate.Location = new System.Drawing.Point(18, 13);
             this.lblFromDate.Name = "lblFromDate";
-            this.lblFromDate.Size = new System.Drawing.Size(105, 32);
+            this.lblFromDate.Size = new System.Drawing.Size(127, 32);
             this.lblFromDate.TabIndex = 0;
-            this.lblFromDate.Text = "Từ ngày:";
+            this.lblFromDate.Text = "From date:";
             // 
             // dtpFromDate
             // 
             this.dtpFromDate.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpFromDate.Location = new System.Drawing.Point(128, 10);
+            this.dtpFromDate.Location = new System.Drawing.Point(148, 10);
             this.dtpFromDate.Name = "dtpFromDate";
             this.dtpFromDate.Size = new System.Drawing.Size(180, 39);
             this.dtpFromDate.TabIndex = 1;
@@ -191,7 +192,7 @@ namespace reservation_winforms.Forms
             this.tabPageMonth.Name = "tabPageMonth";
             this.tabPageMonth.Size = new System.Drawing.Size(1127, 92);
             this.tabPageMonth.TabIndex = 1;
-            this.tabPageMonth.Text = "Lọc theo Tháng";
+            this.tabPageMonth.Text = "Filter by Month";
             this.tabPageMonth.UseVisualStyleBackColor = true;
             // 
             // lblToMonth
@@ -199,9 +200,9 @@ namespace reservation_winforms.Forms
             this.lblToMonth.AutoSize = true;
             this.lblToMonth.Location = new System.Drawing.Point(319, 15);
             this.lblToMonth.Name = "lblToMonth";
-            this.lblToMonth.Size = new System.Drawing.Size(132, 32);
+            this.lblToMonth.Size = new System.Drawing.Size(123, 32);
             this.lblToMonth.TabIndex = 2;
-            this.lblToMonth.Text = "Đến tháng:";
+            this.lblToMonth.Text = "To month:";
             // 
             // dtpToMonth
             // 
@@ -218,15 +219,15 @@ namespace reservation_winforms.Forms
             this.lblFromMonth.AutoSize = true;
             this.lblFromMonth.Location = new System.Drawing.Point(19, 15);
             this.lblFromMonth.Name = "lblFromMonth";
-            this.lblFromMonth.Size = new System.Drawing.Size(115, 32);
+            this.lblFromMonth.Size = new System.Drawing.Size(150, 32);
             this.lblFromMonth.TabIndex = 0;
-            this.lblFromMonth.Text = "Từ tháng:";
+            this.lblFromMonth.Text = "From month:";
             // 
             // dtpFromMonth
             // 
             this.dtpFromMonth.CustomFormat = "MM/yyyy";
             this.dtpFromMonth.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtpFromMonth.Location = new System.Drawing.Point(139, 12);
+            this.dtpFromMonth.Location = new System.Drawing.Point(179, 12);
             this.dtpFromMonth.Name = "dtpFromMonth";
             this.dtpFromMonth.ShowUpDown = true;
             this.dtpFromMonth.Size = new System.Drawing.Size(150, 39);
@@ -242,7 +243,7 @@ namespace reservation_winforms.Forms
             this.tabPageYear.Name = "tabPageYear";
             this.tabPageYear.Size = new System.Drawing.Size(1127, 92);
             this.tabPageYear.TabIndex = 2;
-            this.tabPageYear.Text = "Lọc theo Năm";
+            this.tabPageYear.Text = "Filter by Year";
             this.tabPageYear.UseVisualStyleBackColor = true;
             // 
             // lblFromYear
@@ -250,13 +251,13 @@ namespace reservation_winforms.Forms
             this.lblFromYear.AutoSize = true;
             this.lblFromYear.Location = new System.Drawing.Point(16, 16);
             this.lblFromYear.Name = "lblFromYear";
-            this.lblFromYear.Size = new System.Drawing.Size(100, 32);
+            this.lblFromYear.Size = new System.Drawing.Size(126, 32);
             this.lblFromYear.TabIndex = 0;
-            this.lblFromYear.Text = "Từ năm:";
+            this.lblFromYear.Text = "From year:";
             // 
             // numFromYear
             // 
-            this.numFromYear.Location = new System.Drawing.Point(122, 13);
+            this.numFromYear.Location = new System.Drawing.Point(152, 13);
             this.numFromYear.Maximum = new decimal(new int[] { 2100, 0, 0, 0 });
             this.numFromYear.Minimum = new decimal(new int[] { 2020, 0, 0, 0 });
             this.numFromYear.Name = "numFromYear";
@@ -267,11 +268,11 @@ namespace reservation_winforms.Forms
             // lblToYear
             // 
             this.lblToYear.AutoSize = true;
-            this.lblToYear.Location = new System.Drawing.Point(249, 16);
+            this.lblToYear.Location = new System.Drawing.Point(269, 16);
             this.lblToYear.Name = "lblToYear";
-            this.lblToYear.Size = new System.Drawing.Size(117, 32);
+            this.lblToYear.Size = new System.Drawing.Size(99, 32);
             this.lblToYear.TabIndex = 2;
-            this.lblToYear.Text = "Đến năm:";
+            this.lblToYear.Text = "To year:";
             // 
             // numToYear
             // 
@@ -296,13 +297,12 @@ namespace reservation_winforms.Forms
             this.btnFilter.Name = "btnFilter";
             this.btnFilter.Size = new System.Drawing.Size(274, 50);
             this.btnFilter.TabIndex = 1;
-            this.btnFilter.Text = "LỌC DỮ LIỆU";
+            this.btnFilter.Text = "FILTER DATA";
             this.btnFilter.UseVisualStyleBackColor = false;
             // 
             // tlpCards
             // 
-            this.tlpCards.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tlpCards.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.tlpCards.ColumnCount = 5;
             this.tlpCards.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tlpCards.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
@@ -356,7 +356,7 @@ namespace reservation_winforms.Forms
             this.lblTotalAllTitle.Name = "lblTotalAllTitle";
             this.lblTotalAllTitle.Size = new System.Drawing.Size(279, 50);
             this.lblTotalAllTitle.TabIndex = 0;
-            this.lblTotalAllTitle.Text = "TỔNG ĐƠN ĐÃ ĐẶT";
+            this.lblTotalAllTitle.Text = "TOTAL RESERVED";
             this.lblTotalAllTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // pnlCard2
@@ -394,7 +394,7 @@ namespace reservation_winforms.Forms
             this.lblTotalOnlineTitle.Name = "lblTotalOnlineTitle";
             this.lblTotalOnlineTitle.Size = new System.Drawing.Size(279, 50);
             this.lblTotalOnlineTitle.TabIndex = 2;
-            this.lblTotalOnlineTitle.Text = "ĐƠN ONLINE";
+            this.lblTotalOnlineTitle.Text = "ONLINE BOOKINGS";
             this.lblTotalOnlineTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // pnlCard3
@@ -432,7 +432,7 @@ namespace reservation_winforms.Forms
             this.lblTotalWalkInTitle.Name = "lblTotalWalkInTitle";
             this.lblTotalWalkInTitle.Size = new System.Drawing.Size(279, 50);
             this.lblTotalWalkInTitle.TabIndex = 4;
-            this.lblTotalWalkInTitle.Text = "ĐƠN WALK-IN";
+            this.lblTotalWalkInTitle.Text = "WALK-IN GUESTS";
             this.lblTotalWalkInTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // pnlCard4
@@ -470,7 +470,7 @@ namespace reservation_winforms.Forms
             this.lblNoShowTitle.Name = "lblNoShowTitle";
             this.lblNoShowTitle.Size = new System.Drawing.Size(279, 50);
             this.lblNoShowTitle.TabIndex = 6;
-            this.lblNoShowTitle.Text = "SỐ KHÁCH BỎ CHỖ";
+            this.lblNoShowTitle.Text = "NO-SHOW GUESTS";
             this.lblNoShowTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // pnlCard5
@@ -508,7 +508,7 @@ namespace reservation_winforms.Forms
             this.lblRateTitle.Name = "lblRateTitle";
             this.lblRateTitle.Size = new System.Drawing.Size(294, 50);
             this.lblRateTitle.TabIndex = 8;
-            this.lblRateTitle.Text = "TỶ LỆ NO-SHOW";
+            this.lblRateTitle.Text = "NO-SHOW RATE";
             this.lblRateTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // chartReservations
@@ -521,7 +521,7 @@ namespace reservation_winforms.Forms
             series1.ChartArea = "ChartArea1";
             series1.Color = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
             series1.IsValueShownAsLabel = true;
-            series1.Name = "Đơn đặt bàn";
+            series1.Name = "Reservations";
             this.chartReservations.Series.Add(series1);
             this.chartReservations.Size = new System.Drawing.Size(1470, 520);
             this.chartReservations.TabIndex = 0;

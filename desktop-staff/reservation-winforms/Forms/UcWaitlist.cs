@@ -25,7 +25,7 @@ namespace reservation_winforms.Forms
             this.Load += async (s, e) => await LoadDataAsync();
             btnReload.Click += async (s, e) => await LoadDataAsync();
             btnAdd.Click += async (s, e) => await AddNewWaitlistAsync();
-                
+
             btnSearchMissing.Click += (s, e) => RenderMissingGrid();
             txtSearchMissing.KeyDown += (s, e) => {
                 if (e.KeyCode == Keys.Enter) RenderMissingGrid();
@@ -38,7 +38,7 @@ namespace reservation_winforms.Forms
         private async Task LoadDataAsync()
         {
             btnReload.Enabled = false;
-            btnReload.Text = "ĐANG TẢI...";
+            btnReload.Text = "LOADING...";
 
             var res = await _waitlistService.GetWaitlistAsync();
             if (res.IsSuccess)
@@ -49,11 +49,11 @@ namespace reservation_winforms.Forms
             }
             else
             {
-                MessageBox.Show(res.Message, "Lỗi tải dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(res.Message, "Data Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             btnReload.Enabled = true;
-            btnReload.Text = "🔄 CẬP NHẬT";
+            btnReload.Text = "🔄 RELOAD";
         }
 
         private void RenderWaitingGrid()
@@ -61,7 +61,7 @@ namespace reservation_winforms.Forms
             dgvWaiting.Rows.Clear();
             var waitingList = _masterData.Where(x => x.Status.ToString() == "WAITING").ToList();
 
-            tabWaiting.Text = $"ĐANG CHỜ ({waitingList.Count})";
+            tabWaiting.Text = $"WAITING ({waitingList.Count})";
 
             for (int i = 0; i < waitingList.Count; i++)
             {
@@ -72,9 +72,9 @@ namespace reservation_winforms.Forms
                     item.CustomerPhone,
                     item.GuestCount,
                     item.JoinedAt.ToString("HH:mm"),
-                    item.ReadyToSeat ? "Xếp Bàn" : "Chưa có bàn",
-                    "Vắng",
-                    "Hủy"
+                    item.ReadyToSeat ? "Seat Table" : "No tables",
+                    "Missed",
+                    "Cancel"
                 );
 
                 dgvWaiting.Rows[rowIndex].Tag = item;
@@ -111,7 +111,7 @@ namespace reservation_winforms.Forms
                 .Where(x => string.IsNullOrEmpty(keyword) || x.CustomerPhone.Contains(keyword))
                 .ToList();
 
-            tabMissing.Text = $"VẮNG MẶT ({missingList.Count})";
+            tabMissing.Text = $"MISSED ({missingList.Count})";
 
             for (int i = 0; i < missingList.Count; i++)
             {
@@ -122,9 +122,9 @@ namespace reservation_winforms.Forms
                     item.CustomerPhone,
                     item.GuestCount,
                     item.JoinedAt.ToString("HH:mm"),
-                    item.ReadyToSeat ? "Xếp Bàn" : "Chưa có bàn",
-                    "Chờ Lại",
-                    "Hủy"
+                    item.ReadyToSeat ? "Seat Table" : "No tables",
+                    "Re-wait",
+                    "Cancel"
                 );
 
                 dgvMissing.Rows[rowIndex].Tag = item;
@@ -155,13 +155,13 @@ namespace reservation_winforms.Forms
 
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(phone))
             {
-                MessageBox.Show("Vui lòng nhập đầy đủ Tên và Số điện thoại!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter both Name and Phone number!", "Missing Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (!Regex.IsMatch(phone, @"^(0[3|5|7|8|9])+([0-9]{8})$"))
             {
-                MessageBox.Show("Số điện thoại không hợp lệ!\nVui lòng nhập đúng 10 chữ số và bắt đầu bằng số 0 (Ví dụ: 0912345678).", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Invalid phone number!\nPlease enter exactly 10 digits starting with 0 (E.g.: 0912345678).", "Input Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtPhone.Focus();
                 return;
             }
@@ -173,8 +173,8 @@ namespace reservation_winforms.Forms
 
             if (res.IsSuccess)
             {
-                txtName.Clear(); 
-                txtPhone.Clear(); 
+                txtName.Clear();
+                txtPhone.Clear();
                 nudGuests.Value = 2;
                 chkAllowShortSeating.Checked = false;
 
@@ -182,7 +182,7 @@ namespace reservation_winforms.Forms
             }
             else
             {
-                MessageBox.Show(res.Message, "Lỗi thêm Waitlist", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(res.Message, "Error Adding Waitlist", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             btnAdd.Enabled = true;
         }
@@ -197,7 +197,7 @@ namespace reservation_winforms.Forms
             {
                 if (!item.ReadyToSeat)
                 {
-                    MessageBox.Show("Chưa có bàn trống phù hợp cho nhóm khách này. Hãy bấm 'CẬP NHẬT' để kiểm tra lại hệ thống.", "Chưa có bàn", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("There are no available tables for this group size yet. Please click 'RELOAD' to check the system again.", "No Tables", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
                 await HandleSeatAction(item);
@@ -208,7 +208,7 @@ namespace reservation_winforms.Forms
             }
             else if (e.ColumnIndex == colWaitActionSkip.Index)
             {
-                if (MessageBox.Show("Xác nhận bỏ qua và xóa khách này khỏi danh sách chờ?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                if (MessageBox.Show("Are you sure you want to cancel and remove this customer from the waitlist?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     await CallActionAsync(item.WaitlistId, "skip");
                 }
@@ -225,7 +225,7 @@ namespace reservation_winforms.Forms
             {
                 if (!item.ReadyToSeat)
                 {
-                    MessageBox.Show("Chưa có bàn trống phù hợp cho nhóm khách này.", "Chưa có bàn", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("There are no available tables for this group size yet.", "No Tables", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
                 await HandleSeatAction(item);
@@ -237,7 +237,7 @@ namespace reservation_winforms.Forms
             }
             else if (e.ColumnIndex == colMissActionSkip.Index)
             {
-                if (MessageBox.Show("Xác nhận hủy yêu cầu của khách này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                if (MessageBox.Show("Are you sure you want to cancel this customer's request?", "Confirm Cancel", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     await CallActionAsync(item.WaitlistId, "skip");
                 }
@@ -253,7 +253,7 @@ namespace reservation_winforms.Forms
             }
             else
             {
-                MessageBox.Show(res.Message, "Lỗi thực thi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(res.Message, "Execution Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -262,7 +262,7 @@ namespace reservation_winforms.Forms
             var optionsRes = await _reservationService.GetWalkInOptionsAsync(item.GuestCount);
             if (!optionsRes.IsSuccess || optionsRes.Data.Groups.Count == 0)
             {
-                MessageBox.Show("Hệ thống báo lỗi hoặc không còn bàn trống thực tế.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("System returned an error or there are no actual tables available.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -274,7 +274,7 @@ namespace reservation_winforms.Forms
 
             if (!suggestRes.IsSuccess)
             {
-                MessageBox.Show(suggestRes.Message, "Lỗi khóa bàn", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(suggestRes.Message, "Table Lock Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -282,12 +282,12 @@ namespace reservation_winforms.Forms
             if (confirmRes.IsSuccess)
             {
                 await _waitlistService.MarkActionAsync(item.WaitlistId, "seat");
-                MessageBox.Show("Đã xếp khách vào bàn thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Customer seated successfully!", "Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 await LoadDataAsync();
             }
             else
             {
-                MessageBox.Show(confirmRes.Message, "Lỗi xác nhận", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(confirmRes.Message, "Confirmation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -297,7 +297,7 @@ namespace reservation_winforms.Forms
 
             Form popup = new Form
             {
-                Text = $"Danh sách phương án xếp bàn cho {guestCount} khách",
+                Text = $"Table suggestions for {guestCount} pax",
                 Size = new Size(550, 500),
                 StartPosition = FormStartPosition.CenterParent,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
@@ -324,17 +324,17 @@ namespace reservation_winforms.Forms
                     Font = new Font("Segoe UI", 12, FontStyle.Bold),
                     AutoSize = true,
                     Margin = new Padding(0, 10, 0, 5),
-                    ForeColor = group.GroupName.Contains("Ưu tiên") ? Color.MediumSeaGreen : Color.Orange
+                    ForeColor = group.GroupName.Contains("Priority") ? Color.MediumSeaGreen : Color.Orange
                 };
                 flp.Controls.Add(lblGroup);
 
                 foreach (var opt in group.Options)
                 {
                     string tableStr = string.Join(", ", opt.TableIds);
-                    string typeStr = opt.TableIds.Count > 1 ? "Ghép bàn" : "Bàn đơn";
-                    string limitStr = opt.AvailableUntil.HasValue ? $" | Phải trả bàn lúc: {opt.AvailableUntil.Value:HH:mm}" : "";
+                    string typeStr = opt.TableIds.Count > 1 ? "Combined" : "Single";
+                    string limitStr = opt.AvailableUntil.HasValue ? $" | Must leave by: {opt.AvailableUntil.Value:HH:mm}" : "";
 
-                    string btnText = $"Bàn {tableStr} ({opt.TotalCapacity} chỗ) - {typeStr}{limitStr}";
+                    string btnText = $"Table {tableStr} ({opt.TotalCapacity} pax) - {typeStr}{limitStr}";
 
                     Button btnOpt = new Button
                     {

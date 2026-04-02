@@ -49,15 +49,17 @@ namespace reservation_winforms.Forms
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.lblTitle.Location = new System.Drawing.Point(30, 22);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(442, 48);
+            this.lblTitle.Size = new System.Drawing.Size(264, 48);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "⚙️ QUẢN LÝ SƠ ĐỒ BÀN";
+            this.lblTitle.Text = "TABLE SETUP";
             // 
             // dgvTables
             // 
             this.dgvTables.AllowUserToAddRows = false;
             this.dgvTables.AllowUserToDeleteRows = false;
-            this.dgvTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgvTables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvTables.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvTables.BackgroundColor = System.Drawing.Color.White;
             this.dgvTables.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -74,7 +76,8 @@ namespace reservation_winforms.Forms
             // 
             // pnlEdit
             // 
-            this.pnlEdit.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlEdit.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlEdit.BackColor = System.Drawing.Color.White;
             this.pnlEdit.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlEdit.Controls.Add(this.lblEditTitle);
@@ -99,9 +102,9 @@ namespace reservation_winforms.Forms
             this.lblEditTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
             this.lblEditTitle.Location = new System.Drawing.Point(30, 30);
             this.lblEditTitle.Name = "lblEditTitle";
-            this.lblEditTitle.Size = new System.Drawing.Size(277, 45);
+            this.lblEditTitle.Size = new System.Drawing.Size(206, 45);
             this.lblEditTitle.TabIndex = 0;
-            this.lblEditTitle.Text = "THÔNG TIN BÀN";
+            this.lblEditTitle.Text = "TABLE INFO";
             // 
             // lblTableId
             // 
@@ -109,9 +112,9 @@ namespace reservation_winforms.Forms
             this.lblTableId.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.lblTableId.Location = new System.Drawing.Point(30, 110);
             this.lblTableId.Name = "lblTableId";
-            this.lblTableId.Size = new System.Drawing.Size(144, 32);
+            this.lblTableId.Size = new System.Drawing.Size(105, 32);
             this.lblTableId.TabIndex = 1;
-            this.lblTableId.Text = "Mã bàn (ID):";
+            this.lblTableId.Text = "Table ID:";
             // 
             // txtTableId
             // 
@@ -129,9 +132,9 @@ namespace reservation_winforms.Forms
             this.lblCapacity.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.lblCapacity.Location = new System.Drawing.Point(30, 190);
             this.lblCapacity.Name = "lblCapacity";
-            this.lblCapacity.Size = new System.Drawing.Size(115, 32);
+            this.lblCapacity.Size = new System.Drawing.Size(110, 32);
             this.lblCapacity.TabIndex = 3;
-            this.lblCapacity.Text = "Sức chứa:";
+            this.lblCapacity.Text = "Capacity:";
             // 
             // numCapacity
             // 
@@ -151,9 +154,9 @@ namespace reservation_winforms.Forms
             this.chkIsActive.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.chkIsActive.Location = new System.Drawing.Point(180, 263);
             this.chkIsActive.Name = "chkIsActive";
-            this.chkIsActive.Size = new System.Drawing.Size(226, 36);
+            this.chkIsActive.Size = new System.Drawing.Size(110, 36);
             this.chkIsActive.TabIndex = 5;
-            this.chkIsActive.Text = "Đang hoạt động";
+            this.chkIsActive.Text = "Active";
             // 
             // btnSave
             // 
@@ -166,7 +169,7 @@ namespace reservation_winforms.Forms
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(210, 50);
             this.btnSave.TabIndex = 6;
-            this.btnSave.Text = "➕ THÊM MỚI";
+            this.btnSave.Text = "➕ ADD NEW";
             this.btnSave.UseVisualStyleBackColor = false;
             // 
             // btnUpdate
@@ -180,7 +183,7 @@ namespace reservation_winforms.Forms
             this.btnUpdate.Name = "btnUpdate";
             this.btnUpdate.Size = new System.Drawing.Size(210, 50);
             this.btnUpdate.TabIndex = 7;
-            this.btnUpdate.Text = "💾 CẬP NHẬT";
+            this.btnUpdate.Text = "💾 UPDATE";
             this.btnUpdate.UseVisualStyleBackColor = false;
             // 
             // btnDelete
@@ -195,7 +198,7 @@ namespace reservation_winforms.Forms
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.Size = new System.Drawing.Size(210, 50);
             this.btnDelete.TabIndex = 8;
-            this.btnDelete.Text = "🗑️ VÔ HIỆU HÓA";
+            this.btnDelete.Text = "🗑️ DISABLE";
             this.btnDelete.UseVisualStyleBackColor = false;
             // 
             // btnClear
@@ -209,7 +212,7 @@ namespace reservation_winforms.Forms
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(210, 50);
             this.btnClear.TabIndex = 9;
-            this.btnClear.Text = "Làm mới Form";
+            this.btnClear.Text = "Clear Form";
             this.btnClear.UseVisualStyleBackColor = false;
             // 
             // UcTableSetup

@@ -68,7 +68,7 @@
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(593, 48);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "XÁC NHẬN ĐẶT TRƯỚC (ONLINE)";
+            this.lblTitle.Text = "ONLINE BOOKING CONFIRMATION";
             // 
             // pnlSearch
             // 
@@ -93,7 +93,7 @@
             this.lblSearchHint.Name = "lblSearchHint";
             this.lblSearchHint.Size = new System.Drawing.Size(319, 38);
             this.lblSearchHint.TabIndex = 0;
-            this.lblSearchHint.Text = "Số điện thoại / Mã đơn:";
+            this.lblSearchHint.Text = "Phone No / Booking ID:";
             // 
             // txtSearch
             // 
@@ -115,7 +115,7 @@
             this.btnSearch.Name = "btnSearch";
             this.btnSearch.Size = new System.Drawing.Size(180, 52);
             this.btnSearch.TabIndex = 2;
-            this.btnSearch.Text = "TÌM KIẾM";
+            this.btnSearch.Text = "SEARCH";
             this.btnSearch.UseVisualStyleBackColor = false;
             // 
             // btnReload
@@ -130,7 +130,7 @@
             this.btnReload.Name = "btnReload";
             this.btnReload.Size = new System.Drawing.Size(180, 52);
             this.btnReload.TabIndex = 3;
-            this.btnReload.Text = "🔄 TẢI LẠI";
+            this.btnReload.Text = "RELOAD";
             this.btnReload.UseVisualStyleBackColor = false;
             // 
             // flpReservations
@@ -182,7 +182,7 @@
             this.lblDetailTitle.Name = "lblDetailTitle";
             this.lblDetailTitle.Size = new System.Drawing.Size(351, 45);
             this.lblDetailTitle.TabIndex = 0;
-            this.lblDetailTitle.Text = "THÔNG TIN ĐẶT BÀN:";
+            this.lblDetailTitle.Text = "RESERVATION INFO:";
             // 
             // lblTitleName
             // 
@@ -193,7 +193,7 @@
             this.lblTitleName.Name = "lblTitleName";
             this.lblTitleName.Size = new System.Drawing.Size(169, 38);
             this.lblTitleName.TabIndex = 1;
-            this.lblTitleName.Text = "Khách hàng:";
+            this.lblTitleName.Text = "Customer:";
             // 
             // lblValName
             // 
@@ -214,7 +214,7 @@
             this.lblTitlePhone.Name = "lblTitlePhone";
             this.lblTitlePhone.Size = new System.Drawing.Size(151, 38);
             this.lblTitlePhone.TabIndex = 3;
-            this.lblTitlePhone.Text = "Điện thoại:";
+            this.lblTitlePhone.Text = "Phone:";
             // 
             // lblValPhone
             // 
@@ -235,7 +235,7 @@
             this.lblTitleTime.Name = "lblTitleTime";
             this.lblTitleTime.Size = new System.Drawing.Size(107, 38);
             this.lblTitleTime.TabIndex = 5;
-            this.lblTitleTime.Text = "Giờ tới:";
+            this.lblTitleTime.Text = "Arrival:";
             // 
             // lblValTime
             // 
@@ -257,7 +257,7 @@
             this.lblTitleGuests.Name = "lblTitleGuests";
             this.lblTitleGuests.Size = new System.Drawing.Size(135, 38);
             this.lblTitleGuests.TabIndex = 7;
-            this.lblTitleGuests.Text = "Số lượng:";
+            this.lblTitleGuests.Text = "Guests:";
             // 
             // lblValGuests
             // 
@@ -278,7 +278,7 @@
             this.lblTitleTable.Name = "lblTitleTable";
             this.lblTitleTable.Size = new System.Drawing.Size(162, 38);
             this.lblTitleTable.TabIndex = 9;
-            this.lblTitleTable.Text = "Bàn đã xếp:";
+            this.lblTitleTable.Text = "Table:";
             // 
             // lblValTable
             // 
@@ -300,7 +300,7 @@
             this.lblTitleTableStatus.Name = "lblTitleTableStatus";
             this.lblTitleTableStatus.Size = new System.Drawing.Size(150, 38);
             this.lblTitleTableStatus.TabIndex = 11;
-            this.lblTitleTableStatus.Text = "Tình trạng:";
+            this.lblTitleTableStatus.Text = "Status:";
             // 
             // lblValTableStatus
             // 
@@ -331,7 +331,7 @@
             this.lblTitleNote.Name = "lblTitleNote";
             this.lblTitleNote.Size = new System.Drawing.Size(117, 38);
             this.lblTitleNote.TabIndex = 14;
-            this.lblTitleNote.Text = "Ghi chú:";
+            this.lblTitleNote.Text = "Note:";
             // 
             // lblValNote
             // 
@@ -357,7 +357,7 @@
             this.btnChangeTable.Name = "btnChangeTable";
             this.btnChangeTable.Size = new System.Drawing.Size(350, 80);
             this.btnChangeTable.TabIndex = 6;
-            this.btnChangeTable.Text = "ĐỔI BÀN";
+            this.btnChangeTable.Text = "CHANGE TABLE";
             this.btnChangeTable.UseVisualStyleBackColor = false;
             // 
             // btnCheckIn

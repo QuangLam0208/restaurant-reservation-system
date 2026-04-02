@@ -96,7 +96,7 @@ namespace reservation_winforms.Forms
             this.btnReload.Name = "btnReload";
             this.btnReload.Size = new System.Drawing.Size(220, 50);
             this.btnReload.TabIndex = 1;
-            this.btnReload.Text = "🔄 LÀM MỚI";
+            this.btnReload.Text = "RELOAD";
             this.btnReload.UseVisualStyleBackColor = false;
             // 
             // lblTitle
@@ -106,9 +106,9 @@ namespace reservation_winforms.Forms
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
             this.lblTitle.Location = new System.Drawing.Point(30, 22);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(565, 48);
+            this.lblTitle.Size = new System.Drawing.Size(434, 48);
             this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "QUẢN LÝ HÀNG ĐỢI (WAITLIST)";
+            this.lblTitle.Text = "WAITLIST MANAGEMENT";
             // 
             // pnlAddWaitlist
             // 
@@ -144,7 +144,7 @@ namespace reservation_winforms.Forms
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(286, 60);
             this.btnAdd.TabIndex = 0;
-            this.btnAdd.Text = "THÊM HÀNG ĐỢI";
+            this.btnAdd.Text = "ADD TO WAITLIST";
             this.btnAdd.UseVisualStyleBackColor = false;
             // 
             // chkAllowShortSeating
@@ -154,9 +154,9 @@ namespace reservation_winforms.Forms
             this.chkAllowShortSeating.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
             this.chkAllowShortSeating.Location = new System.Drawing.Point(30, 420);
             this.chkAllowShortSeating.Name = "chkAllowShortSeating";
-            this.chkAllowShortSeating.Size = new System.Drawing.Size(367, 36);
+            this.chkAllowShortSeating.Size = new System.Drawing.Size(243, 36);
             this.chkAllowShortSeating.TabIndex = 8;
-            this.chkAllowShortSeating.Text = "Khách chịu ngồi bàn ngắn hạn";
+            this.chkAllowShortSeating.Text = "Allow short seating";
             this.chkAllowShortSeating.UseVisualStyleBackColor = true;
             // 
             // nudGuests
@@ -180,9 +180,9 @@ namespace reservation_winforms.Forms
             this.lblGuests.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.lblGuests.Location = new System.Drawing.Point(30, 320);
             this.lblGuests.Name = "lblGuests";
-            this.lblGuests.Size = new System.Drawing.Size(185, 32);
+            this.lblGuests.Size = new System.Drawing.Size(193, 32);
             this.lblGuests.TabIndex = 2;
-            this.lblGuests.Text = "Số lượng khách:";
+            this.lblGuests.Text = "No. of Guests:";
             // 
             // txtPhone
             // 
@@ -200,9 +200,9 @@ namespace reservation_winforms.Forms
             this.lblPhone.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.lblPhone.Location = new System.Drawing.Point(30, 210);
             this.lblPhone.Name = "lblPhone";
-            this.lblPhone.Size = new System.Drawing.Size(192, 32);
+            this.lblPhone.Size = new System.Drawing.Size(126, 32);
             this.lblPhone.TabIndex = 4;
-            this.lblPhone.Text = "Số điện thoại (*):";
+            this.lblPhone.Text = "Phone (*):";
             // 
             // txtName
             // 
@@ -220,9 +220,9 @@ namespace reservation_winforms.Forms
             this.lblName.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.lblName.Location = new System.Drawing.Point(30, 100);
             this.lblName.Name = "lblName";
-            this.lblName.Size = new System.Drawing.Size(178, 32);
+            this.lblName.Size = new System.Drawing.Size(123, 32);
             this.lblName.TabIndex = 6;
-            this.lblName.Text = "Tên gọi nhớ (*):";
+            this.lblName.Text = "Name (*):";
             // 
             // lblAddTitle
             // 
@@ -231,9 +231,9 @@ namespace reservation_winforms.Forms
             this.lblAddTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
             this.lblAddTitle.Location = new System.Drawing.Point(30, 30);
             this.lblAddTitle.Name = "lblAddTitle";
-            this.lblAddTitle.Size = new System.Drawing.Size(267, 38);
+            this.lblAddTitle.Size = new System.Drawing.Size(234, 38);
             this.lblAddTitle.TabIndex = 7;
-            this.lblAddTitle.Text = "THÊM KHÁCH MỚI";
+            this.lblAddTitle.Text = "NEW CUSTOMER";
             // 
             // pnlList
             // 
@@ -316,7 +316,7 @@ namespace reservation_winforms.Forms
             // 
             // colWaitStt
             // 
-            this.colWaitStt.HeaderText = "STT";
+            this.colWaitStt.HeaderText = "No.";
             this.colWaitStt.MinimumWidth = 8;
             this.colWaitStt.Name = "colWaitStt";
             this.colWaitStt.ReadOnly = true;
@@ -325,14 +325,14 @@ namespace reservation_winforms.Forms
             // colWaitName
             // 
             this.colWaitName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.colWaitName.HeaderText = "Tên khách";
+            this.colWaitName.HeaderText = "Customer Name";
             this.colWaitName.MinimumWidth = 8;
             this.colWaitName.Name = "colWaitName";
             this.colWaitName.ReadOnly = true;
             // 
             // colWaitPhone
             // 
-            this.colWaitPhone.HeaderText = "SĐT";
+            this.colWaitPhone.HeaderText = "Phone";
             this.colWaitPhone.MinimumWidth = 8;
             this.colWaitPhone.Name = "colWaitPhone";
             this.colWaitPhone.ReadOnly = true;
@@ -340,7 +340,7 @@ namespace reservation_winforms.Forms
             // 
             // colWaitGuests
             // 
-            this.colWaitGuests.HeaderText = "Số khách";
+            this.colWaitGuests.HeaderText = "Pax";
             this.colWaitGuests.MinimumWidth = 8;
             this.colWaitGuests.Name = "colWaitGuests";
             this.colWaitGuests.ReadOnly = true;
@@ -348,7 +348,7 @@ namespace reservation_winforms.Forms
             // 
             // colWaitTime
             // 
-            this.colWaitTime.HeaderText = "Giờ đến";
+            this.colWaitTime.HeaderText = "Arrival";
             this.colWaitTime.MinimumWidth = 8;
             this.colWaitTime.Name = "colWaitTime";
             this.colWaitTime.ReadOnly = true;
@@ -356,31 +356,31 @@ namespace reservation_winforms.Forms
             // 
             // colWaitActionSeat
             // 
-            this.colWaitActionSeat.HeaderText = "Xếp Bàn";
+            this.colWaitActionSeat.HeaderText = "Seat Table";
             this.colWaitActionSeat.MinimumWidth = 8;
             this.colWaitActionSeat.Name = "colWaitActionSeat";
             this.colWaitActionSeat.ReadOnly = true;
-            this.colWaitActionSeat.Text = "Xếp Bàn";
+            this.colWaitActionSeat.Text = "Seat Table";
             this.colWaitActionSeat.UseColumnTextForButtonValue = true;
             this.colWaitActionSeat.Width = 110;
             // 
             // colWaitActionMiss
             // 
-            this.colWaitActionMiss.HeaderText = "Báo Vắng";
+            this.colWaitActionMiss.HeaderText = "Mark Missed";
             this.colWaitActionMiss.MinimumWidth = 8;
             this.colWaitActionMiss.Name = "colWaitActionMiss";
             this.colWaitActionMiss.ReadOnly = true;
-            this.colWaitActionMiss.Text = "Vắng";
+            this.colWaitActionMiss.Text = "Missed";
             this.colWaitActionMiss.UseColumnTextForButtonValue = true;
             this.colWaitActionMiss.Width = 110;
             // 
             // colWaitActionSkip
             // 
-            this.colWaitActionSkip.HeaderText = "Bỏ qua";
+            this.colWaitActionSkip.HeaderText = "Skip/Cancel";
             this.colWaitActionSkip.MinimumWidth = 8;
             this.colWaitActionSkip.Name = "colWaitActionSkip";
             this.colWaitActionSkip.ReadOnly = true;
-            this.colWaitActionSkip.Text = "Hủy";
+            this.colWaitActionSkip.Text = "Cancel";
             this.colWaitActionSkip.UseColumnTextForButtonValue = true;
             this.colWaitActionSkip.Width = 110;
             // 
@@ -393,7 +393,7 @@ namespace reservation_winforms.Forms
             this.tabMissing.Padding = new System.Windows.Forms.Padding(3);
             this.tabMissing.Size = new System.Drawing.Size(1153, 957);
             this.tabMissing.TabIndex = 1;
-            this.tabMissing.Text = "MISSING";
+            this.tabMissing.Text = "MISSED";
             this.tabMissing.UseVisualStyleBackColor = true;
             // 
             // dgvMissing
@@ -442,7 +442,7 @@ namespace reservation_winforms.Forms
             // 
             // colMissStt
             // 
-            this.colMissStt.HeaderText = "STT";
+            this.colMissStt.HeaderText = "No.";
             this.colMissStt.MinimumWidth = 8;
             this.colMissStt.Name = "colMissStt";
             this.colMissStt.ReadOnly = true;
@@ -451,14 +451,14 @@ namespace reservation_winforms.Forms
             // colMissName
             // 
             this.colMissName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.colMissName.HeaderText = "Tên khách";
+            this.colMissName.HeaderText = "Customer Name";
             this.colMissName.MinimumWidth = 8;
             this.colMissName.Name = "colMissName";
             this.colMissName.ReadOnly = true;
             // 
             // colMissPhone
             // 
-            this.colMissPhone.HeaderText = "SĐT";
+            this.colMissPhone.HeaderText = "Phone";
             this.colMissPhone.MinimumWidth = 8;
             this.colMissPhone.Name = "colMissPhone";
             this.colMissPhone.ReadOnly = true;
@@ -466,7 +466,7 @@ namespace reservation_winforms.Forms
             // 
             // colMissGuests
             // 
-            this.colMissGuests.HeaderText = "Số khách";
+            this.colMissGuests.HeaderText = "Pax";
             this.colMissGuests.MinimumWidth = 8;
             this.colMissGuests.Name = "colMissGuests";
             this.colMissGuests.ReadOnly = true;
@@ -474,7 +474,7 @@ namespace reservation_winforms.Forms
             // 
             // colMissTime
             // 
-            this.colMissTime.HeaderText = "Giờ đến";
+            this.colMissTime.HeaderText = "Arrival";
             this.colMissTime.MinimumWidth = 8;
             this.colMissTime.Name = "colMissTime";
             this.colMissTime.ReadOnly = true;
@@ -482,31 +482,31 @@ namespace reservation_winforms.Forms
             // 
             // colMissActionSeat
             // 
-            this.colMissActionSeat.HeaderText = "Xếp Bàn";
+            this.colMissActionSeat.HeaderText = "Seat Table";
             this.colMissActionSeat.MinimumWidth = 8;
             this.colMissActionSeat.Name = "colMissActionSeat";
             this.colMissActionSeat.ReadOnly = true;
-            this.colMissActionSeat.Text = "Xếp Bàn";
+            this.colMissActionSeat.Text = "Seat Table";
             this.colMissActionSeat.UseColumnTextForButtonValue = true;
             this.colMissActionSeat.Width = 110;
             // 
             // colMissActionReWait
             // 
-            this.colMissActionReWait.HeaderText = "Quay Lại";
+            this.colMissActionReWait.HeaderText = "Return";
             this.colMissActionReWait.MinimumWidth = 8;
             this.colMissActionReWait.Name = "colMissActionReWait";
             this.colMissActionReWait.ReadOnly = true;
-            this.colMissActionReWait.Text = "Chờ Lại";
+            this.colMissActionReWait.Text = "Re-wait";
             this.colMissActionReWait.UseColumnTextForButtonValue = true;
             this.colMissActionReWait.Width = 110;
             // 
             // colMissActionSkip
             // 
-            this.colMissActionSkip.HeaderText = "Bỏ qua";
+            this.colMissActionSkip.HeaderText = "Skip/Cancel";
             this.colMissActionSkip.MinimumWidth = 8;
             this.colMissActionSkip.Name = "colMissActionSkip";
             this.colMissActionSkip.ReadOnly = true;
-            this.colMissActionSkip.Text = "Hủy";
+            this.colMissActionSkip.Text = "Cancel";
             this.colMissActionSkip.UseColumnTextForButtonValue = true;
             this.colMissActionSkip.Width = 110;
             // 
@@ -535,7 +535,7 @@ namespace reservation_winforms.Forms
             this.btnSearchMissing.Name = "btnSearchMissing";
             this.btnSearchMissing.Size = new System.Drawing.Size(150, 47);
             this.btnSearchMissing.TabIndex = 2;
-            this.btnSearchMissing.Text = "TÌM KIẾM";
+            this.btnSearchMissing.Text = "SEARCH";
             this.btnSearchMissing.UseVisualStyleBackColor = false;
             // 
             // txtSearchMissing
@@ -554,9 +554,9 @@ namespace reservation_winforms.Forms
             this.lblSearch.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.lblSearch.Location = new System.Drawing.Point(20, 20);
             this.lblSearch.Name = "lblSearch";
-            this.lblSearch.Size = new System.Drawing.Size(178, 32);
+            this.lblSearch.Size = new System.Drawing.Size(176, 32);
             this.lblSearch.TabIndex = 1;
-            this.lblSearch.Text = "Tìm kiếm SĐT:";
+            this.lblSearch.Text = "Search Phone:";
             // 
             // UcWaitlist
             // 

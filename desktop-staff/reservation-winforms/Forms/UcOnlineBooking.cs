@@ -1,4 +1,5 @@
-﻿using reservation_winforms.DTO.reservation;
+﻿using reservation_winforms.DTO.config;
+using reservation_winforms.DTO.reservation;
 using reservation_winforms.DTO.table;
 using reservation_winforms.Services;
 using System;
@@ -14,16 +15,19 @@ namespace reservation_winforms.Forms
     {
         private readonly ReservationService _reservationService;
         private readonly TableService _tableService;
+        private readonly SystemConfigService _configService;
 
         private List<ReservationResponse> _allTodayReservations = new List<ReservationResponse>();
-
         private ReservationResponse _currentReservation = null;
+
+        private int _gracePeriodMinutes = 15;
 
         public UcOnlineBooking()
         {
             InitializeComponent();
             _reservationService = new ReservationService();
             _tableService = new TableService();
+            _configService = new SystemConfigService();
 
             btnSearch.Click += BtnSearch_Click;
             btnReload.Click += BtnReload_Click;
@@ -32,16 +36,33 @@ namespace reservation_winforms.Forms
 
             ResetUI();
 
-            this.Load += async (s, e) => await LoadTodayReservationsAsync();
+            this.Load += async (s, e) =>
+            {
+                await LoadSystemConfigsAsync();
+                await LoadTodayReservationsAsync();
+            };
+        }
+
+        private async Task LoadSystemConfigsAsync()
+        {
+            var res = await _configService.GetAllConfigsAsync();
+            if (res.IsSuccess && res.Data != null)
+            {
+                var graceConfig = res.Data.FirstOrDefault(c => c.ConfigKey == "reservation.grace-period-minutes");
+                if (graceConfig != null && int.TryParse(graceConfig.ConfigValue, out int parsedGrace))
+                {
+                    _gracePeriodMinutes = parsedGrace;
+                }
+            }
         }
 
         private async Task LoadTodayReservationsAsync()
         {
-            btnReload.Text = "ĐANG TẢI...";
+            btnReload.Text = "LOADING...";
             btnReload.Enabled = false;
             ResetUI();
 
-            var res = await _reservationService.GetUpcomingReservationsAsync(1440); // 1440 phút = 24h
+            var res = await _reservationService.GetUpcomingReservationsAsync(1440); // 1440 mins = 24h
 
             if (res.IsSuccess && res.Data != null)
             {
@@ -54,10 +75,10 @@ namespace reservation_winforms.Forms
             }
             else
             {
-                MessageBox.Show("Không thể tải danh sách đơn đặt bàn.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Unable to load the reservation list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
-            btnReload.Text = "🔄 TẢI LẠI";
+            btnReload.Text = "RELOAD";
             btnReload.Enabled = true;
         }
 
@@ -69,7 +90,7 @@ namespace reservation_winforms.Forms
             {
                 Label lblEmpty = new Label
                 {
-                    Text = "Không có đơn đặt trước nào phù hợp.",
+                    Text = "No matching reservations found for today.",
                     Font = new Font("Segoe UI", 12, FontStyle.Italic),
                     ForeColor = Color.Gray,
                     AutoSize = true,
@@ -82,11 +103,11 @@ namespace reservation_winforms.Forms
             foreach (var r in listToRender)
             {
                 string timeStr = r.StartTime.ToString("HH:mm");
-                string tableStr = (r.TableIds != null && r.TableIds.Count > 0) ? string.Join(", ", r.TableIds) : "Chưa xếp";
+                string tableStr = (r.TableIds != null && r.TableIds.Count > 0) ? string.Join(", ", r.TableIds) : "Unassigned";
 
                 Button btnCard = new Button
                 {
-                    Text = $"Giờ đến: {timeStr}\nKhách: {r.CustomerName} ({r.CustomerPhone})\nBàn: {tableStr} - ({r.GuestCount} người)",
+                    Text = $"Time: {timeStr}\nCustomer: {r.CustomerName} ({r.CustomerPhone})\nTable: {tableStr} - ({r.GuestCount} pax)",
                     Width = flpReservations.Width - 25,
                     Height = 100,
                     Margin = new Padding(5, 5, 5, 10),
@@ -127,7 +148,7 @@ namespace reservation_winforms.Forms
             string keyword = txtSearch.Text.Trim();
             if (string.IsNullOrEmpty(keyword))
             {
-                MessageBox.Show("Vui lòng nhập Số điện thoại hoặc Mã đơn!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter a Phone number or Reservation ID!", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -151,23 +172,23 @@ namespace reservation_winforms.Forms
             btnCheckIn.Visible = true;
             btnChangeTable.Visible = true;
 
-            lblValName.Text = r.CustomerName ?? "Khách hàng";
+            lblValName.Text = r.CustomerName ?? "Customer";
             lblValPhone.Text = r.CustomerPhone ?? "N/A";
-            lblValGuests.Text = $"{r.GuestCount} người";
+            lblValGuests.Text = $"{r.GuestCount} pax";
             lblValTime.Text = r.StartTime.ToString("HH:mm");
-            lblValTable.Text = (r.TableIds != null && r.TableIds.Count > 0) ? string.Join(", ", r.TableIds) : "Chưa xếp bàn";
-            lblValNote.Text = string.IsNullOrEmpty(r.Note) ? "Không có ghi chú nào." : r.Note;
+            lblValTable.Text = (r.TableIds != null && r.TableIds.Count > 0) ? string.Join(", ", r.TableIds) : "Unassigned";
+            lblValNote.Text = string.IsNullOrEmpty(r.Note) ? "No notes provided." : r.Note;
 
             TimeSpan diff = DateTime.Now - r.StartTime;
             if (diff.TotalMinutes < 0)
             {
-                lblValTimeStatus.Text = $"(Đến sớm {Math.Abs((int)diff.TotalMinutes)} phút)";
+                lblValTimeStatus.Text = $"(Early {Math.Abs((int)diff.TotalMinutes)} mins)";
                 lblValTimeStatus.ForeColor = Color.MediumSeaGreen;
             }
             else
             {
-                lblValTimeStatus.Text = $"(Đến trễ {(int)diff.TotalMinutes} phút)";
-                lblValTimeStatus.ForeColor = diff.TotalMinutes > 15 ? Color.Red : Color.Orange;
+                lblValTimeStatus.Text = $"(Late {(int)diff.TotalMinutes} mins)";
+                lblValTimeStatus.ForeColor = diff.TotalMinutes > _gracePeriodMinutes ? Color.Red : Color.Orange;
             }
 
             var mapRes = await _tableService.GetFloorMapAsync();
@@ -178,12 +199,12 @@ namespace reservation_winforms.Forms
 
                 if (isBusy)
                 {
-                    lblValTableStatus.Text = "🔴 ĐANG CÓ KHÁCH (Tìm bàn khác)";
+                    lblValTableStatus.Text = "🔴 OCCUPIED (Please change table)";
                     lblValTableStatus.ForeColor = Color.IndianRed;
                 }
                 else
                 {
-                    lblValTableStatus.Text = "🟢 TRỐNG - Sẵn sàng";
+                    lblValTableStatus.Text = "🟢 AVAILABLE - Ready";
                     lblValTableStatus.ForeColor = Color.MediumSeaGreen;
                 }
             }
@@ -196,16 +217,16 @@ namespace reservation_winforms.Forms
             try
             {
                 btnCheckIn.Enabled = false;
-                btnCheckIn.Text = "ĐANG XỬ LÝ...";
+                btnCheckIn.Text = "PROCESSING...";
 
                 var result = await _reservationService.CheckInAsync(_currentReservation.ReservationId);
 
                 if (result.IsSuccess)
                 {
-                    MessageBox.Show($"Check-in thành công!\nĐã xác nhận khách đến bàn.", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Check-in successful!\nCustomer has been seated.", "Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     await LoadTodayReservationsAsync();
                 }
-                else MessageBox.Show(result.Message, "Không thể Check-in", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                else MessageBox.Show(result.Message, "Check-in Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             finally
             {
@@ -221,13 +242,13 @@ namespace reservation_winforms.Forms
             try
             {
                 btnChangeTable.Enabled = false;
-                btnChangeTable.Text = "ĐANG TẢI...";
+                btnChangeTable.Text = "LOADING...";
 
                 var optionsRes = await _reservationService.GetWalkInOptionsAsync(_currentReservation.GuestCount);
 
                 if (!optionsRes.IsSuccess || optionsRes.Data == null || optionsRes.Data.Groups == null || optionsRes.Data.Groups.Count == 0)
                 {
-                    MessageBox.Show("Nhà hàng hiện không có tổ hợp bàn nào trống phù hợp cho số lượng khách này!", "Hết bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("There are no suitable table combinations available for this party size right now!", "No Tables Available", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -236,12 +257,12 @@ namespace reservation_winforms.Forms
 
                 var changeReq = new ChangeTableRequest { TableIds = selectedIds };
 
-                btnChangeTable.Text = "ĐANG CHUYỂN...";
+                btnChangeTable.Text = "CHANGING...";
                 var res = await _reservationService.ChangeTableAsync(_currentReservation.ReservationId, changeReq);
 
                 if (res.IsSuccess)
                 {
-                    MessageBox.Show("Đã chuyển bàn thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Table changed successfully!", "Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     long savedResId = _currentReservation.ReservationId;
                     await LoadTodayReservationsAsync();
@@ -258,13 +279,13 @@ namespace reservation_winforms.Forms
                 }
                 else
                 {
-                    MessageBox.Show(res.Message, "Không thể chuyển bàn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(res.Message, "Cannot change table", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             finally
             {
                 btnChangeTable.Enabled = true;
-                btnChangeTable.Text = "ĐỔI BÀN";
+                btnChangeTable.Text = "CHANGE TABLE";
             }
         }
 
@@ -274,7 +295,7 @@ namespace reservation_winforms.Forms
 
             Form popup = new Form
             {
-                Text = $"Gợi ý đổi bàn cho đơn {guestCount} khách",
+                Text = $"Table suggestions for {guestCount} pax",
                 Size = new Size(550, 500),
                 StartPosition = FormStartPosition.CenterParent,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
@@ -301,24 +322,24 @@ namespace reservation_winforms.Forms
                     Font = new Font("Segoe UI", 12, FontStyle.Bold),
                     AutoSize = true,
                     Margin = new Padding(0, 10, 0, 5),
-                    ForeColor = group.GroupName.Contains("Ưu tiên") ? Color.MediumSeaGreen : Color.Orange
+                    ForeColor = group.GroupName.Contains("Priority") ? Color.MediumSeaGreen : Color.Orange
                 };
                 flp.Controls.Add(lblGroup);
 
                 foreach (var opt in group.Options)
                 {
                     string tableStr = string.Join(", ", opt.TableIds);
-                    string typeStr = opt.TableIds.Count > 1 ? "Ghép bàn" : "Bàn đơn";
-                    string limitStr = opt.AvailableUntil.HasValue ? $" | Phải trả bàn lúc: {opt.AvailableUntil.Value:HH:mm}" : "";
+                    string typeStr = opt.TableIds.Count > 1 ? "Combined" : "Single";
+                    string limitStr = opt.AvailableUntil.HasValue ? $" | Must leave by: {opt.AvailableUntil.Value:HH:mm}" : "";
 
-                    string btnText = $"Bàn {tableStr} ({opt.TotalCapacity} chỗ) - {typeStr}{limitStr}";
+                    string btnText = $"Table {tableStr} ({opt.TotalCapacity} pax) - {typeStr}{limitStr}";
 
                     Button btnOpt = new Button
                     {
                         Text = btnText,
                         Width = 490,
                         Height = 45,
-                        Margin = new Padding(5, 5, 5, 5),
+                        Margin = new Padding(5),
                         TextAlign = ContentAlignment.MiddleLeft,
                         FlatStyle = FlatStyle.Flat,
                         Cursor = Cursors.Hand,
@@ -329,9 +350,18 @@ namespace reservation_winforms.Forms
 
                     btnOpt.Click += (s, e) =>
                     {
-                        selectedIds = opt.TableIds;
-                        popup.DialogResult = DialogResult.OK;
-                        popup.Close();
+                        var confirmResult = MessageBox.Show(
+                            $"Are you sure you want to change to Table {tableStr} ?",
+                            "Confirm Table Change",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Question);
+
+                        if (confirmResult == DialogResult.Yes)
+                        {
+                            selectedIds = opt.TableIds;
+                            popup.DialogResult = DialogResult.OK;
+                            popup.Close();
+                        }
                     };
 
                     flp.Controls.Add(btnOpt);

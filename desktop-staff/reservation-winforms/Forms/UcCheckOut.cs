@@ -13,21 +13,44 @@ namespace reservation_winforms.Forms
     {
         private readonly ReservationService _reservationService;
         private readonly OverrideService _overrideService;
+        private readonly SystemConfigService _configService;
+
         private ReservationResponse _currentSelectedRes = null;
+
+        private int _durationMinutes = 120;
 
         public UcCheckOut()
         {
             InitializeComponent();
             _reservationService = new ReservationService();
             _overrideService = new OverrideService();
+            _configService = new SystemConfigService();
 
             btnRefresh.Click += BtnRefresh_Click;
             btnCheckOut.Click += BtnCheckOut_Click;
 
-            this.Load += async (s, e) => await LoadActiveTablesAsync();
+            this.Load += async (s, e) =>
+            {
+                await LoadSystemConfigsAsync();
+                await LoadActiveTablesAsync();
+            };
+
             btnChangeTable.Click += async (s, e) => await HandleChangeTableAsync();
 
             ResetDetailsPanel();
+        }
+
+        private async Task LoadSystemConfigsAsync()
+        {
+            var res = await _configService.GetAllConfigsAsync();
+            if (res.IsSuccess && res.Data != null)
+            {
+                var durationConfig = res.Data.FirstOrDefault(c => c.ConfigKey == "reservation.duration-minutes");
+                if (durationConfig != null && int.TryParse(durationConfig.ConfigValue, out int parsedDuration))
+                {
+                    _durationMinutes = parsedDuration;
+                }
+            }
         }
 
         private async void BtnRefresh_Click(object sender, EventArgs e)
@@ -79,7 +102,7 @@ namespace reservation_winforms.Forms
                 TimeSpan duration = DateTime.Now - r.StartTime;
                 int durationMins = (int)duration.TotalMinutes;
 
-                string durationText = durationMins > 120 ? $"⚠️ Quá giờ ({durationMins}p)" : $"{durationMins} phút";
+                string durationText = durationMins > _durationMinutes ? $"⚠️ Overdue ({durationMins}min)" : $"{durationMins} minutes";
 
                 Button btnCard = new Button
                 {
@@ -95,7 +118,7 @@ namespace reservation_winforms.Forms
                     Tag = r
                 };
 
-                btnCard.FlatAppearance.BorderColor = durationMins > 120 ? Color.FromArgb(231, 76, 60) : Color.FromArgb(41, 128, 185);
+                btnCard.FlatAppearance.BorderColor = durationMins > _durationMinutes ? Color.FromArgb(231, 76, 60) : Color.FromArgb(41, 128, 185);
                 btnCard.FlatAppearance.BorderSize = 2;
 
                 btnCard.Click += (s, e) =>
@@ -134,13 +157,13 @@ namespace reservation_winforms.Forms
             {
                 lblValDuration.Text = $"{mins} minutes";
             }
-            lblValDuration.ForeColor = mins > 120 ? Color.Red : Color.FromArgb(243, 156, 18);
+
+            lblValDuration.ForeColor = mins > _durationMinutes ? Color.Red : Color.FromArgb(243, 156, 18);
 
             lblValDeposit.Text = (r.DepositAmount != null && r.DepositAmount > 0) ? $"{r.DepositAmount:N0}đ" : "0đ";
 
-            // Hiện checkbox override nếu quá giờ
             chkOverride.Checked = false;
-            chkOverride.Visible = (mins > 120);
+            chkOverride.Visible = (mins > _durationMinutes);
         }
 
         private async void BtnCheckOut_Click(object sender, EventArgs e)
@@ -185,7 +208,7 @@ namespace reservation_winforms.Forms
             string confirmMsg = $"Confirm payment and release the table for {_currentSelectedRes.CustomerName}?\n";
             if (_currentSelectedRes.DepositAmount > 0)
             {
-                confirmMsg += $"\n💰 Warning: This customer has already made a deposit. Please deduct {{_currentSelectedRes.DepositAmount:N0}} VND from the bill.";
+                confirmMsg += $"\n💰 Warning: This customer has already made a deposit. Please deduct {_currentSelectedRes.DepositAmount:N0} VND from the bill.";
             }
 
             var confirm = MessageBox.Show(confirmMsg, "Checkout", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
