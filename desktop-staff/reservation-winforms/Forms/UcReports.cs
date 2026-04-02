@@ -224,77 +224,94 @@ namespace reservation_winforms.Forms
                         // 1. STYLES
                         xml.AppendLine(" <Styles>");
                         xml.AppendLine("  <Style ss:ID=\"Default\" ss:Name=\"Normal\"><Alignment ss:Vertical=\"Bottom\"/><Borders/><Font ss:FontName=\"Calibri\" x:Family=\"Swiss\" ss:Size=\"11\"/></Style>");
-                        xml.AppendLine("  <Style ss:ID=\"sTitle\"><Font ss:FontName=\"Segoe UI\" ss:Size=\"16\" ss:Bold=\"1\" ss:Color=\"#2C3E50\"/></Style>");
-                        xml.AppendLine("  <Style ss:ID=\"sHeader\"><Font ss:FontName=\"Segoe UI\" ss:Size=\"12\" ss:Bold=\"1\" ss:Color=\"#FFFFFF\"/><Interior ss:Color=\"#2980B9\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
+                        xml.AppendLine("  <Style ss:ID=\"sTitle\"><Font ss:FontName=\"Segoe UI\" ss:Size=\"18\" ss:Bold=\"1\" ss:Color=\"#2C3E50\"/></Style>");
+                        
+                        // Card Header Styles (Matching UI Colors)
+                        xml.AppendLine("  <Style ss:ID=\"cTotalHead\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"10\" ss:Bold=\"1\" ss:Color=\"#FFFFFF\"/><Interior ss:Color=\"#34495E\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
+                        xml.AppendLine("  <Style ss:ID=\"cOnlineHead\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"10\" ss:Bold=\"1\" ss:Color=\"#FFFFFF\"/><Interior ss:Color=\"#2980B9\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
+                        xml.AppendLine("  <Style ss:ID=\"cWalkInHead\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"10\" ss:Bold=\"1\" ss:Color=\"#FFFFFF\"/><Interior ss:Color=\"#27AE60\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
+                        xml.AppendLine("  <Style ss:ID=\"cNoShowHead\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"10\" ss:Bold=\"1\" ss:Color=\"#FFFFFF\"/><Interior ss:Color=\"#F39C12\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
+                        xml.AppendLine("  <Style ss:ID=\"cRateHead\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"10\" ss:Bold=\"1\" ss:Color=\"#FFFFFF\"/><Interior ss:Color=\"#E74C3C\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
+
+                        // Card Value Styles (Matching UI Colors)
+                        xml.AppendLine("  <Style ss:ID=\"cTotalVal\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"18\" ss:Bold=\"1\" ss:Color=\"#34495E\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
+                        xml.AppendLine("  <Style ss:ID=\"cOnlineVal\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"18\" ss:Bold=\"1\" ss:Color=\"#2980B9\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
+                        xml.AppendLine("  <Style ss:ID=\"cWalkInVal\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"18\" ss:Bold=\"1\" ss:Color=\"#27AE60\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
+                        xml.AppendLine("  <Style ss:ID=\"cNoShowVal\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"18\" ss:Bold=\"1\" ss:Color=\"#F39C12\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
+                        xml.AppendLine("  <Style ss:ID=\"cRateVal\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"18\" ss:Bold=\"1\" ss:Color=\"#E74C3C\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
+
+                        xml.AppendLine("  <Style ss:ID=\"sHeader\"><Font ss:FontName=\"Segoe UI\" ss:Size=\"11\" ss:Bold=\"1\" ss:Color=\"#FFFFFF\"/><Interior ss:Color=\"#2980B9\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
                         xml.AppendLine("  <Style ss:ID=\"sData\"><Alignment ss:Horizontal=\"Center\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders></Style>");
-                        xml.AppendLine("  <Style ss:ID=\"sSummaryLabel\"><Font ss:Bold=\"1\" ss:Color=\"#2C3E50\"/></Style>");
-                        xml.AppendLine("  <Style ss:ID=\"sSummaryValue\"><Font ss:Bold=\"1\" ss:Color=\"#C0392B\"/></Style>");
                         xml.AppendLine(" </Styles>");
 
                         // 2. WORKSHEET
                         xml.AppendLine(" <Worksheet ss:Name=\"Reservations Report\">");
-                        xml.AppendLine("  <Table ss:ExpandedColumnCount=\"6\">");
-                        xml.AppendLine("   <Column ss:Width=\"120\"/><Column ss:Width=\"100\"/><Column ss:Width=\"100\"/><Column ss:Width=\"100\"/><Column ss:Width=\"100\"/><Column ss:Width=\"100\"/>");
+                        xml.AppendLine("  <Table ss:ExpandedColumnCount=\"10\">");
+                        xml.AppendLine("   <Column ss:Width=\"120\"/><Column ss:Width=\"120\"/><Column ss:Width=\"120\"/><Column ss:Width=\"120\"/><Column ss:Width=\"120\"/>");
 
-                        // 3. TITLE & INFO
+                        // 3. TITLE
                         string reportTitle = "RESERVATIONS STATISTICS REPORT";
                         if (tabFilter.SelectedTab == tabPageDate) reportTitle += $" ({dtpFromDate.Value:dd/MM/yyyy} - {dtpToDate.Value:dd/MM/yyyy})";
                         else if (tabFilter.SelectedTab == tabPageMonth) reportTitle += $" ({dtpFromMonth.Value:MM/yyyy} - {dtpToMonth.Value:MM/yyyy})";
                         else if (tabFilter.SelectedTab == tabPageYear) reportTitle += $" ({numFromYear.Value} - {numToYear.Value})";
 
-                        xml.AppendLine("   <Row ss:Height=\"30\"><Cell ss:StyleID=\"sTitle\"><Data ss:Type=\"String\">" + EscapeXml(reportTitle) + "</Data></Cell></Row>");
-                        xml.AppendLine("   <Row><Cell><Data ss:Type=\"String\">Exported At: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm") + "</Data></Cell></Row>");
+                        xml.AppendLine("   <Row ss:Height=\"35\"><Cell ss:MergeAcross=\"4\" ss:StyleID=\"sTitle\"><Data ss:Type=\"String\">" + EscapeXml(reportTitle) + "</Data></Cell></Row>");
+                        xml.AppendLine("   <Row><Cell ss:MergeAcross=\"4\"><Data ss:Type=\"String\">Exported At: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm") + "</Data></Cell></Row>");
                         xml.AppendLine("   <Row ss:Index=\"4\"/>"); // Blank row
 
-                        // 4. HEADERS
+                        // 4. SUMMARY CARDS (Top Section)
                         xml.AppendLine("   <Row ss:Height=\"20\">");
+                        xml.AppendLine("    <Cell ss:StyleID=\"cTotalHead\"><Data ss:Type=\"String\">TOTAL RESERVED</Data></Cell>");
+                        xml.AppendLine("    <Cell ss:StyleID=\"cOnlineHead\"><Data ss:Type=\"String\">ONLINE BOOKINGS</Data></Cell>");
+                        xml.AppendLine("    <Cell ss:StyleID=\"cWalkInHead\"><Data ss:Type=\"String\">WALK-IN GUESTS</Data></Cell>");
+                        xml.AppendLine("    <Cell ss:StyleID=\"cNoShowHead\"><Data ss:Type=\"String\">NO-SHOW GUESTS</Data></Cell>");
+                        xml.AppendLine("    <Cell ss:StyleID=\"cRateHead\"><Data ss:Type=\"String\">NO-SHOW RATE</Data></Cell>");
+                        xml.AppendLine("   </Row>");
+                        xml.AppendLine("   <Row ss:Height=\"45\">");
+                        xml.AppendLine("    <Cell ss:StyleID=\"cTotalVal\"><Data ss:Type=\"Number\">" + _currentRateData.TotalAll + "</Data></Cell>");
+                        xml.AppendLine("    <Cell ss:StyleID=\"cOnlineVal\"><Data ss:Type=\"Number\">" + _currentRateData.TotalOnline + "</Data></Cell>");
+                        xml.AppendLine("    <Cell ss:StyleID=\"cWalkInVal\"><Data ss:Type=\"Number\">" + _currentRateData.TotalWalkIn + "</Data></Cell>");
+                        xml.AppendLine("    <Cell ss:StyleID=\"cNoShowVal\"><Data ss:Type=\"Number\">" + _currentRateData.NoShowCount + "</Data></Cell>");
+                        xml.AppendLine("    <Cell ss:StyleID=\"cRateVal\"><Data ss:Type=\"String\">" + _currentRateData.NoShowRate + "%</Data></Cell>");
+                        xml.AppendLine("   </Row>");
+                        xml.AppendLine("   <Row ss:Index=\"7\"/>"); // Blank row
+
+                        // 5. DETAIL TABLE HEADERS
+                        xml.AppendLine("   <Row ss:Height=\"22\">");
                         xml.AppendLine("    <Cell ss:StyleID=\"sHeader\"><Data ss:Type=\"String\">Time</Data></Cell>");
                         xml.AppendLine("    <Cell ss:StyleID=\"sHeader\"><Data ss:Type=\"String\">Total</Data></Cell>");
                         xml.AppendLine("    <Cell ss:StyleID=\"sHeader\"><Data ss:Type=\"String\">Walk-in</Data></Cell>");
                         xml.AppendLine("    <Cell ss:StyleID=\"sHeader\"><Data ss:Type=\"String\">Online</Data></Cell>");
                         xml.AppendLine("    <Cell ss:StyleID=\"sHeader\"><Data ss:Type=\"String\">No-Show</Data></Cell>");
-                        xml.AppendLine("    <Cell ss:StyleID=\"sHeader\"><Data ss:Type=\"String\">Rate (%)</Data></Cell>");
                         xml.AppendLine("   </Row>");
 
-                        // 5. DATA ROWS
+                        // 6. DATA ROWS
                         foreach (var item in _currentReportData)
                         {
                             long walkIn = item.TotalWalkIn;
                             long noShow = item.NoShowCount;
                             long online = item.TotalOnline;
                             long total = walkIn + online;
-                            double rate = total > 0 ? Math.Round((double)noShow * 100 / total, 2) : 0;
 
                             string timeLabel = item.Date;
                             if (item.Date.Length == 10) timeLabel = DateTime.Parse(item.Date).ToString("dd/MM/yyyy");
                             else if (item.Date.Length == 7) timeLabel = DateTime.Parse(item.Date + "-01").ToString("MM/yyyy");
 
-                            xml.AppendLine("   <Row>");
+                            xml.AppendLine("   <Row ss:Height=\"18\">");
                             xml.AppendLine("    <Cell ss:StyleID=\"sData\"><Data ss:Type=\"String\">" + EscapeXml(timeLabel) + "</Data></Cell>");
                             xml.AppendLine("    <Cell ss:StyleID=\"sData\"><Data ss:Type=\"Number\">" + total + "</Data></Cell>");
                             xml.AppendLine("    <Cell ss:StyleID=\"sData\"><Data ss:Type=\"Number\">" + walkIn + "</Data></Cell>");
                             xml.AppendLine("    <Cell ss:StyleID=\"sData\"><Data ss:Type=\"Number\">" + online + "</Data></Cell>");
                             xml.AppendLine("    <Cell ss:StyleID=\"sData\"><Data ss:Type=\"Number\">" + noShow + "</Data></Cell>");
-                            xml.AppendLine("    <Cell ss:StyleID=\"sData\"><Data ss:Type=\"String\">" + rate + "%</Data></Cell>");
                             xml.AppendLine("   </Row>");
                         }
-
-                        // 6. SUMMARY SECTION
-                        xml.AppendLine("   <Row ss:Index=\"" + (xml.ToString().Split('\n').Length + 1) + "\"/>"); // Move index properly
-                        xml.AppendLine("   <Row><Cell ss:StyleID=\"sSummaryLabel\"><Data ss:Type=\"String\">OVERALL SUMMARY</Data></Cell></Row>");
-                        xml.AppendLine("   <Row><Cell><Data ss:Type=\"String\">Total Records:</Data></Cell><Cell ss:StyleID=\"sSummaryValue\"><Data ss:Type=\"Number\">" + _currentReportData.Count + "</Data></Cell></Row>");
-                        xml.AppendLine("   <Row><Cell><Data ss:Type=\"String\">Total All Reservations:</Data></Cell><Cell ss:StyleID=\"sSummaryValue\"><Data ss:Type=\"Number\">" + _currentRateData.TotalAll + "</Data></Cell></Row>");
-                        xml.AppendLine("   <Row><Cell><Data ss:Type=\"String\">Total Online Bookings:</Data></Cell><Cell ss:StyleID=\"sSummaryValue\"><Data ss:Type=\"Number\">" + _currentRateData.TotalOnline + "</Data></Cell></Row>");
-                        xml.AppendLine("   <Row><Cell><Data ss:Type=\"String\">Total Walk-in Guests:</Data></Cell><Cell ss:StyleID=\"sSummaryValue\"><Data ss:Type=\"Number\">" + _currentRateData.TotalWalkIn + "</Data></Cell></Row>");
-                        xml.AppendLine("   <Row><Cell><Data ss:Type=\"String\">Total No-Shows:</Data></Cell><Cell ss:StyleID=\"sSummaryValue\"><Data ss:Type=\"Number\">" + _currentRateData.NoShowCount + "</Data></Cell></Row>");
-                        xml.AppendLine("   <Row><Cell><Data ss:Type=\"String\">Overall No-Show Rate:</Data></Cell><Cell ss:StyleID=\"sSummaryValue\"><Data ss:Type=\"String\">" + _currentRateData.NoShowRate + "%</Data></Cell></Row>");
 
                         xml.AppendLine("  </Table>");
                         xml.AppendLine(" </Worksheet>");
                         xml.AppendLine("</Workbook>");
 
                         File.WriteAllText(sfd.FileName, xml.ToString(), Encoding.UTF8);
-                        MessageBox.Show("Professional report exported to Excel successfully!", "Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Professional report with overview cards exported successfully!", "Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
                     {
