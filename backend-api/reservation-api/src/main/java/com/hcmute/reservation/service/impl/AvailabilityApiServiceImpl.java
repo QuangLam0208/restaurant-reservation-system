@@ -52,7 +52,9 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
     @Override
     public Map<String, Object> checkAvailability(LocalDate date, LocalTime time, int guests) {
         LocalDateTime requestedStart = LocalDateTime.of(date, time);
-        validateFutureTime(requestedStart);
+        if (requestedStart.isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Thời gian đặt bàn phải trong tương lai.");
+        }
 
         List<TableInfo> selectedTables = findSelectedTables(requestedStart, guests);
         String selectionType = selectedTables.size() > 1 ? "MERGED_TABLES" : "SINGLE_TABLE";
@@ -103,9 +105,13 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
         int durationMinutes = configProvider.getDurationMinutes();
         int bufferMinutes = configProvider.getBufferMinutes();
 
-        validateAvailableWindowRequest(guests, time);
+        if (guests <= 0) throw new BadRequestException("Số lượng khách phải lớn hơn 0.");
+        if (time == null) throw new BadRequestException("Thiếu thời điểm cần kiểm tra bàn.");
+        if (time.isBefore(LocalDateTime.now().minusSeconds(30))) {
+            throw new BadRequestException("Thời điểm cần kiểm tra phải từ hiện tại trở đi.");
+        }
 
-        // GỌI CORE SERVICE lấy bàn trống hiện tại
+        // GỌI CORE SERVICE lấy bàn trống hiện tại, có thể trống hoàn toàn hoặc 1 phần
         List<TableInfo> availableCurrent = tableAvailabilityService.getCurrentlyAvailableTables().stream()
                 .sorted(Comparator.comparingInt(TableInfo::getCapacity).thenComparing(TableInfo::getTableId))
                 .collect(Collectors.toList());
@@ -114,7 +120,7 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
         List<AvailableWindowResponse> fullyAvailable = new ArrayList<>();
         List<AvailableWindowResponse> partiallyAvailable = new ArrayList<>();
 
-        // 1. Phân loại bàn (Trống hoàn toàn & Trống một phần)
+        // 1. Phân loại bàn đơn (1 bàn là đủ) (Trống hoàn toàn & Trống một phần)
         for (TableInfo table : availableCurrent) {
             if (table.getCapacity() < guests) continue;
 
@@ -126,7 +132,7 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
             }
         }
 
-        // 2. Tìm tổ hợp ghép bàn (Sử dụng Strategy)
+        // 2. Tìm tổ hợp ghép bàn (ghép nhìu bàn nhỏ lại) (Sử dụng Strategy)
         List<TableInfo> mergeCandidates = availableCurrent.stream()
                 .filter(table -> table.getCapacity() < guests)
                 .filter(table -> isFullyAvailableForWindow(table.getTableId(), time, maxEndTime))
@@ -155,21 +161,6 @@ public class AvailabilityApiServiceImpl implements AvailabilityApiService {
     }
 
     // --- CÁC HÀM PRIVATE PHỤ TRỢ ---
-
-    private void validateFutureTime(LocalDateTime requestedStart) {
-        if (requestedStart.isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Thời gian đặt bàn phải trong tương lai.");
-        }
-    }
-
-    private void validateAvailableWindowRequest(int guests, LocalDateTime time) {
-        if (guests <= 0) throw new BadRequestException("Số lượng khách phải lớn hơn 0.");
-        if (time == null) throw new BadRequestException("Thiếu thời điểm cần kiểm tra bàn.");
-        if (time.isBefore(LocalDateTime.now().minusSeconds(30))) {
-            throw new BadRequestException("Thời điểm cần kiểm tra phải từ hiện tại trở đi.");
-        }
-    }
-
     private boolean isFullyAvailableForWindow(Long tableId, LocalDateTime time, LocalDateTime maxEndTime) {
         LocalDateTime nextBookingStart = tableAvailabilityService.getNextBookingTime(tableId, time);
         return nextBookingStart == null || !nextBookingStart.isBefore(maxEndTime);
