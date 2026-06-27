@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -40,8 +42,7 @@ public class AuthServiceImpl implements AuthService {
         LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(30);
 
         return customerRepository.findByEmail(req.getEmail())
-                .map(existing
-                        -> handleExistingUnverifiedCustomer(existing, req, verificationToken, expiresAt))
+                .map(existing -> handleExistingUnverifiedCustomer(existing, req, verificationToken, expiresAt))
                 .orElseGet(() -> createNewCustomer(req, verificationToken, expiresAt));
     }
 
@@ -111,12 +112,12 @@ public class AuthServiceImpl implements AuthService {
             if (customerRepository.findByEmail(req.getEmail()).isPresent()) {
                 throw new ConflictException("Email này đã được sử dụng bởi tài khoản khác.");
             }
-            
+
             String verificationToken = UUID.randomUUID().toString();
             customer.setPendingEmail(req.getEmail());
             customer.setVerificationToken(verificationToken);
             customer.setVerificationTokenExpiresAt(LocalDateTime.now().plusMinutes(30));
-            
+
             // Send Verification to NEW email
             emailService.sendVerificationEmail(req.getEmail(), verificationToken);
             // Send Alert to OLD email
@@ -176,26 +177,52 @@ public class AuthServiceImpl implements AuthService {
         customerRepository.save(customer);
     }
 
-    @Override public void approveVerification(String token) { verifyApprovalMap.put(token, true); }
-    @Override public boolean isVerificationApproved(String token) { return verifyApprovalMap.getOrDefault(token, false); }
-    @Override public void removeVerificationApproval(String token) { verifyApprovalMap.remove(token); }
+    @Override
+    public void approveVerification(String token) {
+        verifyApprovalMap.put(token, true);
+    }
 
-    @Override public boolean validateResetToken(String token) {
+    @Override
+    public boolean isVerificationApproved(String token) {
+        return verifyApprovalMap.getOrDefault(token, false);
+    }
+
+    @Override
+    public void removeVerificationApproval(String token) {
+        verifyApprovalMap.remove(token);
+    }
+
+    @Override
+    public boolean validateResetToken(String token) {
         return customerRepository.findByResetToken(token)
                 .map(c -> c.getResetTokenExpiresAt() != null && c.getResetTokenExpiresAt().isAfter(LocalDateTime.now()))
                 .orElse(false);
     }
 
-    @Override public void approveReset(String token) { tokenApprovalMap.put(token, true); }
-    @Override public boolean isResetApproved(String token) { return tokenApprovalMap.getOrDefault(token, false); }
-    @Override public void removeResetApproval(String token) { tokenApprovalMap.remove(token); }
+    @Override
+    public void approveReset(String token) {
+        tokenApprovalMap.put(token, true);
+    }
+
+    @Override
+    public boolean isResetApproved(String token) {
+        return tokenApprovalMap.getOrDefault(token, false);
+    }
+
+    @Override
+    public void removeResetApproval(String token) {
+        tokenApprovalMap.remove(token);
+    }
 
     @Override
     public String getLatestVerificationToken(String email) {
         return customerRepository.findByEmail(email).map(Customer::getVerificationToken).orElse(null);
     }
 
-    @Override public String getBaseUrl() { return baseUrl; }
+    @Override
+    public String getBaseUrl() {
+        return baseUrl;
+    }
 
     @Override
     public LoginResponse getCustomerInfo(Long customerId) {
@@ -216,7 +243,8 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
-    private String handleExistingUnverifiedCustomer(Customer c, RegisterRequest req, String token, LocalDateTime expiresAt) {
+    private String handleExistingUnverifiedCustomer(Customer c, RegisterRequest req, String token,
+            LocalDateTime expiresAt) {
         if (c.getIsVerified()) {
             throw new ConflictException("Email đã được đăng ký: " + req.getEmail());
         }
@@ -249,14 +277,38 @@ public class AuthServiceImpl implements AuthService {
         return token;
     }
 
+    @Override
+    public String handleEmailVerification(String token) {
+        try {
+            verifyEmail(token);
+            approveVerification(token);
+            return baseUrl + "/auth-success.html";
+        } catch (Exception e) {
+            String errorMsg = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
+            return baseUrl + "/auth-error.html?msg=" + errorMsg;
+        }
+    }
+
+    @Override
+    public String handleResetPasswordPage(String token) {
+        if (validateResetToken(token)) {
+            approveReset(token);
+            return baseUrl + "/auth-success.html";
+        }
+        String errorMsg = URLEncoder.encode("Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.", StandardCharsets.UTF_8);
+        return baseUrl + "/auth-error.html?msg=" + errorMsg;
+    }
+
     private void checkVerificationStatus(Customer customer) {
         if (!customer.getIsVerified()) {
             if (customer.getVerificationTokenExpiresAt() != null &&
                     customer.getVerificationTokenExpiresAt().isBefore(LocalDateTime.now())) {
                 resendVerification(customer.getEmail());
-                throw new UnauthorizedException("Tài khoản chưa xác minh và mã đã hết hạn. Một mã mới đã được gửi tới email của bạn.");
+                throw new UnauthorizedException(
+                        "Tài khoản chưa xác minh và mã đã hết hạn. Một mã mới đã được gửi tới email của bạn.");
             }
-            throw new UnauthorizedException("Tài khoản chưa được xác minh. Vui lòng kiểm tra email (mã có hiệu lực trong 30 phút).");
+            throw new UnauthorizedException(
+                    "Tài khoản chưa được xác minh. Vui lòng kiểm tra email (mã có hiệu lực trong 30 phút).");
         }
     }
 }

@@ -78,7 +78,11 @@
             this.nudGuestCount.Name = "nudGuestCount";
             this.nudGuestCount.Size = new System.Drawing.Size(340, 50);
             this.nudGuestCount.TabIndex = 2;
-            this.nudGuestCount.Value = new decimal(new int[] { 2, 0, 0, 0 });
+            this.nudGuestCount.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
             // 
             // lblGuestCount
             // 
@@ -128,7 +132,7 @@
             this.btnFilterOverstay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFilterOverstay.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnFilterOverstay.ForeColor = System.Drawing.Color.IndianRed;
-            this.btnFilterOverstay.Location = new System.Drawing.Point(780, 15);
+            this.btnFilterOverstay.Location = new System.Drawing.Point(772, 15);
             this.btnFilterOverstay.Name = "btnFilterOverstay";
             this.btnFilterOverstay.Size = new System.Drawing.Size(145, 50);
             this.btnFilterOverstay.TabIndex = 5;
@@ -144,7 +148,7 @@
             this.btnFilterReserved.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFilterReserved.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnFilterReserved.ForeColor = System.Drawing.Color.Orange;
-            this.btnFilterReserved.Location = new System.Drawing.Point(630, 15);
+            this.btnFilterReserved.Location = new System.Drawing.Point(621, 15);
             this.btnFilterReserved.Name = "btnFilterReserved";
             this.btnFilterReserved.Size = new System.Drawing.Size(145, 50);
             this.btnFilterReserved.TabIndex = 4;
