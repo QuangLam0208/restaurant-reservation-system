@@ -8,7 +8,6 @@ import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.TableAvailabilityService;
 import com.hcmute.reservation.strategy.TableAllocationStrategy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 

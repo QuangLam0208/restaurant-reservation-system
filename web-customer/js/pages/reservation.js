@@ -12,6 +12,55 @@ const thisMonday = new Date(today); thisMonday.setDate(today.getDate() - toMon);
 let countdownInterval = null;
 let timeLeft = 300; // 5 phút = 300 giây
 
+const ICON_MAP = {
+    danger: `<svg viewBox="0 0 24 24" fill="none" stroke="#E76B6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="32" height="32"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    info: `<svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="32" height="32"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+    success: `<svg viewBox="0 0 24 24" fill="none" stroke="#48BB78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="32" height="32"><polyline points="20 6 9 17 4 12"/></svg>`
+};
+
+/**
+ * Hiển thị một Modal tùy chỉnh thay thế cho alert/confirm truyền thống.
+ * @param {string} title - Tiêu đề Modal
+ * @param {string} message - Nội dung thông báo
+ * @param {boolean} isConfirm - Nếu true, hiển thị 2 nút (Yes/No), ngược lại chỉ show 1 nút (OK)
+ * @param {string} type - 'info', 'danger', 'success'
+ * @returns {Promise<boolean>} Prosise trả về true nếu chọn Yes/OK, false nếu chọn No
+ */
+function showModal(title, message, isConfirm = false, type = 'info') {
+    return new Promise((resolve) => {
+        const root = document.getElementById('modal-root');
+        const t = document.getElementById('modal-title');
+        const m = document.getElementById('modal-message');
+        const iconDiv = document.getElementById('modal-icon');
+        const btnYes = document.getElementById('modal-btn-yes');
+        const btnNo = document.getElementById('modal-btn-no');
+
+        t.textContent = title;
+        m.textContent = message;
+        iconDiv.innerHTML = ICON_MAP[type] || ICON_MAP.info;
+        root.classList.add('open');
+
+        if (isConfirm) {
+            btnNo.style.display = 'block';
+            btnNo.textContent = 'Cancel';
+            btnYes.textContent = 'Confirm';
+        } else {
+            btnNo.style.display = 'none';
+            btnYes.textContent = 'Got it';
+        }
+
+        const cleanup = (val) => {
+            root.classList.remove('open');
+            btnYes.onclick = null;
+            btnNo.onclick = null;
+            resolve(val);
+        };
+
+        btnYes.onclick = () => cleanup(true);
+        btnNo.onclick = () => cleanup(false);
+    });
+}
+
 // ─── HÀM EXPORT CHO HTML GỌI ───
 window.setParty = setParty;
 window.confirmParty = confirmParty;
@@ -21,6 +70,7 @@ window.editStep = editStep;
 window.goToPayment = goToPayment;
 window.backToBooking = backToBooking;
 window.confirmReservation = confirmReservation;
+window.cancelPayment = cancelPayment;
 window.openBookingsModal = openBookingsModal;
 window.closeBookingsModal = closeBookingsModal;
 window.switchBookingTab = switchBookingTab;
@@ -32,12 +82,12 @@ function startTimer() {
     timeLeft = 300;
     updateTimerDisplay();
 
-    countdownInterval = setInterval(() => {
+    countdownInterval = setInterval(async () => {
         timeLeft--;
         updateTimerDisplay();
         if (timeLeft <= 0) {
             clearInterval(countdownInterval);
-            alert("Thời gian giữ bàn 5 phút đã hết. Vui lòng thao tác lại để giữ bàn mới.");
+            await showModal("Time Expired", "The 5-minute table lock has expired. Please select a new slot to continue.");
             backToBooking();
         }
     }, 1000);
@@ -120,7 +170,7 @@ function renderDates() {
 }
 
 const LUNCH = ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00'];
-const DINNER = ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30'];
+const DINNER = ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30'];
 
 function renderTimes() {
     fillSlots('tg-lunch', LUNCH);
@@ -235,7 +285,7 @@ async function goToPayment() {
     // Gọi API Đặt bàn Online (Backend sẽ soft-lock bàn)
     const { ok, data } = await callApi('/reservations/online', 'POST', bookingData);
     if (!ok) {
-        alert(data?.message || "Failed to create reservation. The slot might have been taken.");
+        await showModal("Reservation Failed", data?.message || "The selected slot is no longer available. Please try another time.");
         return;
     }
 
@@ -255,11 +305,38 @@ async function goToPayment() {
     if (S.time) document.getElementById('p-time').textContent = S.time;
 }
 
-function backToBooking() {
+async function backToBooking() {
+    if (S.reservationId) {
+        const ok = await showModal("Table Locked", "Your table is still locked for you. Going back now will keep the timer running. Do you want to continue?", true, 'info');
+        if (!ok) return;
+    }
     stopTimer();
     document.getElementById('booking-page').style.display = 'block';
     document.getElementById('payment-page').style.display = 'none';
     window.scrollTo(0, 0);
+}
+
+async function cancelPayment() {
+    if (!S.reservationId) return;
+    const okConfirm = await showModal("Release Table", "Are you sure you want to cancel this reservation and release the table back to other guests?", true, 'danger');
+    if (!okConfirm) return;
+
+    try {
+        const { ok, data } = await callApi(`/reservations/${S.reservationId}`, 'DELETE');
+        if (ok) {
+            await showModal("Cancelled", "Reservation has been cancelled and the table is now available.", false, 'success');
+            S.reservationId = null;
+            stopTimer();
+            // Quay về bước 4
+            document.getElementById('booking-page').style.display = 'block';
+            document.getElementById('payment-page').style.display = 'none';
+            window.scrollTo(0, 0);
+        } else {
+            await showModal("Error", data?.message || "Failed to cancel reservation.");
+        }
+    } catch (err) {
+        await showModal("Error", "An unexpected error occurred. Please try again.");
+    }
 }
 
 async function confirmReservation() {
@@ -269,24 +346,18 @@ async function confirmReservation() {
     const { ok, data } = await callApi(`/reservations/${S.reservationId}/payment/confirm`, 'POST');
 
     if (!ok) {
-        alert(data?.message || "Payment confirmation failed.");
+        await showModal("Payment Error", data?.message || "We could not confirm your payment. Please check your card details and try again.");
         return;
     }
 
     stopTimer();
+    S.reservationId = null;
     document.getElementById('payment-page').style.display = 'none';
     const sp = document.getElementById('success-page'); sp.style.display = 'flex';
     window.scrollTo(0, 0);
 
     const refId = 'RS-' + S.reservationId;
     document.getElementById('success-ref').textContent = 'Reservation · ' + refId;
-
-    myBookingsList.push({
-        ref: refId,
-        date: `${DAYS[S.date.getDay()]}, ${S.date.getDate()} ${MONTHS[S.date.getMonth()]}`,
-        time: S.time,
-        party: S.party
-    });
 }
 
 // ─── KHỞI TẠO DOM ───
@@ -304,8 +375,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 3. Quản lý sự kiện cho My Bookings
     const viewBookingsLink = document.getElementById('view-bookings-link');
     if (viewBookingsLink) {
-        viewBookingsLink.addEventListener('click', (e) => {
+        viewBookingsLink.addEventListener('click', async (e) => {
             e.preventDefault();
+
+            // Nếu đang giữ bàn, yêu cầu xác nhận trước khi mở "My Bookings"
+            if (S.reservationId) {
+                const ok = await showModal("Reservation Pending", "Leaving this page will cancel your current booking process. Do you wish to proceed?", true);
+                if (!ok) return;
+                await cancelPaymentDirectly();
+            }
+
             openBookingsModal();
         });
     }
@@ -314,6 +393,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const tabHistory = document.getElementById('tab-history');
     if (tabUpcoming) tabUpcoming.onclick = () => switchBookingTab('upcoming');
     if (tabHistory) tabHistory.onclick = () => switchBookingTab('history');
+
+    const cancelPaymentDirectly = async () => {
+        if (S.reservationId) {
+            await callApi(`/reservations/${S.reservationId}`, 'DELETE');
+            S.reservationId = null;
+        }
+    };
 
     const closeBookingsBtn = document.getElementById('close-bookings-btn');
     if (closeBookingsBtn) closeBookingsBtn.onclick = closeBookingsModal;
@@ -340,7 +426,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (cardNum) cardNum.addEventListener('input', function () { this.value = this.value.replace(/\D/g, '').replace(/(\d{4})(?=\d)/g, '$1 ').substring(0, 19); });
 
     const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) logoutBtn.addEventListener('click', e => { e.preventDefault(); clearUser(); window.location.href = 'index.html'; });
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (S.reservationId) {
+                const ok = await showModal("Sign Out", "Signing out will cancel your pending reservation. Process with logout?", true);
+                if (!ok) return;
+                await cancelPaymentDirectly();
+            }
+            clearUser();
+            window.location.href = 'index.html';
+        });
+    }
+
+    // (Combined with above listener)
 
     // Click listener cho Occasion chips
     document.querySelectorAll('.occ-chip').forEach(c => {

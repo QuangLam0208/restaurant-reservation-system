@@ -56,6 +56,7 @@ public class SecurityConfig {
                 ).permitAll()
                 // ── Public: static content ────────────────────────────────────────
                 .requestMatchers("/", "/index.html", "/web-customer/**", "/assets/**", "/js/**").permitAll()
+                .requestMatchers("/ws-reservation/**", "/ws-reservation-native/**").permitAll()
                 // ── Public: staff auth (POS login) ────────────────────────────────
                 .requestMatchers("/api/staff/auth/login").permitAll()
                 // ── Public: availability check ────────────────────────────────────

@@ -91,7 +91,7 @@ namespace reservation_winforms.Forms
         }
 
         private void OnTableStatusChanged(TableUpdate msg)
-        {
+        {       
             if (this.IsHandleCreated && !this.IsDisposed)
             {
                 this.Invoke(new Action(async () => {

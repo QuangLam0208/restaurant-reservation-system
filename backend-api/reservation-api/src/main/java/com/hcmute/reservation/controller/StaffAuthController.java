@@ -8,7 +8,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -25,25 +28,22 @@ public class StaffAuthController {
         return ResponseEntity.ok(staffAuthService.login(req));
     }
 
+    /** POST /api/staff/auth/logout */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
-        String token = extractToken(request);
-        if (token != null && !token.isBlank()) {
-            staffAuthService.logout(token);
-        }
+        staffAuthService.logout(extractToken(request));
         return ResponseEntity.noContent().build();
     }
 
+    /** POST /api/staff/auth/register */
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> registerStaff(@Valid @RequestBody StaffRegisterRequest req) {
-        staffAuthService.register(req);
-        return ResponseEntity.ok(Map.of("message",
-                "Tạo tài khoản " + req.getRole().name() + " thành công!"));
+        String message = staffAuthService.register(req);
+        return ResponseEntity.ok(Map.of("message", message));
     }
 
     // Hàm bổ trợ để trích xuất token từ Header tùy chỉnh
     private String extractToken(HttpServletRequest request) {
         return request.getHeader("X-Staff-Token");
     }
-
 }

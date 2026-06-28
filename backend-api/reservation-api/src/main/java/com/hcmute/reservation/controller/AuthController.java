@@ -1,6 +1,12 @@
 package com.hcmute.reservation.controller;
 
-import com.hcmute.reservation.model.dto.auth.*;
+import com.hcmute.reservation.model.dto.auth.LoginRequest;
+import com.hcmute.reservation.model.dto.auth.LoginResponse;
+import com.hcmute.reservation.model.dto.auth.RegisterRequest;
+import com.hcmute.reservation.model.dto.auth.ForgotPasswordRequest;
+import com.hcmute.reservation.model.dto.auth.ResetPasswordRequest;
+import com.hcmute.reservation.model.dto.auth.CustomerProfileUpdateRequest;
+import com.hcmute.reservation.model.dto.auth.ChangePasswordRequest;
 import com.hcmute.reservation.security.AppSessionManager;
 import com.hcmute.reservation.service.AuthService;
 import jakarta.servlet.http.HttpSession;
@@ -11,8 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @RestController
@@ -27,9 +31,8 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterRequest req) {
         String token = authService.register(req);
         return ResponseEntity.ok(Map.of(
-            "message", "Đăng ký thành công. Vui lòng kiểm tra email để xác minh tài khoản.",
-            "token", token
-        ));
+                "message", "Đăng ký thành công. Vui lòng kiểm tra email để xác minh tài khoản.",
+                "token", token));
     }
 
     /** POST /api/auth/resend-verification */
@@ -37,48 +40,28 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> resendVerification(@RequestBody Map<String, String> req) {
         String email = req.get("email");
         authService.resendVerification(email);
-        // Tìm lại token mới nhất để trả về cho frontend restart polling (optional security choice)
-        String newToken = authService.getLatestVerificationToken(email); 
+        String newToken = authService.getLatestVerificationToken(email);
         return ResponseEntity.ok(Map.of(
-            "message", "Mã xác minh mới đã được gửi tới email của bạn.",
-            "token", newToken
-        ));
+                "message", "Mã xác minh mới đã được gửi tới email của bạn.",
+                "token", newToken));
     }
 
-    /** GET /api/auth/verify-email?token= — Xác minh xong Redirect về Trang Thành công/Thất bại */
+    /**
+     * GET /api/auth/verify-email?token= — Xác minh xong Redirect về Trang Thành công/Thất bại
+     */
     @GetMapping("/verify-email")
     public ResponseEntity<Void> verifyEmail(@RequestParam String token) {
-        String baseUrl = authService.getBaseUrl();
-        try {
-            authService.verifyEmail(token);
-            // Xác minh thành công -> Đánh dấu Approved để Polling ở trang 1 bắt được
-            authService.approveVerification(token);
-            
-            String redirectUrl = baseUrl + "/auth-success.html";
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .location(URI.create(redirectUrl))
-                    .build();
-        } catch (Exception e) {
-            // XÁC MINH THẤT BẠI -> Redirect về trang lỗi kèm message
-            String errorMsg = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
-            String redirectUrl = baseUrl + "/auth-error.html?msg=" + errorMsg;
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .location(URI.create(redirectUrl))
-                    .build();
-        }
+        String redirectUrl = authService.handleEmailVerification(token);
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(redirectUrl))
+                .build();
     }
 
     /** POST /api/auth/login */
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest req, HttpSession session) {
         LoginResponse response = authService.login(req);
-        
-        // SRP: Delegate session creation to SessionManager
         sessionManager.createSession(session, response.getCustomerId(), response.getEmail());
-        
-        // We set token to null or empty since it's no longer used by the client
-        response.setToken("SESSION_MANAGED");
-        
         return ResponseEntity.ok(response);
     }
 
@@ -94,9 +77,8 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
         String token = authService.forgotPassword(req);
         return ResponseEntity.ok(Map.of(
-            "message", "Mã đặt lại mật khẩu đã được gửi.",
-            "token", token
-        ));
+                "message", "Mã đặt lại mật khẩu đã được gửi.",
+                "token", token));
     }
 
     /** POST /api/auth/reset-password */
@@ -107,39 +89,29 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Đặt lại mật khẩu thành công."));
     }
 
-    /** GET /api/auth/reset-password-page?token= — Xác thực xong báo thành công cho Polling */
+    /**
+     * GET /api/auth/reset-password-page?token= — Redirect về trang thành công/lỗi
+     */
     @GetMapping("/reset-password-page")
     public ResponseEntity<Void> resetPasswordPage(@RequestParam String token) {
-        String baseUrl = authService.getBaseUrl();
-        boolean isValid = authService.validateResetToken(token);
-
-        if (isValid) {
-            // Token đúng -> Đánh dấu là đã duyệt (Approved) để Polling ở trang 1 bắt được
-            authService.approveReset(token);
-            
-            // Redirect về trang thành công
-            String redirectUrl = baseUrl + "/auth-success.html";
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .location(URI.create(redirectUrl))
-                    .build();
-        }
-
-        // Token SAI hoặc HẾT HẠN -> Redirect về trang lỗi
-        String redirectUrl = baseUrl + "/auth-error.html?msg=" + 
-                URLEncoder.encode("This password reset link is invalid or has expired.", StandardCharsets.UTF_8);
+        String redirectUrl = authService.handleResetPasswordPage(token);
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(redirectUrl))
                 .build();
     }
 
-    /** GET /api/auth/check-reset-status?token= — Frontend polling gọi để check link đã bấm chưa */
+    /**
+     * GET /api/auth/check-reset-status?token= — Frontend polling gọi để check link đã bấm chưa
+     */
     @GetMapping("/check-reset-status")
     public ResponseEntity<Map<String, Boolean>> checkResetStatus(@RequestParam String token) {
         boolean approved = authService.isResetApproved(token);
         return ResponseEntity.ok(Map.of("approved", approved));
     }
 
-    /** GET /api/auth/check-verify-status?token= — Frontend polling gọi để check link verify đã bấm chưa */
+    /**
+     * GET /api/auth/check-verify-status?token= — Frontend polling gọi để check link verify đã bấm chưa
+     */
     @GetMapping("/check-verify-status")
     public ResponseEntity<Map<String, Boolean>> checkVerifyStatus(@RequestParam String token) {
         boolean approved = authService.isVerificationApproved(token);
@@ -152,12 +124,8 @@ public class AuthController {
     /** GET /api/auth/me — Lấy thông tin session hiện tại */
     @GetMapping("/me")
     public ResponseEntity<LoginResponse> getMe(HttpSession session) {
-        Long customerId = sessionManager.getCustomerId(session);
-        if (customerId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        LoginResponse response = authService.getCustomerInfo(customerId);
-        return ResponseEntity.ok(response);
+        Long customerId = sessionManager.getRequiredCustomerId(session);
+        return ResponseEntity.ok(authService.getCustomerInfo(customerId));
     }
 
     /** PUT /api/auth/profile — Cập nhật thông tin cá nhân */
@@ -165,12 +133,8 @@ public class AuthController {
     public ResponseEntity<LoginResponse> updateProfile(
             @Valid @RequestBody CustomerProfileUpdateRequest req,
             HttpSession session) {
-        Long customerId = sessionManager.getCustomerId(session);
-        if (customerId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        LoginResponse response = authService.updateProfile(customerId, req);
-        return ResponseEntity.ok(response);
+        Long customerId = sessionManager.getRequiredCustomerId(session);
+        return ResponseEntity.ok(authService.updateProfile(customerId, req));
     }
 
     /** PUT /api/auth/password — Đổi mật khẩu */
@@ -178,10 +142,7 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> changePassword(
             @Valid @RequestBody ChangePasswordRequest req,
             HttpSession session) {
-        Long customerId = sessionManager.getCustomerId(session);
-        if (customerId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        Long customerId = sessionManager.getRequiredCustomerId(session);
         authService.changePassword(customerId, req);
         return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công."));
     }

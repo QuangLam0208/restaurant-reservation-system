@@ -41,4 +41,10 @@ public interface AppSessionManager {
      * @return true if authenticated
      */
     boolean isAuthenticated(HttpSession session);
+    /**
+     * Get Customer ID from the session, throwing UnauthorizedException if not found.
+     * @param session The current HTTP session
+     * @return Customer ID
+     */
+    Long getRequiredCustomerId(HttpSession session);
 }

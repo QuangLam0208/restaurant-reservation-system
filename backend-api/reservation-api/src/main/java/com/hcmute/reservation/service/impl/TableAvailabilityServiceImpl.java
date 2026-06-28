@@ -8,7 +8,6 @@ import com.hcmute.reservation.repository.TableInfoRepository;
 import com.hcmute.reservation.service.ConfigProviderService;
 import com.hcmute.reservation.service.TableAvailabilityService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

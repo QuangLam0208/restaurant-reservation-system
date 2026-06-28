@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    color: var(--text-main);
+    color: var(--text-primary);
     background-color: var(--bg-primary);
     line-height: 1.6;
     overflow-x: hidden;

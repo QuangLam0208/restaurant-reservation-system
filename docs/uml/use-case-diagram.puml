@@ -36,6 +36,7 @@ rectangle "Hệ thống Quản lý Đặt bàn Tích hợp (Online & Offline)" {
     usecase "Đặt bàn trực tuyến\n(UC_BookOnline)" as UC_BookOnline
     usecase "Thanh toán phí giữ bàn\n(UC_Payment)" as UC_Payment
     usecase "Hủy đặt bàn\n(UC_CancelReservation)" as UC_CancelReservation
+    usecase "Hủy thanh toán\n(UC_CancelPayment)" as UC_CancelPayment
   }
 
   ' ----------------------------------------
@@ -78,21 +79,33 @@ rectangle "Hệ thống Quản lý Đặt bàn Tích hợp (Online & Offline)" {
 
 ' Guest
 Guest --> UC_Register
-Guest --> UC_Forgot
+Guest --> UC_VerifyEmail
+Guest --> UC_ResendVerification
+Guest --> UC_ForgotPassword
+Guest --> UC_ResetPassword
 
-' Khách Online
-OnlineCustomer --> UC_Login
-OnlineCustomer --> UC_BookOnline
-OnlineCustomer --> UC_CancelReservation
+Customer --> UC_CustomerLogin
+Customer --> UC_CustomerLogout
+Customer --> UC_UpdateProfile
+Customer --> UC_ChangePassword
+Customer --> UC_BookOnline
+Customer --> UC_CancelReservation
+Customer --> UC_CancelPayment
 
-' Lễ tân
-Receptionist --> UC_Login
-Receptionist --> UC_HandleWalkIn
+Receptionist --> UC_StaffLogin
+Receptionist --> UC_StaffLogout
+Receptionist --> UC_ViewWalkInOptions
+Receptionist --> UC_SuggestWalkIn
+Receptionist --> UC_ConfirmWalkIn
+Receptionist --> UC_CancelWalkInSuggestion
+Receptionist --> UC_AddWaitlist
+Receptionist --> UC_NotifyWaitlist
+Receptionist --> UC_SeatWaitlist
+Receptionist --> UC_MarkMissing
+Receptionist --> UC_SkipWaitlist
 Receptionist --> UC_CheckIn
 Receptionist --> UC_CheckOut
-Receptionist --> UC_CancelReservation
 Receptionist --> UC_Override
-Receptionist --> UC_Waitlist
 
 ' Quản lý
 Manager --> UC_Login
@@ -141,8 +154,13 @@ UC_HandleWalkIn ..> UC_AutoAssign  : <<include>>
 ' Bàn trống một phần → đề xuất Short Seating
 UC_ShortSeating <.. UC_HandleWalkIn : <<extend>>
 
-' Hết bàn → vào Waitlist
-UC_Waitlist <.. UC_HandleWalkIn   : <<extend>>
+UC_BookOnline ..> UC_AutoAssign : <<include>>
+UC_BookOnline ..> UC_SoftLock : <<include>>
+UC_BookOnline ..> UC_Payment : <<include>>
+UC_Merge ..> UC_AutoAssign : <<extend>>
+UC_SuggestAltTime ..> UC_BookOnline : <<extend>>
+UC_NotifyReservation ..> UC_Payment : <<include>>
+UC_CancelPayment ..> UC_Payment : <<extend>>
 
 ' Có bàn trống → thông báo khách chờ
 UC_NotifyWaitlist <.. UC_Waitlist  : <<extend>>

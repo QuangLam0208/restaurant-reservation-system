@@ -106,7 +106,7 @@ namespace reservation_winforms.Forms
 
                 Button btnCard = new Button
                 {
-                    Text = $"🪑 BÀN {tableStr}\n\n👥 Customer: {r.CustomerName ?? "Walk-in"}\n🕒 Seat: {durationText}",
+                    Text = $"🪑 TABLE {tableStr}\n\n👥 Customer: {r.CustomerName ?? "Walk-in"}\n🕒 Seat: {durationText}",
                     Font = new Font("Segoe UI", 12, FontStyle.Bold),
                     Width = 260,
                     Height = 150,

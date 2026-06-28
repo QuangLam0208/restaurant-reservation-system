@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
-@Order(1) // Chạy đầu tiên
+@Order(1)
 public class SingleTableStrategy implements TableAllocationStrategy {
 
     @Override

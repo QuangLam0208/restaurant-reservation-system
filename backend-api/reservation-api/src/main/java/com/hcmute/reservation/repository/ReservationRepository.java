@@ -15,7 +15,7 @@ import java.util.List;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
     List<Reservation> findByStatus(ReservationStatus status);
-    
+
     List<Reservation> findByCustomer_CustomerIdOrderByStartTimeDesc(Long customerId);
 
 
