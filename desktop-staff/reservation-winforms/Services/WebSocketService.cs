@@ -145,14 +145,32 @@ namespace reservation_winforms.Services
 
         public async Task DisconnectAsync()
         {
-            if (_webSocket != null)
+            if (_webSocket == null) return;
+
+            try
             {
                 _cancellationTokenSource?.Cancel();
+
                 if (_webSocket.State == WebSocketState.Open)
                 {
                     await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
                 }
-                _webSocket.Dispose();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Đã bị dispose từ lần gọi trước, bỏ qua
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"WebSocket Disconnect Error: {ex.Message}");
+            }
+            finally
+            {
+                _webSocket?.Dispose();
+                _webSocket = null;
+
+                _cancellationTokenSource?.Dispose();
+                _cancellationTokenSource = null;
             }
         }
     }
